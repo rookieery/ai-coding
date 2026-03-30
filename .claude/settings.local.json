@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/code/gomoku-training/**)",
+      "Bash(python scripts/download_sgf_data.py --help)",
+      "Bash(venv/Scripts/python.exe scripts/evaluate_model.py --model checkpoints/supervised/best.pth --dataset --num-samples 1000)"
+    ],
+    "additionalDirectories": [
+      "d:\\code\\gomoku-training\\scripts"
+    ]
+  }
+}

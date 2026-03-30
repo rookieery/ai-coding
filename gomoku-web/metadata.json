@@ -1,0 +1,5 @@
+{
+  "name": "五子棋",
+  "description": "A Gomoku game built with Vue 3 and TypeScript, featuring PvP and PvE modes.",
+  "requestFramePermissions": []
+}
