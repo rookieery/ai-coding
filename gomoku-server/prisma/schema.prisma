@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  avatar    String?
+  rating    Int      @default(1200)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  games   Game[]  @relation("UserGames")
+  // matches Match[] @relation("UserMatches") // TODO: 启用Match关系
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  boardSize   Int      @default(15)
+  moves       String
+  result      String?
+  playerBlack String?
+  playerWhite String?
+  isPublic    Boolean  @default(true)
+  tags        String
+  metadata    String?
+
+  authorId String?
+  author   User?  @relation("UserGames", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  type        String
+  mode        String
+  boardSize   Int      @default(15)
+
+  // 玩家信息
+  playerBlackId   String?
+  playerBlackName String
+  playerBlackType String
+  playerWhiteId   String?
+  playerWhiteName String
+  playerWhiteType String
+
+  // AI配置
+  aiLevelBlack Int?
+  aiLevelWhite Int?
+
+  // 对局数据
+  moves    String
+  result   String?
+  duration Int?
+
+  // 统计
+  blackCaptures Int @default(0)
+  whiteCaptures Int @default(0)
+
+  createdAt DateTime @default(now())
+  endedAt   DateTime?
+
+  // 关系
+  // playerBlack User? @relation("BlackMatches", fields: [playerBlackId], references: [id])
+  // playerWhite User? @relation("WhiteMatches", fields: [playerWhiteId], references: [id])
+}

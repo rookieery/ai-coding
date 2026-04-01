@@ -1,0 +1,157 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../app';
+import { config } from '../config';
+import { logger } from '../utils/logger';
+
+// 扩展Request类型以包含用户信息
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email: string;
+        username: string;
+      };
+      token?: string;
+    }
+  }
+}
+
+// 生成JWT令牌
+export function generateToken(userId: string, email: string, username: string): string {
+  return jwt.sign(
+    { id: userId, email, username },
+    config.jwt.secret as string,
+    { expiresIn: config.jwt.expiresIn as any }
+  );
+}
+
+// 验证JWT令牌
+export function verifyToken(token: string): any {
+  try {
+    return jwt.verify(token, config.jwt.secret as string);
+  } catch (error) {
+    logger.error('Token verification failed:', error);
+    return null;
+  }
+}
+
+// 认证中间件
+export async function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: 'No token provided or invalid token format',
+      });
+      return;
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: 'Invalid or expired token',
+      });
+      return;
+    }
+
+    // 检查用户是否仍然存在
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, username: true },
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: 'User no longer exists',
+      });
+      return;
+    }
+
+    // 将用户信息附加到请求对象
+    req.user = user;
+    req.token = token;
+
+    next();
+  } catch (error) {
+    logger.error('Authentication error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      message: 'Authentication failed',
+    });
+  }
+}
+
+// 可选认证（不强制要求，但有用户信息时会附加）
+export async function optionalAuthenticate(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = verifyToken(token);
+
+      if (decoded) {
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.id },
+          select: { id: true, email: true, username: true },
+        });
+
+        if (user) {
+          req.user = user;
+          req.token = token;
+        }
+      }
+    }
+
+    next();
+  } catch (error) {
+    logger.error('Optional authentication error:', error);
+    next(); // 不阻止请求继续
+  }
+}
+
+// 管理员权限检查
+export function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  // 这里可以根据需要实现管理员检查
+  // 例如，检查用户角色或权限
+  // 暂时简单实现：所有认证用户都有权限
+
+  if (!req.user) {
+    res.status(403).json({
+      success: false,
+      error: 'Forbidden',
+      message: 'Admin privileges required',
+    });
+    return;
+  }
+
+  // TODO: 实现真正的管理员检查
+  // const isAdmin = await checkAdmin(req.user.id);
+  // if (!isAdmin) { ... }
+
+  next();
+}
