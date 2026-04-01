@@ -6,6 +6,7 @@ import Board from './components/Board.vue';
 import HistoryPanel from './components/HistoryPanel.vue';
 import GameControls from './components/GameControls.vue';
 import { t, currentTheme } from './i18n';
+import { gameApi, type FrontendGame } from './api/game-api';
 
 const board = ref<number[][]>(Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)));
 const currentPlayer = ref<number>(BLACK);
@@ -21,75 +22,96 @@ const thinkingPath = ref<{r: number, c: number, player: number}[]>([]);
 const currentRecordId = ref<string | null>(null);
 const isAiThinking = ref<boolean>(false);
 
-interface SavedGame {
-  id: string;
-  name: string;
-  board: number[][];
-  moveHistory: { r: number; c: number; player: number }[];
-  timestamp: number;
-  mode: 'pvp' | 'pve';
-  aiDifficulty: Difficulty;
-  aiRole: 'first' | 'second';
-  ruleMode: RuleMode;
-}
+type SavedGame = FrontendGame & { moveCount?: number };
 
 const isSaveModalOpen = ref(false);
 const isRecordsModalOpen = ref(false);
 const saveName = ref('');
 const savedGames = ref<SavedGame[]>([]);
 
-onMounted(() => {
-  const stored = localStorage.getItem('gomoku_saved_games');
-  if (stored) {
-    try {
-      savedGames.value = JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse saved games', e);
+onMounted(async () => {
+  try {
+    // 尝试从API加载游戏
+    console.log('Loading games from API...');
+    const result = await gameApi.getGames();
+    savedGames.value = result.games.map(game => {
+      // 获取完整的游戏数据（如果需要）
+      // 目前使用简化的游戏信息
+      return {
+        id: game.id,
+        name: game.name,
+        board: Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)),
+        moveHistory: [], // 简化的游戏列表不包含移动历史
+        moveCount: game.moveCount, // 保存步数信息用于显示
+        timestamp: game.timestamp,
+        mode: game.mode === 'pve' ? 'pve' : 'pvp',
+        aiDifficulty: game.aiDifficulty as Difficulty,
+        aiRole: 'second' as const,
+        ruleMode: 'standard' as const,
+      };
+    });
+    console.log(`Loaded ${savedGames.value.length} games from API`);
+  } catch (error) {
+    console.error('Failed to load games from API, falling back to localStorage:', error);
+
+    // 回退到localStorage
+    const stored = localStorage.getItem('gomoku_saved_games');
+    if (stored) {
+      try {
+        savedGames.value = JSON.parse(stored);
+        console.log(`Loaded ${savedGames.value.length} games from localStorage`);
+      } catch (e) {
+        console.error('Failed to parse saved games from localStorage', e);
+      }
     }
   }
 
-  // Ensure the "浦月必胜开局1" is correct as per user request
+  // 可选：创建默认示例棋谱（只在第一次访问时）
+  // 如果需要，可以提供一个"创建示例棋谱"按钮而不是自动创建
+  const shouldCreateDefault = localStorage.getItem('gomoku_default_created') !== 'true';
   const puyueName = "浦月必胜开局1";
-  const puyueHistory = [
-    { r: 7, c: 7, player: BLACK },
-    { r: 6, c: 8, player: WHITE },
-    { r: 8, c: 8, player: BLACK },
-    { r: 6, c: 6, player: WHITE },
-    { r: 8, c: 6, player: BLACK } // g9
-  ];
-  
-  const existingIndex = savedGames.value.findIndex(g => g.name === puyueName);
-  if (existingIndex === -1) {
-    const puyueGame: SavedGame = {
-      id: 'puyue_win_1',
-      name: puyueName,
-      board: Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)),
-      moveHistory: puyueHistory,
-      timestamp: Date.now(),
-      mode: 'pve',
-      aiDifficulty: 'expert',
-      aiRole: 'second',
-      ruleMode: 'renju'
-    };
-    // Fill the board for the saved game
-    puyueHistory.forEach(m => {
-      puyueGame.board[m.r][m.c] = m.player;
-    });
-    savedGames.value.unshift(puyueGame);
-    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-  } else {
-    // Update if it exists but is different
-    const game = savedGames.value[existingIndex];
-    const isDifferent = game.moveHistory.length !== puyueHistory.length || 
-                        game.moveHistory.some((m, i) => m.r !== puyueHistory[i].r || m.c !== puyueHistory[i].c);
-    
-    if (isDifferent) {
-      game.moveHistory = puyueHistory;
-      game.board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY));
+
+  if (shouldCreateDefault) {
+    const puyueHistory = [
+      { r: 7, c: 7, player: BLACK },
+      { r: 6, c: 8, player: WHITE },
+      { r: 8, c: 8, player: BLACK },
+      { r: 6, c: 6, player: WHITE },
+      { r: 8, c: 6, player: BLACK } // g9
+    ];
+
+    const existingIndex = savedGames.value.findIndex(g => g.name === puyueName);
+    if (existingIndex === -1) {
+      const puyueGame: SavedGame = {
+        id: `puyue_${Date.now()}`, // 使用时间戳避免ID冲突
+        name: puyueName,
+        board: Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)),
+        moveHistory: puyueHistory,
+        timestamp: Date.now(),
+        mode: 'pve',
+        aiDifficulty: 'expert',
+        aiRole: 'second',
+        ruleMode: 'renju'
+      };
+      // Fill the board for the saved game
       puyueHistory.forEach(m => {
-        game.board[m.r][m.c] = m.player;
+        puyueGame.board[m.r][m.c] = m.player;
       });
-      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+      savedGames.value.unshift(puyueGame);
+
+      // 尝试保存到API
+      try {
+        await gameApi.saveGame(puyueGame);
+        console.log('Puyue opening saved to API');
+        localStorage.setItem('gomoku_default_created', 'true');
+      } catch (error) {
+        console.error('Failed to save puyue opening to API, saving to localStorage:', error);
+        localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+        localStorage.setItem('gomoku_default_created', 'true');
+      }
+    } else {
+      // 如果已经存在同名棋谱，也标记为已创建
+      localStorage.setItem('gomoku_default_created', 'true');
     }
   }
 });
@@ -106,9 +128,9 @@ const closeSaveModal = () => {
   isSaveModalOpen.value = false;
 };
 
-const saveCurrentGame = () => {
+const saveCurrentGame = async () => {
   if (!saveName.value.trim()) return;
-  
+
   if (savedGames.value.some(g => g.name === saveName.value.trim())) {
     saveNameError.value = t('nameExists');
     return;
@@ -117,7 +139,7 @@ const saveCurrentGame = () => {
   saveNameError.value = '';
 
   const newGame: SavedGame = {
-    id: Date.now().toString(),
+    id: Date.now().toString(), // 临时ID，会被API返回的ID覆盖
     name: saveName.value.trim(),
     board: board.value.map(row => [...row]),
     moveHistory: [...moveHistory.value],
@@ -128,12 +150,29 @@ const saveCurrentGame = () => {
     ruleMode: ruleMode.value
   };
 
-  savedGames.value.push(newGame);
-  localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-  currentRecordId.value = newGame.id;
-  
-  closeSaveModal();
-  notify(t('saveSuccess'));
+  try {
+    // 保存到API
+    const savedGame = await gameApi.saveGame(newGame);
+
+    // 使用API返回的ID更新游戏
+    newGame.id = savedGame.id;
+    newGame.timestamp = savedGame.timestamp;
+
+    savedGames.value.push(newGame);
+    currentRecordId.value = newGame.id;
+
+    closeSaveModal();
+    notify(t('saveSuccess'));
+  } catch (error) {
+    console.error('Failed to save game to API:', error);
+    // 回退到localStorage
+    savedGames.value.push(newGame);
+    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+    currentRecordId.value = newGame.id;
+
+    closeSaveModal();
+    notify(`${t('saveSuccess')} (local storage)`);
+  }
 };
 
 const openRecordsModal = () => {
@@ -144,23 +183,39 @@ const closeRecordsModal = () => {
   isRecordsModalOpen.value = false;
 };
 
-const importGame = (game: SavedGame) => {
+const importGame = async (game: SavedGame) => {
   terminateWorker();
-  
-  board.value = game.board.map(row => [...row]);
-  moveHistory.value = [...game.moveHistory];
+
+  let fullGame = game;
+
+  // 如果游戏没有移动历史或棋盘为空，尝试从API获取完整数据
+  // 注意：列表中的游戏可能只有moveCount而没有完整的moveHistory
+  if ((game.moveCount && game.moveCount > 0 && game.moveHistory.length === 0) ||
+      game.board.every(row => row.every(cell => cell === EMPTY))) {
+    try {
+      console.log('Fetching full game data from API for:', game.id);
+      fullGame = await gameApi.getGame(game.id);
+      console.log('Full game data loaded:', fullGame);
+    } catch (error) {
+      console.error('Failed to fetch full game data from API:', error);
+      // 继续使用现有的游戏数据
+    }
+  }
+
+  board.value = fullGame.board.map(row => [...row]);
+  moveHistory.value = [...fullGame.moveHistory];
   mode.value = 'pve';
-  aiDifficulty.value = game.aiDifficulty;
-  aiRole.value = game.aiRole;
-  ruleMode.value = game.ruleMode;
-  currentRecordId.value = game.id;
-  
-  currentPlayer.value = game.moveHistory.length % 2 === 0 ? BLACK : WHITE;
-  
+  aiDifficulty.value = fullGame.aiDifficulty;
+  aiRole.value = fullGame.aiRole;
+  ruleMode.value = fullGame.ruleMode;
+  currentRecordId.value = fullGame.id;
+
+  currentPlayer.value = fullGame.moveHistory.length % 2 === 0 ? BLACK : WHITE;
+
   winner.value = EMPTY;
   winningLine.value = [];
-  if (game.moveHistory.length > 0) {
-    const lastMove = game.moveHistory[game.moveHistory.length - 1];
+  if (fullGame.moveHistory.length > 0) {
+    const lastMove = fullGame.moveHistory[fullGame.moveHistory.length - 1];
     const winLine = checkWin(board.value, lastMove.r, lastMove.c, lastMove.player, ruleMode.value);
     if (winLine) {
       winner.value = lastMove.player;
@@ -169,9 +224,9 @@ const importGame = (game: SavedGame) => {
       winner.value = 3;
     }
   }
-  
+
   isAnalysisMode.value = true;
-  
+
   closeRecordsModal();
   notify(t('importSuccess'));
 };
@@ -185,7 +240,7 @@ const startEditing = (game: SavedGame) => {
   editingName.value = game.name;
 };
 
-const saveEdit = () => {
+const saveEdit = async () => {
   if (!editingGameId.value) return;
   const name = editingName.value.trim();
   if (!name) {
@@ -195,9 +250,21 @@ const saveEdit = () => {
 
   const index = savedGames.value.findIndex(g => g.id === editingGameId.value);
   if (index !== -1) {
-    savedGames.value[index].name = name;
-    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-    notify(t('updateSuccess'));
+    const game = savedGames.value[index];
+    const updatedGame = { ...game, name };
+
+    try {
+      // 尝试更新到API
+      await gameApi.updateGame(game.id, updatedGame);
+      savedGames.value[index] = updatedGame;
+      notify(t('updateSuccess'));
+    } catch (error) {
+      console.error('Failed to update game name in API:', error);
+      // 回退到localStorage
+      savedGames.value[index].name = name;
+      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+      notify(`${t('updateSuccess')} (local storage)`);
+    }
   }
   editingGameId.value = null;
 };
@@ -206,17 +273,28 @@ const cancelEditing = () => {
   editingGameId.value = null;
 };
 
-const updateGame = (id: string) => {
+const updateGame = async (id: string) => {
   const index = savedGames.value.findIndex(g => g.id === id);
   if (index !== -1) {
-    savedGames.value[index] = {
+    const updatedGame = {
       ...savedGames.value[index],
       board: board.value.map(row => [...row]),
       moveHistory: [...moveHistory.value],
       timestamp: Date.now()
     };
-    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-    notify(t('updateSuccess'));
+
+    try {
+      // 尝试更新到API
+      await gameApi.updateGame(id, updatedGame);
+      savedGames.value[index] = updatedGame;
+      notify(t('updateSuccess'));
+    } catch (error) {
+      console.error('Failed to update game in API:', error);
+      // 回退到localStorage
+      savedGames.value[index] = updatedGame;
+      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+      notify(`${t('updateSuccess')} (local storage)`);
+    }
   }
 };
 
@@ -224,14 +302,31 @@ const deleteGame = (id: string) => {
   gameToDelete.value = id;
 };
 
-const confirmDeleteGame = () => {
+const confirmDeleteGame = async () => {
   if (gameToDelete.value) {
-    if (currentRecordId.value === gameToDelete.value) {
-      currentRecordId.value = null;
+    const gameId = gameToDelete.value;
+
+    try {
+      // 尝试从API删除
+      await gameApi.deleteGame(gameId);
+
+      // 从本地列表删除
+      if (currentRecordId.value === gameId) {
+        currentRecordId.value = null;
+      }
+      savedGames.value = savedGames.value.filter(g => g.id !== gameId);
+      notify(t('deleteSuccess'));
+    } catch (error) {
+      console.error('Failed to delete game from API:', error);
+      // 回退到localStorage
+      if (currentRecordId.value === gameId) {
+        currentRecordId.value = null;
+      }
+      savedGames.value = savedGames.value.filter(g => g.id !== gameId);
+      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+      notify(`${t('deleteSuccess')} (local storage)`);
     }
-    savedGames.value = savedGames.value.filter(g => g.id !== gameToDelete.value);
-    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-    notify(t('deleteSuccess'));
+
     gameToDelete.value = null;
   }
 };
@@ -687,7 +782,7 @@ const showHint = () => {
                   />
                 </div>
                 <span v-else @click="startEditing(game)" class="font-semibold truncate cursor-pointer hover:text-indigo-500 transition-colors" :title="t('edit')">{{ game.name }}</span>
-                <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveHistory.length) }}</span>
+                <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveCount || game.moveHistory.length) }}</span>
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 <button v-if="currentRecordId === game.id" @click="updateGame(game.id)" class="p-2 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-900/80 transition-colors" :title="t('update')">
