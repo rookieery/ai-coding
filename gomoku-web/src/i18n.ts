@@ -3,11 +3,27 @@ import { ref } from 'vue';
 export type Locale = 'zh-CN' | 'zh-TW' | 'en-US' | 'ja-JP';
 export type Theme = 'light' | 'dark';
 
-export const currentLocale = ref<Locale>('zh-CN');
-export const currentTheme = ref<Theme>('dark');
+const savedLocale = localStorage.getItem('gomoku_locale') as Locale || 'zh-CN';
+export const currentLocale = ref<Locale>(savedLocale);
+
+const savedTheme = localStorage.getItem('gomoku_theme') as Theme || 'dark';
+export const currentTheme = ref<Theme>(savedTheme);
+
+export const toggleTheme = () => {
+  currentTheme.value = currentTheme.value === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('gomoku_theme', currentTheme.value);
+};
+
+export const toggleLocale = () => {
+  const locales: Locale[] = ['zh-CN', 'zh-TW', 'en-US', 'ja-JP'];
+  const currentIndex = locales.indexOf(currentLocale.value);
+  currentLocale.value = locales[(currentIndex + 1) % locales.length];
+  localStorage.setItem('gomoku_locale', currentLocale.value);
+};
 
 const messages = {
   'zh-CN': {
+    language: '中文',
     title: '五子棋',
     pvp: '双人对战',
     pve: '人机对战',
@@ -65,8 +81,16 @@ const messages = {
     updateSuccess: '更新成功！',
     deleteSuccess: '删除成功！',
     confirmDelete: '确定要删除该棋谱吗？',
+    agentTitle: '五林智能体',
+    agentGreeting: '你好！我是五林智能体。我可以帮你分析五子棋开局、解答规则疑问，或者提供对局策略。请在下方输入你的问题。',
+    agentPlaceholder: '询问五子棋开局、规则或策略...',
+    agentDisclaimer: '五林智能体可能会犯错。请核查重要信息。',
+    agentResponse: '这是关于“{0}”的五子棋分析（功能开发中...）',
+    navAgent: '五林智能体',
+    navGame: '去下棋',
   },
   'zh-TW': {
+    language: '繁體中文',
     title: '五子棋',
     pvp: '雙人對戰',
     pve: '人機對戰',
@@ -124,8 +148,16 @@ const messages = {
     updateSuccess: '更新成功！',
     deleteSuccess: '刪除成功！',
     confirmDelete: '確定要刪除該棋譜嗎？',
+    agentTitle: '五林智能體',
+    agentGreeting: '你好！我是五林智能體。我可以幫你分析五子棋開局、解答規則疑問，或者提供對局策略。請在下方輸入你的問題。',
+    agentPlaceholder: '詢問五子棋開局、規則或策略...',
+    agentDisclaimer: '五林智能體可能會犯錯。請核查重要信息。',
+    agentResponse: '這是關於「{0}」的五子棋分析（功能開發中...）',
+    navAgent: '五林智能體',
+    navGame: '去下棋',
   },
   'en-US': {
+    language: 'English',
     title: 'Gomoku',
     pvp: 'PvP',
     pve: 'PvE',
@@ -182,8 +214,16 @@ const messages = {
     updateSuccess: 'Updated successfully!',
     deleteSuccess: 'Deleted successfully!',
     confirmDelete: 'Are you sure you want to delete this record?',
+    agentTitle: 'Wulin Agent',
+    agentGreeting: 'Hello! I am Wulin Agent. I can help you analyze Gomoku openings, answer rule questions, or provide game strategies. Please enter your question below.',
+    agentPlaceholder: 'Ask about Gomoku openings, rules, or strategies...',
+    agentDisclaimer: 'Wulin Agent can make mistakes. Check important info.',
+    agentResponse: 'This is an analysis about "{0}" (Feature in development...)',
+    navAgent: 'Wulin Agent',
+    navGame: 'Go Play',
   },
   'ja-JP': {
+    language: '日本語',
     title: '五目並べ',
     pvp: '対人戦',
     pve: 'CPU戦',
@@ -240,6 +280,13 @@ const messages = {
     updateSuccess: '更新しました！',
     deleteSuccess: '削除しました！',
     confirmDelete: 'この棋譜を削除してもよろしいですか？',
+    agentTitle: '五林エージェント',
+    agentGreeting: 'こんにちは！五林エージェントです。五目並べの序盤の分析、ルールの疑問への回答、対局戦略の提供などができます。下に質問を入力してください。',
+    agentPlaceholder: '五目並べの序盤、ルール、戦略について質問する...',
+    agentDisclaimer: '五林エージェントは間違えることがあります。重要な情報は確認してください。',
+    agentResponse: '「{0}」に関する分析です（機能開発中...）',
+    navAgent: '五林エージェント',
+    navGame: '対局へ',
   }
 };
 

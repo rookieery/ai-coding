@@ -95,6 +95,15 @@ export const matchQuerySchema = paginationSchema.extend({
   result: z.string().optional(),
 });
 
+// 聊天消息验证
+export const chatMessageSchema = z.object({
+  message: z.string().min(1, 'Message is required').max(2000, 'Message must be at most 2000 characters'),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string(),
+  })).default([]).optional(),
+});
+
 // 验证函数
 export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
   try {

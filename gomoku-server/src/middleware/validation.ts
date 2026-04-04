@@ -9,6 +9,7 @@ import {
   matchCreateSchema,
   gameQuerySchema,
   matchQuerySchema,
+  chatMessageSchema,
 } from '../utils/validator';
 
 // 验证请求体的通用中间件
@@ -118,3 +119,6 @@ export function validateId(paramName: string = 'id') {
     next();
   };
 }
+
+// 聊天消息验证
+export const validateChatMessage = validateBody(chatMessageSchema);

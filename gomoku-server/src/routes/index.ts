@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import gameRoutes from './game.routes';
+import chatRoutes from './chat.routes';
 // 将来添加其他路由
 // import authRoutes from './auth.routes';
 // import userRoutes from './user.routes';
@@ -9,6 +10,7 @@ const router = Router();
 
 // 挂载路由
 router.use('/games', gameRoutes);
+router.use('/chat', chatRoutes);
 // router.use('/auth', authRoutes);
 // router.use('/users', userRoutes);
 // router.use('/matches', matchRoutes);

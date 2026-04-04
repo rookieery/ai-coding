@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
 import { RotateCcw, Undo2, Lightbulb, User, Bot, BookOpen, Brain, Eye, EyeOff, Save, List } from 'lucide-vue-next';
 import type { Difficulty, RuleMode } from '../gameLogic';
 import { t, currentLocale, currentTheme } from '../i18n';

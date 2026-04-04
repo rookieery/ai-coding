@@ -9,6 +9,8 @@ export default defineConfig(({mode}) => {
     plugins: [vue(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.DEEPSEEK_API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
+      'process.env.DEEPSEEK_API_BASE': JSON.stringify(env.DEEPSEEK_API_BASE),
     },
     resolve: {
       alias: {
