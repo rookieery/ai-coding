@@ -30,33 +30,33 @@ const validateForm = () => {
   errorMessage.value = '';
 
   if (!phone.value || !password.value) {
-    errorMessage.value = '手机号和密码不能为空';
+    errorMessage.value = t('errorPhoneRequired');
     return false;
   }
 
   // 手机号格式验证
   const phoneRegex = /^1[3-9]\d{9}$/;
   if (!phoneRegex.test(phone.value)) {
-    errorMessage.value = '请输入有效的中国大陆手机号';
+    errorMessage.value = t('errorPhoneInvalid');
     return false;
   }
 
   if (!isLoginMode.value) {
     // 注册额外验证
     if (!username.value) {
-      errorMessage.value = '用户名不能为空';
+      errorMessage.value = t('errorUsernameRequired');
       return false;
     }
     if (username.value.length < 3 || username.value.length > 50) {
-      errorMessage.value = '用户名长度需在3-50字符之间';
+      errorMessage.value = t('errorUsernameLength');
       return false;
     }
     if (password.value.length < 6) {
-      errorMessage.value = '密码长度至少6位';
+      errorMessage.value = t('errorPasswordLength');
       return false;
     }
     if (password.value !== confirmPassword.value) {
-      errorMessage.value = '两次输入的密码不一致';
+      errorMessage.value = t('errorPasswordMismatch');
       return false;
     }
   }
@@ -84,7 +84,7 @@ const submitForm = async () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      successMessage.value = '登录成功！正在跳转...';
+      successMessage.value = t('loginSuccess');
       setTimeout(() => {
         router.push('/'); // 跳转到智能体首页
       }, 1000);
@@ -102,14 +102,14 @@ const submitForm = async () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      successMessage.value = '注册成功！正在跳转...';
+      successMessage.value = t('registerSuccess');
       setTimeout(() => {
         router.push('/');
       }, 1000);
     }
   } catch (error: any) {
     console.error('Auth error:', error);
-    errorMessage.value = error.response?.data?.message || error.message || '请求失败，请重试';
+    errorMessage.value = error.response?.data?.message || error.message || t('requestFailed');
   } finally {
     isLoading.value = false;
   }
@@ -135,7 +135,7 @@ const toggleMode = () => {
           五林
         </h1>
         <p class="mt-2" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
-          {{ isLoginMode ? '登录以开始您的五子棋之旅' : '创建新账户' }}
+          {{ isLoginMode ? t('loginSubtitleLogin') : t('loginSubtitleRegister') }}
         </p>
       </div>
 
@@ -158,7 +158,7 @@ const toggleMode = () => {
             <div class="mb-6">
               <label class="block text-sm font-medium mb-2"
                      :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">
-                手机号
+                {{ t('phoneLabel') }}
               </label>
               <div class="relative">
                 <Phone class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
@@ -166,7 +166,7 @@ const toggleMode = () => {
                 <input
                   v-model="phone"
                   type="tel"
-                  placeholder="请输入您的手机号"
+                  :placeholder="t('phonePlaceholder')"
                   class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   :class="currentTheme === 'dark'
                     ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -179,7 +179,7 @@ const toggleMode = () => {
             <div class="mb-6">
               <label class="block text-sm font-medium mb-2"
                      :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">
-                密码
+                {{ t('passwordLabel') }}
               </label>
               <div class="relative">
                 <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
@@ -187,7 +187,7 @@ const toggleMode = () => {
                 <input
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
-                  :placeholder="isLoginMode ? '请输入您的密码' : '请设置密码（至少6位）'"
+                  :placeholder="isLoginMode ? t('passwordPlaceholderLogin') : t('passwordPlaceholderRegister')"
                   class="w-full pl-12 pr-12 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   :class="currentTheme === 'dark'
                     ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -198,7 +198,7 @@ const toggleMode = () => {
                   @click="showPassword = !showPassword"
                   class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
                   :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
-                  :title="showPassword ? '隐藏密码' : '显示密码'"
+                  :title="showPassword ? t('hidePassword') : t('showPassword')"
                 >
                   <EyeOff v-if="showPassword" class="w-5 h-5" />
                   <Eye v-else class="w-5 h-5" />
@@ -212,7 +212,7 @@ const toggleMode = () => {
               <div class="mb-6">
                 <label class="block text-sm font-medium mb-2"
                        :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">
-                  用户名
+                  {{ t('usernameLabel') }}
                 </label>
                 <div class="relative">
                   <User class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
@@ -220,7 +220,7 @@ const toggleMode = () => {
                   <input
                     v-model="username"
                     type="text"
-                    placeholder="请输入用户名（3-50字符）"
+                    :placeholder="t('usernamePlaceholder')"
                     class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     :class="currentTheme === 'dark'
                       ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -233,7 +233,7 @@ const toggleMode = () => {
               <div class="mb-6">
                 <label class="block text-sm font-medium mb-2"
                        :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">
-                  确认密码
+                  {{ t('confirmPasswordLabel') }}
                 </label>
                 <div class="relative">
                   <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
@@ -241,7 +241,7 @@ const toggleMode = () => {
                   <input
                     v-model="confirmPassword"
                     :type="showConfirmPassword ? 'text' : 'password'"
-                    placeholder="请再次输入密码"
+                    :placeholder="t('confirmPasswordPlaceholder')"
                     class="w-full pl-12 pr-12 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     :class="currentTheme === 'dark'
                       ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -252,7 +252,7 @@ const toggleMode = () => {
                     @click="showConfirmPassword = !showConfirmPassword"
                     class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
                     :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
-                    :title="showConfirmPassword ? '隐藏密码' : '显示密码'"
+                    :title="showConfirmPassword ? t('hidePassword') : t('showPassword')"
                   >
                     <EyeOff v-if="showConfirmPassword" class="w-5 h-5" />
                     <Eye v-else class="w-5 h-5" />
@@ -264,7 +264,7 @@ const toggleMode = () => {
               <div class="mb-6">
                 <label class="block text-sm font-medium mb-2"
                        :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">
-                  邮箱（可选）
+                  {{ t('emailLabel') }}
                 </label>
                 <div class="relative">
                   <Mail class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
@@ -272,7 +272,7 @@ const toggleMode = () => {
                   <input
                     v-model="email"
                     type="email"
-                    placeholder="请输入邮箱地址"
+                    :placeholder="t('emailPlaceholder')"
                     class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     :class="currentTheme === 'dark'
                       ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -293,19 +293,19 @@ const toggleMode = () => {
             >
               <LogIn v-if="isLoginMode" class="w-5 h-5" />
               <UserPlus v-else class="w-5 h-5" />
-              {{ isLoading ? '处理中...' : (isLoginMode ? '登录' : '注册') }}
+              {{ isLoading ? t('processing') : (isLoginMode ? t('loginButton') : t('registerButton')) }}
             </button>
           </form>
 
           <!-- 切换模式 -->
           <div class="mt-8 text-center">
             <p class="text-sm" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
-              {{ isLoginMode ? '还没有账户？' : '已有账户？' }}
+              {{ isLoginMode ? t('toggleLoginPrompt') : t('toggleRegisterPrompt') }}
               <button
                 @click="toggleMode"
                 class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
               >
-                {{ isLoginMode ? '立即注册' : '立即登录' }}
+                {{ isLoginMode ? t('toggleLoginAction') : t('toggleRegisterAction') }}
               </button>
             </p>
           </div>
@@ -314,7 +314,7 @@ const toggleMode = () => {
 
       <!-- 提示信息 -->
       <div class="mt-8 text-center text-sm" :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'">
-        <p>登录后即可使用智能体功能并保存您的棋谱记录</p>
+        <p>{{ t('loginHint') }}</p>
       </div>
     </div>
   </div>

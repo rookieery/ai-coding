@@ -3,11 +3,11 @@ import { ref, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { currentTheme, toggleTheme, toggleLocale, t } from './i18n';
 import { Moon, Sun, Globe, User, LogOut, Settings, ChevronDown } from 'lucide-vue-next';
-import { useAuth } from './composables/useAuth';
+import { useGlobalAuth } from './composables/useAuth';
 
 const route = useRoute();
 const router = useRouter();
-const auth = useAuth();
+const auth = useGlobalAuth();
 
 // 计算属性
 const userRole = computed(() => auth.user?.value?.role);
@@ -64,16 +64,18 @@ onUnmounted(() => {
           五林
         </h1>
         <nav class="flex items-center gap-2 bg-stone-200/50 dark:bg-stone-800/50 p-1 rounded-lg">
-          <button 
+          <button
+            v-if="auth.isAuthenticated"
             @click="router.push('/')"
             class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
-            :class="route.path === '/' 
-              ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm') 
+            :class="route.path === '/'
+              ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm')
               : (currentTheme === 'dark' ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700')"
           >
             {{ t('navAgent') }}
           </button>
           <button
+            v-if="auth.isAuthenticated"
             @click="router.push('/game')"
             class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
             :class="route.path === '/game'
@@ -90,7 +92,7 @@ onUnmounted(() => {
               ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm')
               : (currentTheme === 'dark' ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700')"
           >
-            权限设置
+            {{ t('adminNav') }}
           </button>
         </nav>
       </div>
@@ -137,14 +139,14 @@ onUnmounted(() => {
                 :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'"
               >
                 <Settings class="w-4 h-4" />
-                <span class="text-sm">个人设置</span>
+                <span class="text-sm">{{ t('settings') }}</span>
               </button>
               <button
                 @click="handleLogout"
                 class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-red-600 dark:text-red-400"
               >
                 <LogOut class="w-4 h-4" />
-                <span class="text-sm">退出登录</span>
+                <span class="text-sm">{{ t('logout') }}</span>
               </button>
             </div>
           </div>
@@ -156,7 +158,7 @@ onUnmounted(() => {
               class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors flex items-center gap-2"
             >
               <User class="w-4 h-4" />
-              登录
+              {{ t('loginButton') }}
             </button>
           </div>
         </div>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuth } from '../composables/useAuth';
+import { useGlobalAuth } from '../composables/useAuth';
 import { adminApi, type AdminUser } from '../api/admin-api';
 import { Trash2, AlertCircle, ChevronLeft, ChevronRight, Loader } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 
 const router = useRouter();
-const auth = useAuth();
+const auth = useGlobalAuth();
 
 // 状态
 const users = ref<AdminUser[]>([]);
@@ -100,12 +100,13 @@ onMounted(() => {
     <div class="container mx-auto px-4 max-w-6xl">
       <!-- 页面标题 -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold mb-2 dark:text-stone-300">权限设置</h1>
-        <p class="opacity-70 dark:text-stone-400">管理所有普通用户账号，可查看用户信息和删除账号</p>
+        <h1 class="text-3xl font-bold mb-2">{{ t('adminTitle') }}</h1>
+        <p class="opacity-70">{{ t('adminSubtitle') }}</p>
       </div>
 
       <!-- 错误提示 -->
-      <div v-if="error" class="mb-6 p-4 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 flex items-center gap-3">
+      <div v-if="error" class="mb-6 p-4 rounded-lg flex items-center gap-3"
+           :class="currentTheme === 'dark' ? 'bg-red-900/50 text-red-400' : 'bg-red-100 text-red-700'">
         <AlertCircle class="w-5 h-5 flex-shrink-0" />
         <span>{{ error }}</span>
       </div>
@@ -116,40 +117,42 @@ onMounted(() => {
       </div>
 
       <!-- 用户表格 -->
-      <div v-else-if="users.length > 0" class="bg-white dark:bg-stone-800 rounded-xl shadow-lg overflow-hidden border dark:border-stone-700">
+      <div v-else-if="users.length > 0" class="rounded-xl shadow-lg overflow-hidden border transition-colors duration-300"
+           :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 shadow-stone-900/30 text-stone-100' : 'bg-white border-stone-300 text-stone-800'">
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
-              <tr class="border-b dark:border-stone-700">
-                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider dark:text-stone-300">用户名</th>
-                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider dark:text-stone-300">密码</th>
-                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider dark:text-stone-300">私有棋谱数量</th>
-                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider dark:text-stone-300">操作</th>
+              <tr :class="currentTheme === 'dark' ? 'border-b border-stone-700' : 'border-b border-stone-200'">
+                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider">{{ t('adminUsername') }}</th>
+                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider">{{ t('adminPassword') }}</th>
+                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider">{{ t('adminPrivateGameCount') }}</th>
+                <th class="px-6 py-4 text-left font-semibold text-sm uppercase tracking-wider">{{ t('adminOperation') }}</th>
               </tr>
             </thead>
-            <tbody class="divide-y dark:divide-stone-700">
-              <tr v-for="user in users" :key="user.id" class="hover:bg-stone-50 dark:hover:bg-stone-750 transition-colors">
+            <tbody :class="['divide-y', currentTheme === 'dark' ? 'divide-stone-700' : 'divide-stone-200']">
+              <tr v-for="user in users" :key="user.id" :class="['transition-colors', currentTheme === 'dark' ? 'hover:bg-stone-700/50' : 'hover:bg-stone-50']">
                 <td class="px-6 py-4">
                   <div class="flex flex-col">
-                    <span class="font-medium dark:text-stone-300">{{ user.username }}</span>
-                    <span class="text-xs opacity-60 dark:text-stone-400">{{ user.phone }}</span>
+                    <span class="font-medium">{{ user.username }}</span>
+                    <span class="text-xs opacity-60">{{ user.phone }}</span>
                   </div>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="font-mono dark:text-stone-300">••••••••</span>
-                  <p class="text-xs opacity-60 mt-1 dark:text-stone-400">密码已加密存储</p>
+                  <span class="font-mono">••••••••</span>
+                  <p class="text-xs opacity-60 mt-1">{{ t('adminPasswordEncrypted') }}</p>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="font-medium dark:text-stone-300">{{ user.privateGameCount }}</span>
-                  <p class="text-xs opacity-60 mt-1 dark:text-stone-400">个私有棋谱</p>
+                  <span class="font-medium">{{ user.privateGameCount }}</span>
+                  <p class="text-xs opacity-60 mt-1">{{ t('adminPrivateGameUnit') }}</p>
                 </td>
                 <td class="px-6 py-4">
                   <button
                     @click="confirmDelete(user.id)"
-                    class="px-4 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900/80 transition-colors flex items-center gap-2"
+                    class="px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                    :class="currentTheme === 'dark' ? 'bg-red-900/50 text-red-400 hover:bg-red-900/80' : 'bg-red-100 text-red-700 hover:bg-red-200'"
                   >
                     <Trash2 class="w-4 h-4" />
-                    删除
+                    {{ t('adminDelete') }}
                   </button>
                 </td>
               </tr>
@@ -158,16 +161,17 @@ onMounted(() => {
         </div>
 
         <!-- 分页控件 -->
-        <div v-if="totalPages > 1" class="px-6 py-4 border-t dark:border-stone-700 flex items-center justify-between">
-          <div class="text-sm opacity-70 dark:text-stone-400">
+        <div v-if="totalPages > 1" class="px-6 py-4 border-t flex items-center justify-between"
+             :class="currentTheme === 'dark' ? 'border-stone-700' : 'border-stone-200'">
+          <div class="text-sm opacity-70">
             显示 {{ Math.min((currentPage - 1) * pageSize + 1, totalUsers) }} - {{ Math.min(currentPage * pageSize, totalUsers) }} 条，共 {{ totalUsers }} 条
           </div>
           <div class="flex items-center gap-2">
             <button
               @click="goToPage(currentPage - 1)"
               :disabled="currentPage === 1"
-              class="p-2 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'"
+              class="p-2 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              :class="currentTheme === 'dark' ? 'text-stone-300 hover:bg-stone-700' : 'text-stone-700 hover:bg-stone-200'"
             >
               <ChevronLeft class="w-5 h-5" />
             </button>
@@ -181,19 +185,21 @@ onMounted(() => {
                 :class="[
                   currentPage === page
                     ? 'bg-indigo-600 text-white'
-                    : 'text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                    : currentTheme === 'dark'
+                      ? 'text-stone-300 hover:bg-stone-700'
+                      : 'text-stone-700 hover:bg-stone-200'
                 ]"
               >
                 {{ page }}
               </button>
-              <span v-if="totalPages > 5" class="px-2 opacity-50 dark:text-stone-500">...</span>
+              <span v-if="totalPages > 5" class="px-2 opacity-50">...</span>
             </div>
 
             <button
               @click="goToPage(currentPage + 1)"
               :disabled="currentPage === totalPages"
-              class="p-2 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'"
+              class="p-2 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              :class="currentTheme === 'dark' ? 'text-stone-300 hover:bg-stone-700' : 'text-stone-700 hover:bg-stone-200'"
             >
               <ChevronRight class="w-5 h-5" />
             </button>
@@ -203,25 +209,27 @@ onMounted(() => {
 
       <!-- 空状态 -->
       <div v-else class="text-center py-12">
-        <div class="w-16 h-16 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle class="w-8 h-8 opacity-50 dark:text-stone-400" />
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+             :class="currentTheme === 'dark' ? 'bg-stone-700' : 'bg-stone-200'">
+          <AlertCircle class="w-8 h-8 opacity-50" />
         </div>
-        <h3 class="text-xl font-semibold mb-2 dark:text-stone-300">暂无用户</h3>
-        <p class="opacity-70 dark:text-stone-400">当前没有其他用户注册</p>
+        <h3 class="text-xl font-semibold mb-2">{{ t('adminNoUsers') }}</h3>
+        <p class="opacity-70">{{ t('adminNoUsersSubtitle') }}</p>
       </div>
     </div>
 
     <!-- 删除确认对话框 -->
     <div v-if="userToDelete" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div class="w-full max-w-md p-6 rounded-2xl shadow-xl transition-colors" :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100' : 'bg-white text-stone-800'">
+      <div class="w-full max-w-md p-6 rounded-2xl shadow-xl transition-colors" :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 shadow-stone-900/50' : 'bg-white text-stone-800'">
         <div class="mb-6">
-          <h3 class="text-xl font-bold mb-2">确认删除用户</h3>
-          <p class="opacity-70">删除后此用户的所有数据（包括棋谱）将被永久删除，且需要重新注册才能使用系统。</p>
-          <p class="opacity-70 mt-2">此操作不可撤销，请谨慎操作。</p>
+          <h3 class="text-xl font-bold mb-2">{{ t('adminConfirmDeleteTitle') }}</h3>
+          <p class="opacity-70">{{ t('adminConfirmDeleteMessage') }}</p>
+          <p class="opacity-70 mt-2">{{ t('adminConfirmDeleteWarning') }}</p>
         </div>
 
         <!-- 删除错误提示 -->
-        <div v-if="deleteError" class="mb-4 p-3 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 text-sm">
+        <div v-if="deleteError" class="mb-4 p-3 rounded-lg text-sm"
+             :class="currentTheme === 'dark' ? 'bg-red-900/50 text-red-400' : 'bg-red-100 text-red-700'">
           {{ deleteError }}
         </div>
 
@@ -231,13 +239,13 @@ onMounted(() => {
             class="px-4 py-2 rounded-lg font-medium transition-colors"
             :class="currentTheme === 'dark' ? 'bg-stone-700 hover:bg-stone-600 text-stone-200' : 'bg-stone-200 hover:bg-stone-300 text-stone-800'"
           >
-            取消
+            {{ t('adminCancel') }}
           </button>
           <button
             @click="deleteUser(userToDelete)"
             class="px-4 py-2 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-colors"
           >
-            确认删除
+            {{ t('adminConfirmDelete') }}
           </button>
         </div>
       </div>
@@ -246,7 +254,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.dark .dark\:bg-stone-750 {
-  background-color: rgb(41 37 36 / 0.5);
-}
 </style>

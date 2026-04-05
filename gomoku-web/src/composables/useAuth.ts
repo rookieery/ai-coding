@@ -40,6 +40,16 @@ export function useAuth() {
         clearAuth();
       }
     }
+
+    // 如果有token，异步验证其有效性
+    if (token.value) {
+      // 使用setTimeout避免阻塞初始化
+      setTimeout(() => {
+        fetchCurrentUser().catch(() => {
+          // 静默处理错误，fetchCurrentUser内部已处理清理
+        });
+      }, 0);
+    }
   };
 
   // 计算属性
