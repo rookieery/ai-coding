@@ -3,6 +3,8 @@ import { ValidationError, validate } from '../utils/validator';
 import {
   userCreateSchema,
   userUpdateSchema,
+  updateUserSchema,
+  changePasswordSchema,
   loginSchema,
   gameCreateSchema,
   gameUpdateSchema,
@@ -94,6 +96,9 @@ export function validateParams(schema: any) {
 export const validateUserCreate = validateBody(userCreateSchema);
 export const validateUserUpdate = validateBody(userUpdateSchema);
 export const validateLogin = validateBody(loginSchema);
+export const validateRegister = validateBody(userCreateSchema);
+export const validateUpdateUser = validateBody(updateUserSchema);
+export const validateChangePassword = validateBody(changePasswordSchema);
 export const validateGameCreate = validateBody(gameCreateSchema);
 export const validateGameUpdate = validateBody(gameUpdateSchema);
 export const validateMatchCreate = validateBody(matchCreateSchema);

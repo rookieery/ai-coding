@@ -1,5 +1,5 @@
 // API配置
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:3003/api';
 
 /**
  * 前端棋谱数据结构

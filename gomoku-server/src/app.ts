@@ -12,7 +12,7 @@ export const prisma = new PrismaClient();
 
 // 创建Express应用
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = 3003;
 
 // 中间件
 app.use(helmet());

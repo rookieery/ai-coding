@@ -19,7 +19,8 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 // 用户相关类型
 export interface User {
   id: string;
-  email: string;
+  phone: string;
+  email?: string;
   username: string;
   avatar?: string;
   rating: number;
@@ -28,7 +29,8 @@ export interface User {
 }
 
 export interface UserCreateInput {
-  email: string;
+  phone: string;
+  email?: string;
   username: string;
   password: string;
   avatar?: string;
@@ -43,7 +45,7 @@ export interface UserUpdateInput {
 }
 
 export interface LoginCredentials {
-  email: string;
+  phone: string;
   password: string;
 }
 

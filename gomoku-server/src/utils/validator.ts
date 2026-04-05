@@ -2,21 +2,41 @@ import { z } from 'zod';
 
 // 用户验证
 export const userCreateSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  phone: z.string()
+    .regex(/^1[3-9]\d{9}$/, 'Invalid Chinese phone number format'),
+  email: z.string().email('Invalid email format').optional(),
   username: z.string()
     .min(3, 'Username must be at least 3 characters')
     .max(50, 'Username must be at most 50 characters')
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores'),
   password: z.string()
-    .min(8, 'Password must be at least 8 characters')
+    .min(6, 'Password must be at least 6 characters')
     .max(100, 'Password must be at most 100 characters'),
   avatar: z.string().url('Invalid URL format').optional(),
 });
 
 export const userUpdateSchema = userCreateSchema.partial();
 
+export const updateUserSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username must be at most 50 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores')
+    .optional(),
+  email: z.string().email('Invalid email format').optional(),
+  avatar: z.string().url('Invalid URL format').optional(),
+});
+
+export const changePasswordSchema = z.object({
+  oldPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string()
+    .min(6, 'New password must be at least 6 characters')
+    .max(100, 'New password must be at most 100 characters'),
+});
+
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  phone: z.string()
+    .regex(/^1[3-9]\d{9}$/, 'Invalid Chinese phone number format'),
   password: z.string().min(1, 'Password is required'),
 });
 
