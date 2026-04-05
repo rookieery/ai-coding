@@ -12,6 +12,7 @@ const auth = useGlobalAuth();
 // 计算属性
 const userRole = computed(() => auth.user?.value?.role);
 const userRating = computed(() => auth.user?.value?.rating || 1200);
+const isAuthenticated = computed(() => auth.isAuthenticated.value);
 
 // 用户下拉菜单状态
 const isUserDropdownOpen = ref(false);
@@ -63,9 +64,8 @@ onUnmounted(() => {
         <h1 class="text-xl font-bold tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">
           五林
         </h1>
-        <nav class="flex items-center gap-2 bg-stone-200/50 dark:bg-stone-800/50 p-1 rounded-lg">
+        <nav class="flex items-center gap-2 bg-stone-200/50 dark:bg-stone-800/50 p-1 rounded-lg" v-if="isAuthenticated">
           <button
-            v-if="auth.isAuthenticated"
             @click="router.push('/')"
             class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
             :class="route.path === '/'
@@ -75,7 +75,6 @@ onUnmounted(() => {
             {{ t('navAgent') }}
           </button>
           <button
-            v-if="auth.isAuthenticated"
             @click="router.push('/game')"
             class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
             :class="route.path === '/game'
@@ -108,7 +107,7 @@ onUnmounted(() => {
 
         <!-- 用户区域 -->
         <div class="relative user-dropdown">
-          <div v-if="auth.isAuthenticated">
+          <div v-if="isAuthenticated">
             <button
               @click="isUserDropdownOpen = !isUserDropdownOpen"
               class="flex items-center gap-2 p-2 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
@@ -149,17 +148,6 @@ onUnmounted(() => {
                 <span class="text-sm">{{ t('logout') }}</span>
               </button>
             </div>
-          </div>
-
-          <!-- 未登录状态 -->
-          <div v-else>
-            <button
-              @click="router.push('/login')"
-              class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors flex items-center gap-2"
-            >
-              <User class="w-4 h-4" />
-              {{ t('loginButton') }}
-            </button>
           </div>
         </div>
       </div>
