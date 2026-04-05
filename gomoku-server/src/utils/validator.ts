@@ -10,9 +10,10 @@ export const userCreateSchema = z.object({
     .max(50, 'Username must be at most 50 characters')
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores'),
   password: z.string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(5, 'Password must be at least 5 characters')
     .max(100, 'Password must be at most 100 characters'),
   avatar: z.string().url('Invalid URL format').optional(),
+  role: z.enum(['USER', 'ADMIN']).default('USER'),
 });
 
 export const userUpdateSchema = userCreateSchema.partial();

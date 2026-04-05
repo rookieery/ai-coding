@@ -47,16 +47,33 @@ export class ChatApiService {
   }
 
   /**
+   * 获取请求头（附带认证token）
+   */
+  private getHeaders(includeAuth: boolean = true): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (includeAuth) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+
+    return headers;
+  }
+
+  /**
    * 发送聊天消息并获取AI回复
    */
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(request),
+        credentials: 'include',
       });
 
       const result: ChatResponse = await response.json();
@@ -84,10 +101,9 @@ export class ChatApiService {
     try {
       const response = await fetch(`${this.baseUrl}/chat/stream`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(request),
+        credentials: 'include',
       });
 
       if (!response.ok) {

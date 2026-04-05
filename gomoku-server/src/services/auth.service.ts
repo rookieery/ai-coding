@@ -42,6 +42,7 @@ export class AuthService {
           password: hashedPassword,
           avatar: userData.avatar,
           rating: 1200, // 默认等级分
+          role: userData.role || 'USER',
         },
         select: {
           id: true,
@@ -50,6 +51,7 @@ export class AuthService {
           username: true,
           avatar: true,
           rating: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -100,6 +102,7 @@ export class AuthService {
           password: true,
           avatar: true,
           rating: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -148,6 +151,7 @@ export class AuthService {
           username: true,
           avatar: true,
           rating: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -215,6 +219,7 @@ export class AuthService {
           username: true,
           avatar: true,
           rating: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -278,6 +283,7 @@ export class AuthService {
       username: user.username,
       avatar: user.avatar || undefined,
       rating: user.rating,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

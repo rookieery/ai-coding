@@ -142,27 +142,43 @@ export async function optionalAuthenticate(
 }
 
 // 管理员权限检查
-export function requireAdmin(
+export async function requireAdmin(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
-  // 这里可以根据需要实现管理员检查
-  // 例如，检查用户角色或权限
-  // 暂时简单实现：所有认证用户都有权限
+): Promise<void> {
+  try {
+    if (!req.user) {
+      res.status(403).json({
+        success: false,
+        error: 'Forbidden',
+        message: 'Admin privileges required',
+      });
+      return;
+    }
 
-  if (!req.user) {
-    res.status(403).json({
-      success: false,
-      error: 'Forbidden',
-      message: 'Admin privileges required',
+    // 查询数据库检查用户角色
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { role: true },
     });
-    return;
+
+    if (!user || user.role !== 'ADMIN') {
+      res.status(403).json({
+        success: false,
+        error: 'Forbidden',
+        message: 'Admin privileges required',
+      });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    logger.error('Admin check error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      message: 'Failed to verify admin privileges',
+    });
   }
-
-  // TODO: 实现真正的管理员检查
-  // const isAdmin = await checkAdmin(req.user.id);
-  // if (!isAdmin) { ... }
-
-  next();
 }

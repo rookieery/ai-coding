@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { currentTheme, toggleTheme, toggleLocale, t } from './i18n';
 import { Moon, Sun, Globe, User, LogOut, Settings, ChevronDown } from 'lucide-vue-next';
@@ -8,6 +8,10 @@ import { useAuth } from './composables/useAuth';
 const route = useRoute();
 const router = useRouter();
 const auth = useAuth();
+
+// 计算属性
+const userRole = computed(() => auth.user?.value?.role);
+const userRating = computed(() => auth.user?.value?.rating || 1200);
 
 // 用户下拉菜单状态
 const isUserDropdownOpen = ref(false);
@@ -69,14 +73,24 @@ onUnmounted(() => {
           >
             {{ t('navAgent') }}
           </button>
-          <button 
+          <button
             @click="router.push('/game')"
             class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
-            :class="route.path === '/game' 
-              ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm') 
+            :class="route.path === '/game'
+              ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm')
               : (currentTheme === 'dark' ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700')"
           >
             {{ t('navGame') }}
+          </button>
+          <button
+            v-if="userRole === 'ADMIN'"
+            @click="router.push('/admin')"
+            class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
+            :class="route.path === '/admin'
+              ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm')
+              : (currentTheme === 'dark' ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700')"
+          >
+            权限设置
           </button>
         </nav>
       </div>
@@ -85,7 +99,7 @@ onUnmounted(() => {
         <button @click="switchLang" class="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" :title="t('language')">
           <Globe class="w-5 h-5" />
         </button>
-        <button @click="toggleTheme" class="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" :title="t('theme')">
+        <button @click="toggleTheme" class="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" :title="currentTheme === 'dark' ? t('themeLight') : t('themeDark')">
           <Sun v-if="currentTheme === 'dark'" class="w-5 h-5" />
           <Moon v-else class="w-5 h-5" />
         </button>
@@ -113,7 +127,7 @@ onUnmounted(() => {
               <!-- 用户信息摘要 -->
               <div class="p-4 border-b" :class="currentTheme === 'dark' ? 'border-stone-700' : 'border-stone-100'">
                 <p class="font-medium text-sm">{{ auth.username }}</p>
-                <p class="text-xs opacity-60 mt-1">等级分: {{ auth.user?.rating || 1200 }}</p>
+                <p class="text-xs opacity-60 mt-1">等级分: {{ userRating }}</p>
               </div>
 
               <!-- 菜单项 -->

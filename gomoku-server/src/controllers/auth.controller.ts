@@ -9,7 +9,7 @@ export class AuthController {
    */
   async register(req: Request, res: Response) {
     try {
-      const { phone, email, username, password, avatar } = req.body;
+      const { phone, email, username, password, avatar, role } = req.body;
 
       // 验证必要字段
       if (!phone || !username || !password) {
@@ -34,11 +34,11 @@ export class AuthController {
       }
 
       // 验证密码长度
-      if (password.length < 6) {
+      if (password.length < 5) {
         const response: ApiResponse = {
           success: false,
           error: 'Bad Request',
-          message: 'Password must be at least 6 characters',
+          message: 'Password must be at least 5 characters',
           timestamp: new Date().toISOString(),
         };
         return res.status(400).json(response);
@@ -50,6 +50,7 @@ export class AuthController {
         username,
         password,
         avatar,
+        role,
       });
 
       const response: ApiResponse = {

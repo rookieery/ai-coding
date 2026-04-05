@@ -17,6 +17,8 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 // 用户相关类型
+export type UserRole = 'USER' | 'ADMIN';
+
 export interface User {
   id: string;
   phone: string;
@@ -24,6 +26,7 @@ export interface User {
   username: string;
   avatar?: string;
   rating: number;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +37,7 @@ export interface UserCreateInput {
   username: string;
   password: string;
   avatar?: string;
+  role?: UserRole;
 }
 
 export interface UserUpdateInput {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { LogIn, UserPlus, Phone, Lock, User, Mail } from 'lucide-vue-next';
+import { LogIn, UserPlus, Phone, Lock, User, Mail, Eye, EyeOff } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { authApi } from '../api/auth-api';
 
@@ -20,6 +20,10 @@ const avatar = ref('');
 const isLoading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+
+// 密码可见性
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 // 表单验证
 const validateForm = () => {
@@ -182,13 +186,23 @@ const toggleMode = () => {
                       :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'" />
                 <input
                   v-model="password"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   :placeholder="isLoginMode ? '请输入您的密码' : '请设置密码（至少6位）'"
-                  class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  class="w-full pl-12 pr-12 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   :class="currentTheme === 'dark'
                     ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
                     : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400'"
                 />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+                  :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
+                  :title="showPassword ? '隐藏密码' : '显示密码'"
+                >
+                  <EyeOff v-if="showPassword" class="w-5 h-5" />
+                  <Eye v-else class="w-5 h-5" />
+                </button>
               </div>
             </div>
 
@@ -226,13 +240,23 @@ const toggleMode = () => {
                         :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'" />
                   <input
                     v-model="confirmPassword"
-                    type="password"
+                    :type="showConfirmPassword ? 'text' : 'password'"
                     placeholder="请再次输入密码"
-                    class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    class="w-full pl-12 pr-12 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     :class="currentTheme === 'dark'
                       ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
                       : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400'"
                   />
+                  <button
+                    type="button"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+                    :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
+                    :title="showConfirmPassword ? '隐藏密码' : '显示密码'"
+                  >
+                    <EyeOff v-if="showConfirmPassword" class="w-5 h-5" />
+                    <Eye v-else class="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 

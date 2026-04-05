@@ -57,16 +57,33 @@ export class GameApiService {
   }
 
   /**
+   * 获取请求头（附带认证token）
+   */
+  private getHeaders(includeAuth: boolean = true): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (includeAuth) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+
+    return headers;
+  }
+
+  /**
    * 保存棋谱到后端
    */
   async saveGame(game: FrontendGame): Promise<{ id: string; name: string; timestamp: number }> {
     try {
       const response = await fetch(`${this.baseUrl}/games/frontend`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(game),
+        credentials: 'include',
       });
 
       const result: ApiResponse<{ id: string; name: string; timestamp: number }> = await response.json();
@@ -104,7 +121,11 @@ export class GameApiService {
   }> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/games/frontend?page=${page}&pageSize=${pageSize}`
+        `${this.baseUrl}/games/frontend?page=${page}&pageSize=${pageSize}`,
+        {
+          headers: this.getHeaders(),
+          credentials: 'include',
+        }
       );
 
       const result: PaginatedResponse<any> = await response.json();
@@ -125,7 +146,10 @@ export class GameApiService {
    */
   async getGame(id: string): Promise<FrontendGame> {
     try {
-      const response = await fetch(`${this.baseUrl}/games/frontend/${id}`);
+      const response = await fetch(`${this.baseUrl}/games/frontend/${id}`, {
+        headers: this.getHeaders(),
+        credentials: 'include',
+      });
 
       const result: ApiResponse<FrontendGame> = await response.json();
 
@@ -172,10 +196,9 @@ export class GameApiService {
 
       const response = await fetch(`${this.baseUrl}/games/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(body),
+        credentials: 'include',
       });
 
       const result: ApiResponse = await response.json();
@@ -196,6 +219,8 @@ export class GameApiService {
     try {
       const response = await fetch(`${this.baseUrl}/games/${id}`, {
         method: 'DELETE',
+        headers: this.getHeaders(),
+        credentials: 'include',
       });
 
       const result: ApiResponse = await response.json();

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import AgentView from '../views/AgentView.vue';
 import GameView from '../views/GameView.vue';
 import LoginView from '../views/LoginView.vue';
+import AdminView from '../views/AdminView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -23,6 +24,12 @@ const router = createRouter({
       name: 'login',
       component: LoginView,
       meta: { requiresGuest: true }
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
+      meta: { requiresAuth: true }
     }
   ]
 });

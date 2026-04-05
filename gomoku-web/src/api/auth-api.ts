@@ -11,6 +11,7 @@ export interface User {
   username: string;
   avatar?: string;
   rating: number;
+  role: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,6 +121,7 @@ export class AuthApiService {
       method: 'POST',
       headers: this.getHeaders(false),
       body: JSON.stringify(data),
+      credentials: 'include',
     });
 
     return this.handleResponse<AuthResponse>(response);
@@ -133,6 +135,7 @@ export class AuthApiService {
       method: 'POST',
       headers: this.getHeaders(false),
       body: JSON.stringify(data),
+      credentials: 'include',
     });
 
     return this.handleResponse<AuthResponse>(response);
