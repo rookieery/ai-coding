@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { logger } from './utils/logger';
+import { config } from './config';
 
 // 加载环境变量
 dotenv.config();
@@ -17,10 +18,12 @@ const PORT = 3003;
 
 // 中间件
 app.use(helmet());
+
+// CORS配置：支持从环境变量配置多个允许的域名（逗号分隔）
 app.use(cors({
   origin: (origin, callback) => {
-    // 允许所有本地开发端口
-    const allowedOrigins = [
+    // 基础允许的域名列表
+    const baseAllowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
@@ -31,14 +34,38 @@ app.use(cors({
       'http://localhost:5173', // Vite默认端口
     ];
 
-    // 允许所有本地开发或来自环境变量
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+    // 从环境变量读取配置的域名（支持逗号分隔多个域名）
+    const corsOrigin = config.server.corsOrigin;
+    const configuredOrigins = corsOrigin
+      ? corsOrigin.split(',').map(domain => domain.trim()).filter(domain => domain.length > 0)
+      : [];
+
+    // 合并所有允许的域名
+    const allowedOrigins = [...baseAllowedOrigins, ...configuredOrigins];
+
+    // 在开发环境中更宽松
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug(`CORS check - Origin: ${origin}, Allowed: ${allowedOrigins.join(', ')}`);
+    }
+
+    // 允许条件：
+    // 1. 请求没有origin（例如：curl请求、Postman）
+    // 2. origin在允许列表中
+    // 3. 在生产环境中，必须有明确的origin匹配
+    if (!origin) {
+      callback(null, true);
+    } else if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
+      // 开发环境下允许所有本地端口
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      logger.warn(`CORS blocked: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
+      callback(new Error('Not allowed by CORS'), false);
     }
   },
   credentials: true,
+  optionsSuccessStatus: 200, // 兼容一些旧浏览器
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -70,7 +97,7 @@ app.use('*', (req, res) => {
 
 // 错误处理中间件
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error:', err);
   res.status(500).json({
     error: 'Internal Server Error',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
