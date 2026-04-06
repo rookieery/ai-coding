@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger';
 
 dotenv.config();
 
@@ -41,8 +42,8 @@ export function validateConfig() {
   }
 
   if (config.jwt.secret === 'your-super-secret-jwt-key-change-in-production') {
-    console.warn('⚠️  Warning: Using default JWT secret. Please change JWT_SECRET in production.');
+    logger.warn('Warning: Using default JWT secret. Please change JWT_SECRET in production.');
   }
 
-  console.log('✅ Configuration loaded successfully');
+  logger.info('Configuration loaded successfully');
 }

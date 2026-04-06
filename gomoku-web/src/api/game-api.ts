@@ -17,9 +17,31 @@ export interface FrontendGame {
 }
 
 /**
+ * 更新棋谱请求体
+ */
+export interface UpdateGameRequest {
+  title: string;
+  metadata: {
+    frontendFormat: boolean;
+    mode: 'pvp' | 'pve';
+    aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
+    aiRole: 'first' | 'second';
+    ruleMode: 'standard' | 'renju';
+    originalTimestamp: number;
+  };
+  moves?: Array<{
+    x: number;
+    y: number;
+    color: 'black' | 'white';
+    step: number;
+    timestamp: number;
+  }>;
+}
+
+/**
  * API响应格式
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -171,7 +193,7 @@ export class GameApiService {
     try {
       // 注意：更新API可能需要认证，这里暂时使用前端格式的更新
       // 实际项目中可能需要转换为后端格式
-      const body: any = {
+      const body: UpdateGameRequest = {
         title: game.name,
         metadata: {
           frontendFormat: true,

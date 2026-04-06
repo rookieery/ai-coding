@@ -286,7 +286,6 @@ const messages = {
     oldPasswordLabel: '舊密碼',
     oldPasswordPlaceholder: '請輸入當前密碼',
     newPasswordPlaceholder: '請輸入新密碼（至少6位）',
-    confirmPasswordPlaceholder: '請再次輸入新密碼',
     passwordChangeSuccess: '密碼修改成功',
     passwordChangeFailed: '修改密碼失敗，請檢查舊密碼是否正確',
     errorOldPasswordRequired: '請輸入舊密碼',
@@ -427,7 +426,6 @@ const messages = {
     oldPasswordLabel: 'Current Password',
     oldPasswordPlaceholder: 'Enter current password',
     newPasswordPlaceholder: 'Enter new password (at least 6 characters)',
-    confirmPasswordPlaceholder: 'Re-enter new password',
     passwordChangeSuccess: 'Password changed successfully',
     passwordChangeFailed: 'Password change failed, please check if current password is correct',
     errorOldPasswordRequired: 'Please enter current password',
@@ -568,7 +566,6 @@ const messages = {
     oldPasswordLabel: '現在のパスワード',
     oldPasswordPlaceholder: '現在のパスワードを入力してください',
     newPasswordPlaceholder: '新しいパスワードを入力してください（6文字以上）',
-    confirmPasswordPlaceholder: '新しいパスワードを再度入力してください',
     passwordChangeSuccess: 'パスワードを変更しました',
     passwordChangeFailed: 'パスワード変更に失敗しました。現在のパスワードが正しいか確認してください',
     errorOldPasswordRequired: '現在のパスワードを入力してください',
@@ -578,10 +575,10 @@ const messages = {
   }
 };
 
-export const t = (key: keyof typeof messages['zh-CN'], ...args: any[]) => {
+export const t = (key: keyof typeof messages['zh-CN'], ...args: (string | number)[]) => {
   let msg = messages[currentLocale.value][key] || messages['zh-CN'][key];
   args.forEach((arg, i) => {
-    msg = msg.replace(`{${i}}`, arg);
+    msg = msg.replace(`{${i}}`, String(arg));
   });
   return msg;
 };

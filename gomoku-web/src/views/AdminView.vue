@@ -48,9 +48,9 @@ const fetchUsers = async () => {
     users.value = result.users;
     totalUsers.value = result.pagination.total;
     totalPages.value = result.pagination.totalPages;
-  } catch (err: any) {
+  } catch (err) {
     console.error('Failed to fetch users:', err);
-    error.value = err.message || '获取用户列表失败';
+    error.value = err instanceof Error ? err.message : '获取用户列表失败';
   } finally {
     isLoading.value = false;
   }
@@ -67,9 +67,9 @@ const deleteUser = async (userId: string) => {
     // 删除成功后重新获取用户列表
     fetchUsers();
     userToDelete.value = null;
-  } catch (err: any) {
+  } catch (err) {
     console.error('Failed to delete user:', err);
-    deleteError.value = err.message || '删除用户失败';
+    deleteError.value = err instanceof Error ? err.message : '删除用户失败';
   }
 };
 

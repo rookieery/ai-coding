@@ -74,8 +74,8 @@ export function useAuth() {
       user.value = response.user;
       token.value = response.token;
       authApi.saveAuth(response.user, response.token);
-    } catch (err: any) {
-      error.value = err.message || '登录失败';
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '登录失败';
       throw err;
     } finally {
       isLoading.value = false;
@@ -98,8 +98,8 @@ export function useAuth() {
       user.value = response.user;
       token.value = response.token;
       authApi.saveAuth(response.user, response.token);
-    } catch (err: any) {
-      error.value = err.message || '注册失败';
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '注册失败';
       throw err;
     } finally {
       isLoading.value = false;
@@ -131,8 +131,8 @@ export function useAuth() {
       const updatedUser = await authApi.updateUser(data);
       user.value = updatedUser;
       localStorage.setItem('user', JSON.stringify(updatedUser));
-    } catch (err: any) {
-      error.value = err.message || '更新失败';
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '更新失败';
       throw err;
     } finally {
       isLoading.value = false;
@@ -146,8 +146,8 @@ export function useAuth() {
 
     try {
       await authApi.changePassword({ oldPassword, newPassword });
-    } catch (err: any) {
-      error.value = err.message || '修改密码失败';
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '修改密码失败';
       throw err;
     } finally {
       isLoading.value = false;
@@ -168,12 +168,12 @@ export function useAuth() {
       const currentUser = await authApi.getCurrentUser();
       user.value = currentUser;
       localStorage.setItem('user', JSON.stringify(currentUser));
-    } catch (err: any) {
+    } catch (err) {
       // 如果获取失败，可能是token过期，清除认证信息
-      if (err.message.includes('Unauthorized') || err.message.includes('Invalid')) {
+      if (err instanceof Error && (err.message.includes('Unauthorized') || err.message.includes('Invalid'))) {
         clearAuth();
       }
-      error.value = err.message || '获取用户信息失败';
+      error.value = err instanceof Error ? err.message : '获取用户信息失败';
     } finally {
       isLoading.value = false;
     }

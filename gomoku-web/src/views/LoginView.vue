@@ -97,9 +97,15 @@ const submitForm = async () => {
         router.push('/');
       }, 1000);
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Auth error:', error);
-    errorMessage.value = error.response?.data?.message || error.message || t('requestFailed');
+    let message = t('requestFailed');
+    if (error instanceof Error) {
+      // 尝试从错误对象中提取消息
+      const anyError = error as any;
+      message = anyError.response?.data?.message || error.message || t('requestFailed');
+    }
+    errorMessage.value = message;
   } finally {
     isLoading.value = false;
   }

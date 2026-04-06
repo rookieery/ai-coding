@@ -51,11 +51,12 @@ const sendMessage = async () => {
     if (messages.value.length > 20) {
       messages.value = messages.value.slice(-20);
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Chat API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : '无法连接到AI助手';
     messages.value.push({
       role: 'agent',
-      text: `抱歉，发生了一些错误：${error.message || '无法连接到AI助手'}`
+      text: `抱歉，发生了一些错误：${errorMessage}`
     });
   } finally {
     isThinking.value = false;

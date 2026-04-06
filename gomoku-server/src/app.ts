@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import { logger } from './utils/logger';
 
 // 加载环境变量
 dotenv.config();
@@ -81,31 +82,31 @@ async function startServer() {
   try {
     // 测试数据库连接
     await prisma.$connect();
-    console.log('✅ Database connected successfully');
+    logger.info('Database connected successfully');
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`📚 API available at http://localhost:${PORT}/api`);
-      console.log(`🏥 Health check at http://localhost:${PORT}/health`);
+      logger.info(`Server is running on port ${PORT}`);
+      logger.info(`API available at http://localhost:${PORT}/api`);
+      logger.info(`Health check at http://localhost:${PORT}/health`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
 }
 
 // 优雅关闭
 process.on('SIGINT', async () => {
-  console.log('Shutting down server...');
+  logger.info('Shutting down server...');
   await prisma.$disconnect();
-  console.log('Database disconnected');
+  logger.info('Database disconnected');
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('Terminating server...');
+  logger.info('Terminating server...');
   await prisma.$disconnect();
-  console.log('Database disconnected');
+  logger.info('Database disconnected');
   process.exit(0);
 });
 

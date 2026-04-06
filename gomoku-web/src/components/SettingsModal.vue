@@ -137,11 +137,12 @@ const changePassword = async () => {
       closeModal();
     }, 2000);
 
-  } catch (error: any) {
-    if (error.message && (error.message.includes('不正确') || error.message.includes('incorrect') || error.message.includes('错误'))) {
+  } catch (error) {
+    if (error instanceof Error && error.message && (error.message.includes('不正确') || error.message.includes('incorrect') || error.message.includes('错误'))) {
       settingsError.value = t('settingsErrorCurrentPasswordIncorrect');
     } else {
-      settingsError.value = error.message || t('settingsPasswordChangeFailed');
+      const errorMessage = error instanceof Error ? error.message : t('settingsPasswordChangeFailed');
+      settingsError.value = errorMessage;
     }
   } finally {
     isChangingPassword.value = false;

@@ -36,7 +36,6 @@ const savedGames = ref<SavedGame[]>([]);
 onMounted(async () => {
   try {
     // 尝试从API加载游戏
-    console.log('Loading games from API...');
     const result = await gameApi.getGames();
     savedGames.value = result.games.map(game => {
       // 获取完整的游戏数据（如果需要）
@@ -54,7 +53,6 @@ onMounted(async () => {
         ruleMode: 'standard' as const,
       };
     });
-    console.log(`Loaded ${savedGames.value.length} games from API`);
   } catch (error) {
     console.error('Failed to load games from API, falling back to localStorage:', error);
 
@@ -63,7 +61,6 @@ onMounted(async () => {
     if (stored) {
       try {
         savedGames.value = JSON.parse(stored);
-        console.log(`Loaded ${savedGames.value.length} games from localStorage`);
       } catch (e) {
         console.error('Failed to parse saved games from localStorage', e);
       }
@@ -107,7 +104,6 @@ onMounted(async () => {
       // 尝试保存到API
       try {
         await gameApi.saveGame(puyueGame);
-        console.log('Puyue opening saved to API');
         localStorage.setItem('gomoku_default_created', 'true');
       } catch (error) {
         console.error('Failed to save puyue opening to API, saving to localStorage:', error);
