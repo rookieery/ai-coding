@@ -1,4 +1,4 @@
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed } from 'vue';
 import { authApi, type User } from '../api/auth-api';
 import { useRouter } from 'vue-router';
 

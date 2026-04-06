@@ -3,9 +3,10 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { LogIn, UserPlus, Phone, Lock, User, Mail, Eye, EyeOff } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
-import { authApi } from '../api/auth-api';
+import { useGlobalAuth } from '../composables/useAuth';
 
 const router = useRouter();
+const auth = useGlobalAuth();
 
 // 登录/注册表单数据
 const isLoginMode = ref(true); // true: 登录, false: 注册
@@ -74,33 +75,22 @@ const submitForm = async () => {
 
   try {
     if (isLoginMode.value) {
-      // 登录
-      const response = await authApi.login({
-        phone: phone.value,
-        password: password.value,
-      });
-
-      // 保存token到localStorage
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // 登录 - 使用全局auth实例
+      await auth.login(phone.value, password.value);
 
       successMessage.value = t('loginSuccess');
       setTimeout(() => {
         router.push('/'); // 跳转到智能体首页
       }, 1000);
     } else {
-      // 注册
-      const response = await authApi.register({
+      // 注册 - 使用全局auth实例
+      await auth.register({
         phone: phone.value,
         email: email.value || undefined,
         username: username.value,
         password: password.value,
         avatar: avatar.value || undefined,
       });
-
-      // 保存token
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
 
       successMessage.value = t('registerSuccess');
       setTimeout(() => {
