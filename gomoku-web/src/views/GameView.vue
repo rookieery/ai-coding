@@ -459,7 +459,7 @@ const aiMove = () => {
 
   terminateWorker();
   isAiThinking.value = true;
-  worker = new Worker(new URL('./aiWorker.ts', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('../aiWorker.ts', import.meta.url), { type: 'module' });
 
   worker.onmessage = (e) => {
     if (e.data.type === 'thinking') {
@@ -621,7 +621,7 @@ const showHint = () => {
 
   terminateWorker();
   isAiThinking.value = true;
-  worker = new Worker(new URL('./aiWorker.ts', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('../aiWorker.ts', import.meta.url), { type: 'module' });
 
   worker.onmessage = (e) => {
     if (e.data.type === 'thinking') {
