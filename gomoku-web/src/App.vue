@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { currentTheme, toggleTheme, toggleLocale, t } from './i18n';
 import { Moon, Sun, Globe, User, LogOut, Settings, ChevronDown } from 'lucide-vue-next';
 import { useGlobalAuth } from './composables/useAuth';
+import SettingsModal from './components/SettingsModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,6 +17,9 @@ const isAuthenticated = computed(() => auth.isAuthenticated.value);
 
 // 用户下拉菜单状态
 const isUserDropdownOpen = ref(false);
+
+// 个人设置弹窗状态
+const isSettingsModalOpen = ref(false);
 
 const switchLang = () => {
   toggleLocale();
@@ -31,11 +35,10 @@ const handleLogout = async () => {
   }
 };
 
-// 导航到个人设置（未来实现）
+// 打开个人设置弹窗
 const goToSettings = () => {
-  // TODO: 实现设置页面
   isUserDropdownOpen.value = false;
-  alert('个人设置功能开发中');
+  isSettingsModalOpen.value = true;
 };
 
 // 点击外部关闭下拉菜单
@@ -163,6 +166,9 @@ onUnmounted(() => {
         </transition>
       </router-view>
     </main>
+
+    <!-- 个人设置弹窗组件 -->
+    <SettingsModal :open="isSettingsModalOpen" @update:open="isSettingsModalOpen = $event" @close="isSettingsModalOpen = false" />
   </div>
 </template>
 
