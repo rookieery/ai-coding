@@ -1,5 +1,5 @@
 // API配置
-const API_BASE_URL = 'http://localhost:3003/api';
+import { API_BASE_URL } from '../config';
 
 /**
  * 用户信息（管理员视图）

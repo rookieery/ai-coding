@@ -3,6 +3,7 @@
 // Vite环境变量类型声明
 interface ImportMetaEnv {
   readonly VITE_GOMOKU_MODEL_URL?: string
+  readonly VITE_API_BASE_URL?: string
   // 可以添加其他环境变量
 }
 
