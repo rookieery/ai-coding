@@ -157,7 +157,9 @@ onUnmounted(() => {
     <main class="flex-1 flex flex-col w-full">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" />
+          <keep-alive :include="['AgentView', 'GameView', 'AdminView']">
+            <component :is="Component" />
+          </keep-alive>
         </transition>
       </router-view>
     </main>

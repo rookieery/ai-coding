@@ -4,6 +4,10 @@ import { Send, Loader2 } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
 
+defineOptions({
+  name: 'AgentView'
+});
+
 const query = ref('');
 const messages = ref<{role: 'user' | 'agent', text: string}[]>([]);
 const isThinking = ref(false);

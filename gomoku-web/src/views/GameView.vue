@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted, onMounted } from 'vue';
+import { ref, computed, onUnmounted, onMounted, onActivated, onDeactivated } from 'vue';
 import { Download, Trash2, X, RefreshCw } from 'lucide-vue-next';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE, checkWin, checkDraw, type Difficulty, type RuleMode, getForbiddenType } from '../gameLogic';
 import Board from '../components/Board.vue';
@@ -7,6 +7,10 @@ import HistoryPanel from '../components/HistoryPanel.vue';
 import GameControls from '../components/GameControls.vue';
 import { t, currentTheme } from '../i18n';
 import { gameApi, type FrontendGame } from '../api/game-api';
+
+defineOptions({
+  name: 'GameView'
+});
 
 const board = ref<number[][]>(Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)));
 const currentPlayer = ref<number>(BLACK);
@@ -356,6 +360,15 @@ const terminateWorker = () => {
 
 onUnmounted(() => {
   terminateWorker();
+});
+
+onDeactivated(() => {
+  terminateWorker();
+});
+
+onActivated(() => {
+  // 组件重新激活时，可以重新启动AI思考（如果需要）
+  // 暂时不处理，由用户手动触发
 });
 const winningLine = ref<{r: number, c: number}[]>([]);
 const hintMove = ref<{r: number, c: number} | null>(null);

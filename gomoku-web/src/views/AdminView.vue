@@ -6,6 +6,10 @@ import { adminApi, type AdminUser } from '../api/admin-api';
 import { Trash2, AlertCircle, ChevronLeft, ChevronRight, Loader } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 
+defineOptions({
+  name: 'AdminView'
+});
+
 const router = useRouter();
 const auth = useGlobalAuth();
 
