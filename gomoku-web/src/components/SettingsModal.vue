@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { X, Check, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { authApi } from '../api/auth-api';
+import { validatePassword, isPasswordValid } from '../utils/password';
 
 export interface Props {
   open: boolean;
@@ -91,9 +92,12 @@ const validatePasswordForm = (): boolean => {
   if (!passwordForm.value.newPassword.trim()) {
     passwordErrors.value.newPassword = t('settingsErrorNewPasswordMinLength');
     isValid = false;
-  } else if (passwordForm.value.newPassword.length < 6) {
-    passwordErrors.value.newPassword = t('settingsErrorNewPasswordMinLength');
-    isValid = false;
+  } else {
+    const result = validatePassword(passwordForm.value.newPassword);
+    if (!result.isValid) {
+      passwordErrors.value.newPassword = t('settingsErrorNewPasswordComplexity');
+      isValid = false;
+    }
   }
 
   // 验证确认密码
@@ -149,10 +153,47 @@ const changePassword = async () => {
   }
 };
 
+// 实时验证新密码
+watch(() => passwordForm.value.newPassword, (newValue) => {
+  if (!newValue.trim()) {
+    passwordErrors.value.newPassword = t('settingsErrorNewPasswordMinLength');
+    return;
+  }
+  const result = validatePassword(newValue);
+  if (!result.isValid) {
+    passwordErrors.value.newPassword = t('settingsErrorNewPasswordComplexity');
+  } else {
+    passwordErrors.value.newPassword = '';
+  }
+});
+
+// 实时验证确认密码
+watch(() => [passwordForm.value.newPassword, passwordForm.value.confirmPassword], () => {
+  if (!passwordForm.value.confirmPassword.trim()) {
+    passwordErrors.value.confirmPassword = t('settingsErrorConfirmPasswordRequired');
+    return;
+  }
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    passwordErrors.value.confirmPassword = t('settingsErrorPasswordsMismatch');
+  } else {
+    passwordErrors.value.confirmPassword = '';
+  }
+});
+
 // 密码输入框类型计算属性
 const oldPasswordType = computed(() => showOldPassword.value ? 'text' : 'password');
 const newPasswordType = computed(() => showNewPassword.value ? 'text' : 'password');
 const confirmPasswordType = computed(() => showConfirmPassword.value ? 'text' : 'password');
+
+// 密码表单是否有效
+const isPasswordFormValid = computed(() => {
+  if (!passwordForm.value.oldPassword.trim()) return false;
+  if (!passwordForm.value.newPassword.trim()) return false;
+  if (!passwordForm.value.confirmPassword.trim()) return false;
+  if (!isPasswordValid(passwordForm.value.newPassword)) return false;
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) return false;
+  return true;
+});
 </script>
 
 <template>
@@ -297,7 +338,7 @@ const confirmPasswordType = computed(() => showConfirmPassword.value ? 'text' : 
         </button>
         <button
           @click="changePassword"
-          :disabled="isChangingPassword"
+          :disabled="isChangingPassword || !isPasswordFormValid"
           class="px-4 py-2 rounded-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Loader2 v-if="isChangingPassword" class="w-4 h-4 animate-spin" />

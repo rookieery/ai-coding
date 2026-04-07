@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { LogIn, UserPlus, Phone, Lock, User, Mail, Eye, EyeOff } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { useGlobalAuth } from '../composables/useAuth';
+import { validatePassword, isPasswordValid } from '../utils/password';
 
 const router = useRouter();
 const auth = useGlobalAuth();
@@ -17,6 +18,12 @@ const password = ref('');
 const confirmPassword = ref('');
 const avatar = ref('');
 
+// 字段级错误消息
+const phoneError = ref('');
+const passwordError = ref('');
+const confirmPasswordError = ref('');
+const usernameError = ref('');
+
 // 状态
 const isLoading = ref(false);
 const errorMessage = ref('');
@@ -26,38 +33,26 @@ const successMessage = ref('');
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
-// 表单验证
+// 表单验证（使用实时验证结果）
 const validateForm = () => {
   errorMessage.value = '';
 
-  if (!phone.value || !password.value) {
-    errorMessage.value = t('errorPhoneRequired');
+  // 使用实时验证结果
+  if (!phoneValidation.value.isValid) {
+    errorMessage.value = phoneValidation.value.error || t('errorPhoneRequired');
     return false;
   }
-
-  // 手机号格式验证
-  const phoneRegex = /^1[3-9]\d{9}$/;
-  if (!phoneRegex.test(phone.value)) {
-    errorMessage.value = t('errorPhoneInvalid');
+  if (!passwordValidation.value.isValid) {
+    errorMessage.value = passwordValidation.value.error || t('errorPasswordLength');
     return false;
   }
-
   if (!isLoginMode.value) {
-    // 注册额外验证
-    if (!username.value) {
-      errorMessage.value = t('errorUsernameRequired');
+    if (!usernameValidation.value.isValid) {
+      errorMessage.value = usernameValidation.value.error || t('errorUsernameRequired');
       return false;
     }
-    if (username.value.length < 3 || username.value.length > 50) {
-      errorMessage.value = t('errorUsernameLength');
-      return false;
-    }
-    if (password.value.length < 6) {
-      errorMessage.value = t('errorPasswordLength');
-      return false;
-    }
-    if (password.value !== confirmPassword.value) {
-      errorMessage.value = t('errorPasswordMismatch');
+    if (!confirmPasswordValidation.value.isValid) {
+      errorMessage.value = confirmPasswordValidation.value.error || t('errorPasswordMismatch');
       return false;
     }
   }
@@ -117,6 +112,52 @@ const toggleMode = () => {
   errorMessage.value = '';
   successMessage.value = '';
 };
+
+// 字段验证
+const phoneValidation = computed(() => {
+  if (!phone.value) return { isValid: false, error: t('errorPhoneRequired') };
+  const phoneRegex = /^1[3-9]\d{9}$/;
+  if (!phoneRegex.test(phone.value)) return { isValid: false, error: t('errorPhoneInvalid') };
+  return { isValid: true };
+});
+
+const passwordValidation = computed(() => {
+  if (!password.value) return { isValid: false, error: t('errorPhoneRequired') };
+  const result = validatePassword(password.value);
+  if (!result.isValid) return { isValid: false, error: t('errorPasswordComplexity') };
+  return { isValid: true };
+});
+
+const usernameValidation = computed(() => {
+  if (!isLoginMode.value) {
+    if (!username.value) return { isValid: false, error: t('errorUsernameRequired') };
+    if (username.value.length < 3 || username.value.length > 50) {
+      return { isValid: false, error: t('errorUsernameLength') };
+    }
+  }
+  return { isValid: true };
+});
+
+const confirmPasswordValidation = computed(() => {
+  if (!isLoginMode.value) {
+    if (!confirmPassword.value) return { isValid: false, error: t('errorPasswordMismatch') };
+    if (password.value !== confirmPassword.value) {
+      return { isValid: false, error: t('errorPasswordMismatch') };
+    }
+  }
+  return { isValid: true };
+});
+
+// 表单整体验证状态
+const isFormValid = computed(() => {
+  if (!phoneValidation.value.isValid) return false;
+  if (!passwordValidation.value.isValid) return false;
+  if (!isLoginMode.value) {
+    if (!usernameValidation.value.isValid) return false;
+    if (!confirmPasswordValidation.value.isValid) return false;
+  }
+  return true;
+});
 </script>
 
 <template>
@@ -169,6 +210,9 @@ const toggleMode = () => {
                     : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400'"
                 />
               </div>
+              <p v-if="phoneValidation.error" class="mt-2 text-sm text-red-500">
+                {{ phoneValidation.error }}
+              </p>
             </div>
 
             <!-- 密码 -->
@@ -200,6 +244,9 @@ const toggleMode = () => {
                   <Eye v-else class="w-5 h-5" />
                 </button>
               </div>
+              <p v-if="passwordValidation.error" class="mt-2 text-sm text-red-500">
+                {{ passwordValidation.error }}
+              </p>
             </div>
 
             <!-- 注册额外字段 -->
@@ -223,6 +270,9 @@ const toggleMode = () => {
                       : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400'"
                   />
                 </div>
+                <p v-if="usernameValidation.error" class="mt-2 text-sm text-red-500">
+                  {{ usernameValidation.error }}
+                </p>
               </div>
 
               <!-- 确认密码 -->
@@ -254,6 +304,9 @@ const toggleMode = () => {
                     <Eye v-else class="w-5 h-5" />
                   </button>
                 </div>
+                <p v-if="confirmPasswordValidation.error" class="mt-2 text-sm text-red-500">
+                  {{ confirmPasswordValidation.error }}
+                </p>
               </div>
 
               <!-- 邮箱（可选） -->
@@ -281,7 +334,7 @@ const toggleMode = () => {
             <!-- 提交按钮 -->
             <button
               type="submit"
-              :disabled="isLoading"
+              :disabled="isLoading || !isFormValid"
               class="w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               :class="isLoading
                 ? 'bg-indigo-400 cursor-not-allowed text-white'

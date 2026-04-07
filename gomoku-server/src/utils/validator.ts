@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+// 密码验证正则表达式：必须包含大小写字母和数字，长度8-20位，不能包含空格
+export const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,20}$/;
+export const passwordErrorMessage = '密码必须包含大小写字母和数字，长度为8-20位，且不能包含空格';
+
 // 用户验证
 export const userCreateSchema = z.object({
   phone: z.string()
@@ -10,8 +14,7 @@ export const userCreateSchema = z.object({
     .max(50, 'Username must be at most 50 characters')
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers and underscores'),
   password: z.string()
-    .min(5, 'Password must be at least 5 characters')
-    .max(100, 'Password must be at most 100 characters'),
+    .regex(passwordRegex, passwordErrorMessage),
   avatar: z.string().url('Invalid URL format').optional(),
   role: z.enum(['USER', 'ADMIN']).default('USER'),
 });
@@ -31,8 +34,7 @@ export const updateUserSchema = z.object({
 export const changePasswordSchema = z.object({
   oldPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string()
-    .min(6, 'New password must be at least 6 characters')
-    .max(100, 'New password must be at most 100 characters'),
+    .regex(passwordRegex, passwordErrorMessage),
 });
 
 export const loginSchema = z.object({
@@ -150,4 +152,12 @@ export class ValidationError extends Error {
     super(message);
     this.name = 'ValidationError';
   }
+}
+
+// 密码验证工具函数
+export function validatePassword(password: string): { isValid: boolean; error?: string } {
+  if (!passwordRegex.test(password)) {
+    return { isValid: false, error: passwordErrorMessage };
+  }
+  return { isValid: true };
 }

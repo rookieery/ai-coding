@@ -22,27 +22,7 @@ export class AuthController {
         return res.status(400).json(response);
       }
 
-      // 验证手机号格式（简单验证）
-      if (!/^1[3-9]\d{9}$/.test(phone)) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Bad Request',
-          message: 'Invalid phone number format',
-          timestamp: new Date().toISOString(),
-        };
-        return res.status(400).json(response);
-      }
 
-      // 验证密码长度
-      if (password.length < 5) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Bad Request',
-          message: 'Password must be at least 5 characters',
-          timestamp: new Date().toISOString(),
-        };
-        return res.status(400).json(response);
-      }
 
       const authResponse = await authService.register({
         phone,
@@ -250,15 +230,6 @@ export class AuthController {
         return res.status(400).json(response);
       }
 
-      if (newPassword.length < 6) {
-        const response: ApiResponse = {
-          success: false,
-          error: 'Bad Request',
-          message: 'New password must be at least 6 characters',
-          timestamp: new Date().toISOString(),
-        };
-        return res.status(400).json(response);
-      }
 
       await authService.changePassword(userId, oldPassword, newPassword);
 
