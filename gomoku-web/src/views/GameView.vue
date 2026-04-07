@@ -689,7 +689,7 @@ const showHint = () => {
       @showRecords="openRecordsModal"
     />
 
-    <div class="flex flex-col lg:flex-row items-start justify-center w-full px-4 gap-6 lg:gap-8">
+    <div class="flex flex-col lg:flex-row items-start justify-center w-full px-4 gap-4 sm:gap-6 lg:gap-8">
       <!-- Left Spacer to balance the History Panel and keep Board centered -->
       <div class="hidden lg:block w-64 shrink-0"></div>
       
@@ -711,8 +711,8 @@ const showHint = () => {
         />
       </div>
       
-      <div class="w-full lg:w-64 shrink-0 flex flex-col justify-start gap-4 self-stretch h-[482px] lg:h-[694px]">
-        <div class="text-xl font-semibold px-6 py-3 rounded-lg shadow-sm border text-center w-full transition-colors shrink-0"
+      <div class="w-full lg:w-64 shrink-0 flex flex-col justify-start gap-4 self-stretch h-[320px] sm:h-[400px] lg:h-[694px]">
+        <div class="text-lg sm:text-xl font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-sm border text-center w-full transition-colors shrink-0"
              :class="[
                currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-100' : 'bg-white border-stone-200 text-stone-700',
                isAnalysisMode ? (currentTheme === 'dark' ? 'ring-2 ring-indigo-500 text-indigo-300' : 'ring-2 ring-indigo-400 text-indigo-700') : ''
@@ -725,7 +725,7 @@ const showHint = () => {
       </div>
     </div>
     
-    <div class="mt-8 text-sm max-w-md text-center transition-colors" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+    <div class="mt-4 sm:mt-6 lg:mt-8 text-xs sm:text-sm max-w-md px-4 text-center transition-colors" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
       <p>{{ t('rules') }}</p>
       <p v-if="mode === 'pve'" class="mt-1">
         {{ t('currentModePve', aiRoleText, aiDifficultyText) }}

@@ -29,7 +29,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
 
         <button
           @click="emit('setMode', 'pvp')"
-          class="flex items-center gap-2 px-4 py-2 rounded-md transition-colors text-sm font-medium"
+          class="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md transition-colors text-sm font-medium"
           :class="mode === 'pvp' ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow' : 'bg-stone-800 text-white shadow') : (currentTheme === 'dark' ? 'text-stone-400 hover:bg-stone-700' : 'text-stone-600 hover:bg-stone-100')"
         >
           <User class="w-4 h-4" />
@@ -37,7 +37,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
         </button>
         <button
           @click="emit('setMode', 'pve')"
-          class="flex items-center gap-2 px-4 py-2 rounded-md transition-colors text-sm font-medium"
+          class="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md transition-colors text-sm font-medium"
           :class="mode === 'pve' ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow' : 'bg-stone-800 text-white shadow') : (currentTheme === 'dark' ? 'text-stone-400 hover:bg-stone-700' : 'text-stone-600 hover:bg-stone-100')"
         >
           <Bot class="w-4 h-4" />
@@ -51,11 +51,11 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
         class="flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out flex-wrap justify-center"
         :class="mode === 'pve' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'"
       >
-        <select 
-          :value="aiRole" 
+        <select
+          :value="aiRole"
           @change="emit('setAiRole', ($event.target as HTMLSelectElement).value)"
           :disabled="isAnalysisMode"
-          class="border text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block p-2 outline-none shadow-sm cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="border text-sm rounded-lg focus:ring-stone-500 focus:border-stone-500 block p-1.5 sm:p-2 outline-none shadow-sm cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-200 hover:bg-stone-700' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'"
         >
           <option value="second">{{ t('roleSecond') }}</option>
@@ -64,7 +64,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
 
         <button
           @click="emit('toggleThinking')"
-          class="flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors shadow-sm text-sm font-medium"
+          class="flex items-center gap-1.5 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 border rounded-lg transition-colors shadow-sm text-sm font-medium"
           :class="showThinking ? (currentTheme === 'dark' ? 'bg-emerald-900/50 border-emerald-700 text-emerald-400 hover:bg-emerald-900/70' : 'bg-emerald-100 border-emerald-300 text-emerald-700 hover:bg-emerald-200') : (currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50')"
         >
           <Brain class="w-4 h-4" />
@@ -72,7 +72,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
         </button>
         <button
           @click="emit('toggleAnalysisMode')"
-          class="flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors shadow-sm text-sm font-medium"
+          class="flex items-center gap-1.5 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 border rounded-lg transition-colors shadow-sm text-sm font-medium"
           :class="isAnalysisMode ? (currentTheme === 'dark' ? 'bg-indigo-900/50 border-indigo-700 text-indigo-400 hover:bg-indigo-900/70' : 'bg-indigo-100 border-indigo-300 text-indigo-700 hover:bg-indigo-200') : (currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50')"
         >
           <BookOpen class="w-4 h-4" />
@@ -81,23 +81,23 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
       </div>
     </div>
 
-    <div class="flex gap-3 flex-wrap justify-center">
-      <select 
-        :value="ruleMode" 
+    <div class="flex gap-2 sm:gap-3 flex-wrap justify-center">
+      <select
+        :value="ruleMode"
         @change="emit('setRuleMode', ($event.target as HTMLSelectElement).value)"
         :disabled="isAnalysisMode"
-        class="px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm text-sm font-medium outline-none cursor-pointer"
+        class="px-2 py-1.5 sm:px-3 sm:py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm text-sm font-medium outline-none cursor-pointer"
         :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-200 hover:bg-stone-700' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'"
       >
         <option value="standard">{{ t('ruleStandard') }}</option>
         <option value="renju">{{ t('ruleRenju') }}</option>
       </select>
 
-      <select 
-        :value="aiDifficulty" 
+      <select
+        :value="aiDifficulty"
         @change="emit('setAiDifficulty', ($event.target as HTMLSelectElement).value)"
         :disabled="isAnalysisMode"
-        class="px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm text-sm font-medium outline-none cursor-pointer"
+        class="px-2 py-1.5 sm:px-3 sm:py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm text-sm font-medium outline-none cursor-pointer"
         :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-200 hover:bg-stone-700' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'"
       >
         <option value="beginner">{{ t('difficultyBeginner') }}</option>
