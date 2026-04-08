@@ -6,8 +6,14 @@ export class GameService {
   /**
    * 创建新棋谱
    */
-  async createGame(data: GameCreateInput, authorId?: string): Promise<Game> {
+  async createGame(data: GameCreateInput, authorId?: string, userRole?: string): Promise<Game> {
     try {
+      // 验证：只有管理员可以创建公开棋谱
+      const isPublic = data.isPublic ?? false;
+      if (isPublic && userRole !== 'ADMIN') {
+        throw new Error('Only administrators can create public games');
+      }
+
       const game = await prisma.game.create({
         data: {
           title: data.title,
@@ -17,7 +23,7 @@ export class GameService {
           result: data.result,
           playerBlack: data.playerBlack,
           playerWhite: data.playerWhite,
-          isPublic: data.isPublic ?? true,
+          isPublic: isPublic, // 默认私有棋谱，符合安全要求
           tags: JSON.stringify(data.tags || []),
           metadata: data.metadata ? JSON.stringify(data.metadata) : null,
           authorId: authorId || null,
@@ -143,23 +149,32 @@ export class GameService {
   /**
    * 更新棋谱
    */
-  async updateGame(id: string, data: GameUpdateInput, userId: string): Promise<Game> {
+  async updateGame(id: string, data: GameUpdateInput, userId: string, userRole?: string): Promise<Game> {
     try {
       // 验证用户是否有权限更新（作者或管理员）
       const existingGame = await prisma.game.findUnique({
         where: { id },
-        select: { authorId: true },
+        select: { authorId: true, isPublic: true },
       });
 
       if (!existingGame) {
         throw new Error('Game not found');
       }
 
-      // 检查权限：如果游戏有作者，只有作者可以更新；如果游戏没有作者（匿名），允许更新
+      // 检查权限：如果游戏有作者，只有作者或管理员可以更新；如果游戏没有作者（匿名），允许更新
       if (existingGame.authorId) {
         if (!userId || existingGame.authorId !== userId) {
-          // TODO: 检查管理员权限
-          throw new Error('Unauthorized to update this game');
+          // 检查管理员权限
+          if (userRole !== 'ADMIN') {
+            throw new Error('Unauthorized to update this game');
+          }
+        }
+      }
+
+      // 检查isPublic字段修改权限：只有管理员可以修改棋谱的公开状态
+      if (data.isPublic !== undefined && data.isPublic !== existingGame.isPublic) {
+        if (userRole !== 'ADMIN') {
+          throw new Error('Only administrators can change game visibility');
         }
       }
 
@@ -200,7 +215,7 @@ export class GameService {
   /**
    * 删除棋谱
    */
-  async deleteGame(id: string, userId: string): Promise<void> {
+  async deleteGame(id: string, userId: string, userRole?: string): Promise<void> {
     try {
       // 验证用户是否有权限删除
       const existingGame = await prisma.game.findUnique({
@@ -212,11 +227,13 @@ export class GameService {
         throw new Error('Game not found');
       }
 
-      // 检查权限：如果游戏有作者，只有作者可以删除；如果游戏没有作者（匿名），允许删除
+      // 检查权限：如果游戏有作者，只有作者或管理员可以删除；如果游戏没有作者（匿名），允许删除
       if (existingGame.authorId) {
         if (!userId || existingGame.authorId !== userId) {
-          // TODO: 检查管理员权限
-          throw new Error('Unauthorized to delete this game');
+          // 检查管理员权限
+          if (userRole !== 'ADMIN') {
+            throw new Error('Unauthorized to delete this game');
+          }
         }
       }
 

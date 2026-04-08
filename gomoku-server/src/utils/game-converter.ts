@@ -22,6 +22,7 @@ export interface FrontendGame {
   aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
   aiRole: 'first' | 'second';
   ruleMode: 'standard' | 'renju';
+  isPublic?: boolean; // 棋谱是否公开，默认false（私有），只有admin用户保存的棋谱默认为true
 }
 
 /**
@@ -105,23 +106,23 @@ export function frontendGameToBackendData(
   // 生成标签
   const tags: string[] = [];
   if (frontendGame.mode === 'pve') {
-    tags.push('人机对战');
-    tags.push(`AI难度:${frontendGame.aiDifficulty}`);
-    tags.push(`AI角色:${frontendGame.aiRole}`);
+    tags.push('human-vs-ai');
+    tags.push(`ai-difficulty:${frontendGame.aiDifficulty}`);
+    tags.push(`ai-role:${frontendGame.aiRole}`);
   } else {
-    tags.push('人人对战');
+    tags.push('human-vs-human');
   }
-  tags.push(`规则:${frontendGame.ruleMode}`);
+  tags.push(`rule-mode:${frontendGame.ruleMode}`);
 
   return {
     title: frontendGame.name,
-    description: `创建于 ${new Date(frontendGame.timestamp).toLocaleString()}`,
+    description: `Game created at ${new Date(frontendGame.timestamp).toISOString()}`,
     boardSize: 15, // 标准五子棋棋盘大小
     moves,
     result,
     playerBlack: frontendGame.mode === 'pve' && frontendGame.aiRole === 'first' ? 'AI' : '玩家1',
     playerWhite: frontendGame.mode === 'pve' && frontendGame.aiRole === 'second' ? 'AI' : '玩家2',
-    isPublic: true,
+    isPublic: frontendGame.isPublic ?? false, // 默认私有棋谱，符合安全要求
     tags,
     metadata: {
       frontendFormat: true,
@@ -130,6 +131,7 @@ export function frontendGameToBackendData(
       aiRole: frontendGame.aiRole,
       ruleMode: frontendGame.ruleMode,
       originalTimestamp: frontendGame.timestamp,
+      isPublic: frontendGame.isPublic ?? false, // 在metadata中也保存一份，便于前端读取
     },
   };
 }
@@ -158,6 +160,7 @@ export function backendGameToFrontendGame(
     aiDifficulty: metadata.aiDifficulty || 'intermediate',
     aiRole: metadata.aiRole || 'second',
     ruleMode: metadata.ruleMode || 'standard',
+    isPublic: metadata.isPublic ?? backendGame.isPublic ?? false,
   };
 }
 

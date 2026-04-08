@@ -12,6 +12,7 @@ export class GameController {
     try {
       const { title, description, boardSize, moves, result, playerBlack, playerWhite, isPublic, tags } = req.body;
       const authorId = req.user?.id; // 从认证中间件获取，可选
+      const userRole = req.user?.role;
 
       const game = await gameService.createGame(
         {
@@ -25,7 +26,8 @@ export class GameController {
           isPublic,
           tags,
         },
-        authorId
+        authorId,
+        userRole
       );
 
       const response: ApiResponse = {
@@ -59,10 +61,34 @@ export class GameController {
       const isPublic = req.query.isPublic as string;
       const tags = req.query.tags as string;
       const search = req.query.search as string;
+      const currentUserId = req.user?.id;
 
       const filters: any = {};
-      if (authorId) filters.authorId = authorId;
-      if (isPublic !== undefined) filters.isPublic = isPublic === 'true';
+
+      // 权限检查：如果指定了authorId，确保只有查看自己私有棋谱的权限
+      if (authorId) {
+        filters.authorId = authorId;
+        // 如果请求查看其他用户的棋谱，强制只返回公共棋谱
+        if (authorId !== currentUserId) {
+          filters.isPublic = true;
+        } else {
+          // 查看自己的棋谱，可以查看所有（包括私有），尊重isPublic参数
+          if (isPublic !== undefined) {
+            filters.isPublic = isPublic === 'true';
+          }
+          // 如果没有指定isPublic，不设置过滤条件，返回所有（包括私有）
+        }
+      } else {
+        // 没有指定authorId，默认只返回公共棋谱
+        filters.isPublic = true;
+        // 如果用户已登录，可以额外看到自己的私有棋谱吗？不，应该使用/my端点
+        // 但这里为了兼容性，保持只返回公共棋谱
+      }
+
+      // 如果isPublic参数被显式设置，但authorId与当前用户不匹配，已经强制为true
+      // 如果authorId匹配当前用户，isPublic参数已处理
+      // 如果authorId不存在，isPublic被强制为true，忽略用户输入（安全第一）
+
       if (tags) filters.tags = tags.split(',');
       if (search) filters.search = search;
 
@@ -138,8 +164,9 @@ export class GameController {
       const { id } = req.params;
       const updateData = req.body;
       const userId = req.user?.id;
+      const userRole = req.user?.role;
 
-      const game = await gameService.updateGame(id, updateData, userId || '');
+      const game = await gameService.updateGame(id, updateData, userId || '', userRole);
 
       const response: ApiResponse = {
         success: true,
@@ -169,8 +196,9 @@ export class GameController {
     try {
       const { id } = req.params;
       const userId = req.user?.id;
+      const userRole = req.user?.role;
 
-      await gameService.deleteGame(id, userId || '');
+      await gameService.deleteGame(id, userId || '', userRole);
 
       const response: ApiResponse = {
         success: true,
@@ -244,6 +272,7 @@ export class GameController {
     try {
       const frontendGame = req.body;
       const authorId = req.user?.id;
+      const userRole = req.user?.role;
 
       // 验证必要字段
       if (!frontendGame.name || !frontendGame.moveHistory) {
@@ -260,7 +289,7 @@ export class GameController {
       const backendData = frontendGameToBackendData(frontendGame);
 
       // 创建棋谱
-      const game = await gameService.createGame(backendData, authorId);
+      const game = await gameService.createGame(backendData, authorId, userRole);
 
       const response: ApiResponse = {
         success: true,
@@ -295,13 +324,16 @@ export class GameController {
       const pageSize = parseInt(req.query.pageSize as string) || 20;
       const userId = req.user?.id;
 
-      // 构建过滤条件：如果用户已认证，显示该用户的所有游戏（包括私有）
-      // 如果用户未认证，只显示公共游戏
+      // 构建过滤条件：如果用户已认证，显示所有公开棋谱 + 用户自己的私有棋谱
+      // 如果用户未认证，只显示公开棋谱
       const filters: any = {};
       if (userId) {
-        filters.authorId = userId;
+        filters.OR = [
+          { isPublic: true },           // 所有公开棋谱
+          { authorId: userId }          // 用户自己的棋谱（包括私有）
+        ];
       } else {
-        filters.isPublic = true;
+        filters.isPublic = true;        // 未登录用户只能看到公开棋谱
       }
 
       // 获取棋谱列表

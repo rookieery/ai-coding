@@ -7,6 +7,7 @@ import HistoryPanel from '../components/HistoryPanel.vue';
 import GameControls from '../components/GameControls.vue';
 import { t, currentTheme } from '../i18n';
 import { gameApi, type FrontendGame } from '../api/game-api';
+import { useGlobalAuth } from '../composables/useAuth';
 
 defineOptions({
   name: 'GameView'
@@ -25,6 +26,9 @@ const showSteps = ref<boolean>(false);
 const thinkingPath = ref<{r: number, c: number, player: number}[]>([]);
 const currentRecordId = ref<string | null>(null);
 const isAiThinking = ref<boolean>(false);
+
+// 获取认证信息
+const auth = useGlobalAuth();
 
 type SavedGame = FrontendGame & { moveCount?: number };
 
@@ -70,7 +74,7 @@ onMounted(async () => {
   // 可选：创建默认示例棋谱（只在第一次访问时）
   // 如果需要，可以提供一个"创建示例棋谱"按钮而不是自动创建
   const shouldCreateDefault = localStorage.getItem('gomoku_default_created') !== 'true';
-  const puyueName = "浦月必胜开局1";
+  const puyueName = "Puyue Winning Opening 1";
 
   if (shouldCreateDefault) {
     const puyueHistory = [
@@ -129,6 +133,13 @@ const closeSaveModal = () => {
   isSaveModalOpen.value = false;
 };
 
+// 检查用户是否有权限编辑/删除棋谱
+const canEditGame = (game: SavedGame) => {
+  const isAdmin = auth.user.value?.role === 'ADMIN';
+  // admin用户可以编辑所有棋谱，非admin用户只能编辑私有棋谱
+  return isAdmin || !game.isPublic;
+};
+
 const saveCurrentGame = async () => {
   if (!saveName.value.trim()) return;
 
@@ -138,6 +149,9 @@ const saveCurrentGame = async () => {
   }
 
   saveNameError.value = '';
+
+  // 根据用户权限设置棋谱公开性：只有admin用户保存公开棋谱，其他用户默认私有
+  const isUserAdmin = auth.user.value?.role === 'ADMIN';
 
   const newGame: SavedGame = {
     id: Date.now().toString(), // 临时ID，会被API返回的ID覆盖
@@ -149,7 +163,8 @@ const saveCurrentGame = async () => {
     mode: mode.value,
     aiDifficulty: aiDifficulty.value,
     aiRole: aiRole.value,
-    ruleMode: ruleMode.value
+    ruleMode: ruleMode.value,
+    isPublic: isUserAdmin // admin用户保存公开棋谱，其他用户保存私有棋谱
   };
 
   try {
@@ -239,6 +254,10 @@ const editingGameId = ref<string | null>(null);
 const editingName = ref('');
 
 const startEditing = (game: SavedGame) => {
+  if (!canEditGame(game)) {
+    notify(game.isPublic ? t('noPermissionEditPublic') : t('noPermissionEdit'));
+    return;
+  }
   editingGameId.value = game.id;
   editingName.value = game.name;
 };
@@ -254,6 +273,13 @@ const saveEdit = async () => {
   const index = savedGames.value.findIndex(g => g.id === editingGameId.value);
   if (index !== -1) {
     const game = savedGames.value[index];
+    // 再次检查权限
+    if (!canEditGame(game)) {
+      notify(game.isPublic ? t('noPermissionEditPublic') : t('noPermissionEdit'));
+      editingGameId.value = null;
+      return;
+    }
+
     const updatedGame = { ...game, name };
 
     try {
@@ -279,6 +305,13 @@ const cancelEditing = () => {
 const updateGame = async (id: string) => {
   const index = savedGames.value.findIndex(g => g.id === id);
   if (index !== -1) {
+    const game = savedGames.value[index];
+    // 检查权限
+    if (!canEditGame(game)) {
+      notify(game.isPublic ? t('noPermissionUpdatePublic') : t('noPermissionUpdate'));
+      return;
+    }
+
     const updatedGame = {
       ...savedGames.value[index],
       board: board.value.map(row => [...row]),
@@ -304,12 +337,29 @@ const updateGame = async (id: string) => {
 };
 
 const deleteGame = (id: string) => {
+  const game = savedGames.value.find(g => g.id === id);
+  if (!game) return;
+
+  // 检查权限
+  if (!canEditGame(game)) {
+    notify(game.isPublic ? t('noPermissionDeletePublic') : t('noPermissionDelete'));
+    return;
+  }
+
   gameToDelete.value = id;
 };
 
 const confirmDeleteGame = async () => {
   if (gameToDelete.value) {
     const gameId = gameToDelete.value;
+    const game = savedGames.value.find(g => g.id === gameId);
+
+    // 再次检查权限（安全冗余）
+    if (game && !canEditGame(game)) {
+      notify(game.isPublic ? t('noPermissionDeletePublic') : t('noPermissionDelete'));
+      gameToDelete.value = null;
+      return;
+    }
 
     try {
       // 尝试从API删除
@@ -796,17 +846,20 @@ const showHint = () => {
                     v-focus
                   />
                 </div>
-                <span v-else @click="startEditing(game)" class="font-semibold truncate cursor-pointer hover:text-indigo-500 transition-colors" :title="t('edit')">{{ game.name }}</span>
+                <span v-else @click="canEditGame(game) ? startEditing(game) : null" class="font-semibold truncate transition-colors" :class="canEditGame(game) ? 'cursor-pointer hover:text-indigo-500' : 'cursor-default text-stone-500 dark:text-stone-400'" :title="canEditGame(game) ? t('edit') : ''">{{ game.name }}</span>
                 <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveCount || game.moveHistory.length) }}</span>
+                <span class="text-xs mt-0.5" :class="game.isPublic ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400'">
+                  {{ game.isPublic ? t('publicGame') : t('privateGame') }}
+                </span>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                <button v-if="currentRecordId === game.id" @click="updateGame(game.id)" class="p-2 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-900/80 transition-colors" :title="t('update')">
+                <button v-if="currentRecordId === game.id && canEditGame(game)" @click="updateGame(game.id)" class="p-2 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-900/80 transition-colors" :title="t('update')">
                   <RefreshCw class="w-4 h-4" />
                 </button>
                 <button @click="importGame(game)" class="p-2 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900/80 transition-colors" :title="t('analysisMode')">
                   <Download class="w-4 h-4" />
                 </button>
-                <button @click="deleteGame(game.id)" class="p-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900/80 transition-colors" :title="t('confirmDelete')">
+                <button v-if="canEditGame(game)" @click="deleteGame(game.id)" class="p-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900/80 transition-colors" :title="t('confirmDelete')">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </div>

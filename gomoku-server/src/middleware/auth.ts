@@ -13,6 +13,7 @@ declare global {
         phone: string;
         email?: string;
         username: string;
+        role?: string;
       };
       token?: string;
     }
@@ -20,9 +21,9 @@ declare global {
 }
 
 // 生成JWT令牌
-export function generateToken(userId: string, phone: string, username: string): string {
+export function generateToken(userId: string, phone: string, username: string, role?: string): string {
   return jwt.sign(
-    { id: userId, phone, username },
+    { id: userId, phone, username, role },
     config.jwt.secret as string,
     { expiresIn: config.jwt.expiresIn as any }
   );
@@ -71,7 +72,7 @@ export async function authenticate(
     // 检查用户是否仍然存在
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, phone: true, email: true, username: true },
+      select: { id: true, phone: true, email: true, username: true, role: true },
     });
 
     if (!user) {
@@ -89,6 +90,7 @@ export async function authenticate(
       phone: user.phone,
       email: user.email || undefined,
       username: user.username,
+      role: user.role,
     };
     req.token = token;
 
@@ -119,7 +121,7 @@ export async function optionalAuthenticate(
       if (decoded) {
         const user = await prisma.user.findUnique({
           where: { id: decoded.id },
-          select: { id: true, phone: true, email: true, username: true },
+          select: { id: true, phone: true, email: true, username: true, role: true },
         });
 
         if (user) {
@@ -128,6 +130,7 @@ export async function optionalAuthenticate(
             phone: user.phone,
             email: user.email || undefined,
             username: user.username,
+            role: user.role,
           };
           req.token = token;
         }

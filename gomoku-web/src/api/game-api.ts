@@ -14,6 +14,7 @@ export interface FrontendGame {
   aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
   aiRole: 'first' | 'second';
   ruleMode: 'standard' | 'renju';
+  isPublic?: boolean; // 棋谱是否公开，默认false（私有），只有admin用户保存的棋谱默认为true
 }
 
 /**

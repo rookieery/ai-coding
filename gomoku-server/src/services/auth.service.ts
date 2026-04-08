@@ -58,7 +58,7 @@ export class AuthService {
       });
 
       // 生成JWT令牌
-      const token = generateToken(user.id, user.phone, user.username);
+      const token = generateToken(user.id, user.phone, user.username, user.role);
 
       logger.info(`User registered: ${user.phone} (${user.username})`);
 
@@ -119,7 +119,7 @@ export class AuthService {
       }
 
       // 生成JWT令牌
-      const token = generateToken(user.id, user.phone, user.username);
+      const token = generateToken(user.id, user.phone, user.username, user.role);
 
       logger.info(`User logged in: ${user.phone} (${user.username})`);
 
