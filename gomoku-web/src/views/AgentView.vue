@@ -3,6 +3,7 @@ import { ref, nextTick } from 'vue';
 import { Send, Loader2 } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
+import { useMarkdown } from '../composables/useMarkdown';
 
 defineOptions({
   name: 'AgentView'
@@ -12,6 +13,7 @@ const query = ref('');
 const messages = ref<{role: 'user' | 'agent', text: string}[]>([]);
 const isThinking = ref(false);
 const messagesContainer = ref<HTMLElement | null>(null);
+const { renderMarkdown } = useMarkdown();
 
 // 将消息转换为聊天历史格式
 const getChatHistory = (): ChatMessage[] => {
@@ -79,11 +81,12 @@ const sendMessage = async () => {
 
     <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4">
       <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
-        <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm whitespace-pre-wrap"
-             :class="msg.role === 'user' 
-                ? 'bg-indigo-600 text-white rounded-br-sm' 
+        <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
+             :class="msg.role === 'user'
+                ? 'bg-indigo-600 text-white rounded-br-sm'
                 : (currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 rounded-bl-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-bl-sm')">
-          {{ msg.text }}
+          <div v-if="msg.role === 'user'" class="whitespace-pre-wrap">{{ msg.text }}</div>
+          <div v-else class="markdown-body" v-html="renderMarkdown(msg.text)"></div>
         </div>
       </div>
       <div v-if="isThinking" class="flex w-full justify-start">
