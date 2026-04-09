@@ -6,19 +6,28 @@ import { chatApi, type ChatMessage } from '../api/chat-api';
 import { useMarkdown } from '../composables/useMarkdown';
 import ThinkingProcess from '../components/ThinkingProcess.vue';
 import AnswerContent from '../components/AnswerContent.vue';
+import MessageActions from '../components/MessageActions.vue';
 
 defineOptions({
   name: 'AgentView'
 });
 
 const query = ref('');
-const messages = ref<{role: 'user' | 'agent', text: string}[]>([]);
+interface Message {
+  role: 'user' | 'agent';
+  text: string;
+  relatedUserQuery?: string; // 仅对 agent 消息有效，表示对应的用户提问
+}
+const messages = ref<Message[]>([]);
 const isThinking = ref(false);
 const thinkingContent = ref('');
 const answerContent = ref('');
 const showThinkingProcess = ref(true); // 控制思考过程面板的展开/收起
 const messagesContainer = ref<HTMLElement | null>(null);
 const { renderMarkdown } = useMarkdown();
+
+// 当前正在处理的用户提问（用于重新生成）
+const currentUserQuery = ref('');
 
 // 将消息转换为聊天历史格式
 const getChatHistory = (): ChatMessage[] => {
@@ -35,11 +44,29 @@ const scrollToBottom = async () => {
   }
 };
 
+// 获取指定索引消息的渲染文本
+const getRenderedTextForMessage = async (index: number): Promise<string> => {
+  await nextTick();
+
+  // 通过 data-index 属性查找对应的 markdown 元素
+  const selector = `.message-markdown[data-index="${index}"]`;
+  const element = document.querySelector(selector);
+
+  if (element) {
+    return element.textContent || '';
+  }
+
+  // 如果找不到元素，返回原始文本
+  const message = messages.value[index];
+  return message?.text || '';
+};
+
 const sendMessage = async () => {
   if (!query.value.trim() || isThinking.value) return;
 
   const userQuery = query.value;
   messages.value.push({ role: 'user', text: userQuery });
+  currentUserQuery.value = userQuery; // 存储当前用户提问
   query.value = '';
 
   // 重置流式响应状态
@@ -84,12 +111,221 @@ const sendMessage = async () => {
       },
       () => {
         // 流式响应完成
-        // 将完整回答添加到消息历史
+        // 将完整回答添加到消息历史，关联用户提问
         if (answerContent.value.trim()) {
-          messages.value.push({ role: 'agent', text: answerContent.value });
+          messages.value.push({
+            role: 'agent',
+            text: answerContent.value,
+            relatedUserQuery: currentUserQuery.value
+          });
         } else if (thinkingContent.value.trim()) {
           // 如果没有正式回答但只有思考内容，将其作为回答
-          messages.value.push({ role: 'agent', text: thinkingContent.value });
+          messages.value.push({
+            role: 'agent',
+            text: thinkingContent.value,
+            relatedUserQuery: currentUserQuery.value
+          });
+        }
+
+        // 保持最近20条消息以管理历史记录
+        if (messages.value.length > 20) {
+          messages.value = messages.value.slice(-20);
+        }
+
+        // 重置流式状态
+        thinkingContent.value = '';
+        answerContent.value = '';
+        isThinking.value = false;
+        showThinkingProcess.value = true; // 重置为展开状态
+        scrollToBottom();
+      }
+    );
+  } catch (error) {
+    console.error('Chat API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : t('connectionError');
+    messages.value.push({
+      role: 'agent',
+      text: `${t('genericErrorPrefix')}${errorMessage}`
+    });
+    isThinking.value = false;
+    showThinkingProcess.value = true; // 重置为展开状态
+    await scrollToBottom();
+  }
+};
+
+// 重新生成流式响应中的回答
+const regenerateStreamingAnswer = async () => {
+  if (isThinking.value || !currentUserQuery.value) return;
+
+  // 重置流式响应状态
+  isThinking.value = true;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await scrollToBottom();
+
+  try {
+    // 调用流式聊天API
+    await chatApi.sendMessageStream(
+      {
+        message: currentUserQuery.value,
+        history: getChatHistory(),
+      },
+      (chunk) => {
+        // 处理流式数据块
+        if (chunk.type === 'thinking') {
+          thinkingContent.value += chunk.text;
+        } else if (chunk.type === 'answer') {
+          answerContent.value += chunk.text;
+
+          // 当收到第一条正式回答时，自动收起思考过程面板
+          if (showThinkingProcess.value) {
+            showThinkingProcess.value = false;
+          }
+        }
+
+        // 自动滚动到底部
+        scrollToBottom();
+      },
+      (error) => {
+        console.error('Chat API Stream Error:', error);
+        const errorMessage = error instanceof Error ? error.message : t('connectionError');
+        messages.value.push({
+          role: 'agent',
+          text: `${t('genericErrorPrefix')}${errorMessage}`
+        });
+        scrollToBottom();
+      },
+      () => {
+        // 流式响应完成
+        // 将完整回答添加到消息历史，关联用户提问
+        if (answerContent.value.trim()) {
+          messages.value.push({
+            role: 'agent',
+            text: answerContent.value,
+            relatedUserQuery: currentUserQuery.value
+          });
+        } else if (thinkingContent.value.trim()) {
+          // 如果没有正式回答但只有思考内容，将其作为回答
+          messages.value.push({
+            role: 'agent',
+            text: thinkingContent.value,
+            relatedUserQuery: currentUserQuery.value
+          });
+        }
+
+        // 保持最近20条消息以管理历史记录
+        if (messages.value.length > 20) {
+          messages.value = messages.value.slice(-20);
+        }
+
+        // 重置流式状态
+        thinkingContent.value = '';
+        answerContent.value = '';
+        isThinking.value = false;
+        showThinkingProcess.value = true; // 重置为展开状态
+        scrollToBottom();
+      }
+    );
+  } catch (error) {
+    console.error('Chat API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : t('connectionError');
+    messages.value.push({
+      role: 'agent',
+      text: `${t('genericErrorPrefix')}${errorMessage}`
+    });
+    isThinking.value = false;
+    showThinkingProcess.value = true; // 重置为展开状态
+    await scrollToBottom();
+  }
+};
+
+// 重新生成历史消息中的回答
+const regenerateAnswer = async (index: number) => {
+  if (isThinking.value) return;
+
+  const message = messages.value[index];
+  if (message.role !== 'agent') return;
+
+  // 查找对应的用户提问
+  let relatedUserQuery = message.relatedUserQuery;
+
+  // 如果没有关联的用户提问，查找前一条用户消息
+  if (!relatedUserQuery && index > 0) {
+    const prevMessage = messages.value[index - 1];
+    if (prevMessage.role === 'user') {
+      relatedUserQuery = prevMessage.text;
+    }
+  }
+
+  if (!relatedUserQuery) {
+    console.warn('No related user query found for regeneration');
+    return;
+  }
+
+  // 清空当前回答（从消息列表中删除）
+  messages.value.splice(index, 1);
+
+  // 设置当前用户提问
+  currentUserQuery.value = relatedUserQuery;
+
+  // 重置流式响应状态
+  isThinking.value = true;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await scrollToBottom();
+
+  try {
+    // 调用流式聊天API
+    await chatApi.sendMessageStream(
+      {
+        message: relatedUserQuery,
+        history: getChatHistory(),
+      },
+      (chunk) => {
+        // 处理流式数据块
+        if (chunk.type === 'thinking') {
+          thinkingContent.value += chunk.text;
+        } else if (chunk.type === 'answer') {
+          answerContent.value += chunk.text;
+
+          // 当收到第一条正式回答时，自动收起思考过程面板
+          if (showThinkingProcess.value) {
+            showThinkingProcess.value = false;
+          }
+        }
+
+        // 自动滚动到底部
+        scrollToBottom();
+      },
+      (error) => {
+        console.error('Chat API Stream Error:', error);
+        const errorMessage = error instanceof Error ? error.message : t('connectionError');
+        messages.value.push({
+          role: 'agent',
+          text: `${t('genericErrorPrefix')}${errorMessage}`
+        });
+        scrollToBottom();
+      },
+      () => {
+        // 流式响应完成
+        // 将完整回答添加到消息历史，关联用户提问
+        if (answerContent.value.trim()) {
+          messages.value.push({
+            role: 'agent',
+            text: answerContent.value,
+            relatedUserQuery: relatedUserQuery
+          });
+        } else if (thinkingContent.value.trim()) {
+          // 如果没有正式回答但只有思考内容，将其作为回答
+          messages.value.push({
+            role: 'agent',
+            text: thinkingContent.value,
+            relatedUserQuery: relatedUserQuery
+          });
         }
 
         // 保持最近20条消息以管理历史记录
@@ -134,12 +370,26 @@ const sendMessage = async () => {
     <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4">
       <!-- 历史消息 -->
       <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
-        <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
-             :class="msg.role === 'user'
-                ? 'bg-indigo-600 text-white rounded-br-sm'
-                : (currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 rounded-bl-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-bl-sm')">
-          <div v-if="msg.role === 'user'" class="whitespace-pre-wrap">{{ msg.text }}</div>
-          <div v-else class="markdown-body" v-html="renderMarkdown(msg.text)"></div>
+        <div v-if="msg.role === 'user'" class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm bg-indigo-600 text-white rounded-br-sm">
+          <div class="whitespace-pre-wrap">{{ msg.text }}</div>
+        </div>
+
+        <!-- AI消息 -->
+        <div v-else class="relative">
+          <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
+               :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 rounded-bl-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-bl-sm'">
+            <div class="markdown-body message-markdown" :data-index="index" v-html="renderMarkdown(msg.text)"></div>
+
+            <!-- 操作栏 -->
+            <div v-if="msg.text.trim()" class="flex justify-end mt-3">
+              <MessageActions
+                :content="msg.text"
+                :is-streaming="false"
+                :on-regenerate="() => regenerateAnswer(index)"
+                :get-text-to-copy="() => getRenderedTextForMessage(index)"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -158,6 +408,7 @@ const sendMessage = async () => {
           <AnswerContent
             :content="answerContent"
             :is-streaming="isThinking"
+            :on-regenerate="regenerateStreamingAnswer"
           />
         </div>
       </div>

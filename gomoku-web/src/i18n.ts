@@ -170,6 +170,11 @@ const messages = {
     character: '字符',
     connectionError: '无法连接到AI助手',
     genericErrorPrefix: '抱歉，发生了一些错误：',
+    copyText: '复制文本',
+    regenerate: '重新生成',
+    speak: '朗读内容',
+    stopSpeaking: '停止朗读',
+    copied: '已复制',
   },
   'zh-TW': {
     language: '繁體中文',
@@ -328,6 +333,11 @@ const messages = {
     character: '字元',
     connectionError: '無法連接到AI助手',
     genericErrorPrefix: '抱歉，發生了一些錯誤：',
+    copyText: '複製文本',
+    regenerate: '重新生成',
+    speak: '朗讀內容',
+    stopSpeaking: '停止朗讀',
+    copied: '已複製',
   },
   'en-US': {
     language: 'English',
@@ -486,6 +496,11 @@ const messages = {
     character: 'chars',
     connectionError: 'Unable to connect to AI assistant',
     genericErrorPrefix: 'Sorry, an error occurred: ',
+    copyText: 'Copy text',
+    regenerate: 'Regenerate',
+    speak: 'Speak',
+    stopSpeaking: 'Stop speaking',
+    copied: 'Copied',
   },
   'ja-JP': {
     language: '日本語',
@@ -644,6 +659,11 @@ const messages = {
     character: '文字',
     connectionError: 'AIアシスタントに接続できません',
     genericErrorPrefix: '申し訳ありません、エラーが発生しました：',
+    copyText: 'テキストをコピー',
+    regenerate: '再生成',
+    speak: '音声読み上げ',
+    stopSpeaking: '読み上げ停止',
+    copied: 'コピーしました',
   }
 };
 

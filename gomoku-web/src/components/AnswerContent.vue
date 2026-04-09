@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useMarkdown } from '../composables/useMarkdown';
 import { currentTheme, t } from '../i18n';
+import MessageActions from './MessageActions.vue';
 
 defineOptions({
   name: 'AnswerContent'
@@ -10,13 +11,46 @@ defineOptions({
 interface Props {
   content: string;
   isStreaming?: boolean;
+  onRegenerate?: () => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isStreaming: false,
 });
 
+const emit = defineEmits<{
+  regenerate: [];
+}>();
+
+const handleRegenerate = () => {
+  if (props.onRegenerate) {
+    props.onRegenerate();
+  } else {
+    emit('regenerate');
+  }
+};
+
 const { renderMarkdown } = useMarkdown();
+
+// 引用渲染后的内容元素
+const contentElement = ref<HTMLElement | null>(null);
+
+// 提取渲染后的纯文本
+const getRenderedText = (): Promise<string> => {
+  return new Promise<string>((resolve) => {
+    // 使用 requestAnimationFrame 确保 DOM 已更新
+    requestAnimationFrame(() => {
+      if (!contentElement.value) {
+        resolve(props.content);
+        return;
+      }
+
+      // 从渲染后的元素中提取纯文本
+      const text = contentElement.value.textContent || props.content;
+      resolve(text);
+    });
+  });
+};
 
 // 容器样式类
 const containerClasses = computed(() => {
@@ -44,7 +78,7 @@ const cursorClasses = computed(() => {
 </script>
 
 <template>
-  <div :class="containerClasses">
+  <div :class="containerClasses" class="relative">
     <!-- 流式指示器 -->
     <div v-if="isStreaming" :class="streamingIndicatorClasses">
       <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -55,10 +89,20 @@ const cursorClasses = computed(() => {
     </div>
 
     <!-- 回答内容 -->
-    <div class="markdown-body" v-html="renderMarkdown(content)"></div>
+    <div ref="contentElement" class="markdown-body" v-html="renderMarkdown(content)"></div>
 
     <!-- 流式光标 -->
     <div v-if="isStreaming && content.trim()" :class="cursorClasses"></div>
+
+    <!-- 操作栏 -->
+    <div v-if="content.trim()" class="flex justify-end mt-4">
+      <MessageActions
+        :content="content"
+        :is-streaming="isStreaming"
+        :on-regenerate="handleRegenerate"
+        :get-text-to-copy="getRenderedText"
+      />
+    </div>
   </div>
 </template>
 
