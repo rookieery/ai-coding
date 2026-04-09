@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
-import { Send, Loader2 } from 'lucide-vue-next';
+import { Send } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
 import { useMarkdown } from '../composables/useMarkdown';
+import ThinkingProcess from '../components/ThinkingProcess.vue';
+import AnswerContent from '../components/AnswerContent.vue';
 
 defineOptions({
   name: 'AgentView'
@@ -12,6 +14,9 @@ defineOptions({
 const query = ref('');
 const messages = ref<{role: 'user' | 'agent', text: string}[]>([]);
 const isThinking = ref(false);
+const thinkingContent = ref('');
+const answerContent = ref('');
+const showThinkingProcess = ref(true); // 控制思考过程面板的展开/收起
 const messagesContainer = ref<HTMLElement | null>(null);
 const { renderMarkdown } = useMarkdown();
 
@@ -36,32 +41,79 @@ const sendMessage = async () => {
   const userQuery = query.value;
   messages.value.push({ role: 'user', text: userQuery });
   query.value = '';
+
+  // 重置流式响应状态
   isThinking.value = true;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true; // 重置为展开状态
+
   await scrollToBottom();
 
   try {
-    // 调用后端聊天API
-    const response = await chatApi.sendMessage({
-      message: userQuery,
-      history: getChatHistory(),
-    });
+    // 调用流式聊天API
+    await chatApi.sendMessageStream(
+      {
+        message: userQuery,
+        history: getChatHistory(),
+      },
+      (chunk) => {
+        // 处理流式数据块
+        if (chunk.type === 'thinking') {
+          thinkingContent.value += chunk.text;
+        } else if (chunk.type === 'answer') {
+          answerContent.value += chunk.text;
 
-    const aiResponse = response.response || '抱歉，我没有收到回复';
-    messages.value.push({ role: 'agent', text: aiResponse });
+          // 当收到第一条正式回答时，自动收起思考过程面板
+          if (showThinkingProcess.value) {
+            showThinkingProcess.value = false;
+          }
+        }
 
-    // 保持最近20条消息以管理历史记录
-    if (messages.value.length > 20) {
-      messages.value = messages.value.slice(-20);
-    }
+        // 自动滚动到底部
+        scrollToBottom();
+      },
+      (error) => {
+        console.error('Chat API Stream Error:', error);
+        const errorMessage = error instanceof Error ? error.message : t('connectionError');
+        messages.value.push({
+          role: 'agent',
+          text: `${t('genericErrorPrefix')}${errorMessage}`
+        });
+        scrollToBottom();
+      },
+      () => {
+        // 流式响应完成
+        // 将完整回答添加到消息历史
+        if (answerContent.value.trim()) {
+          messages.value.push({ role: 'agent', text: answerContent.value });
+        } else if (thinkingContent.value.trim()) {
+          // 如果没有正式回答但只有思考内容，将其作为回答
+          messages.value.push({ role: 'agent', text: thinkingContent.value });
+        }
+
+        // 保持最近20条消息以管理历史记录
+        if (messages.value.length > 20) {
+          messages.value = messages.value.slice(-20);
+        }
+
+        // 重置流式状态
+        thinkingContent.value = '';
+        answerContent.value = '';
+        isThinking.value = false;
+        showThinkingProcess.value = true; // 重置为展开状态
+        scrollToBottom();
+      }
+    );
   } catch (error) {
     console.error('Chat API Error:', error);
-    const errorMessage = error instanceof Error ? error.message : '无法连接到AI助手';
+    const errorMessage = error instanceof Error ? error.message : t('connectionError');
     messages.value.push({
       role: 'agent',
-      text: `抱歉，发生了一些错误：${errorMessage}`
+      text: `${t('genericErrorPrefix')}${errorMessage}`
     });
-  } finally {
     isThinking.value = false;
+    showThinkingProcess.value = true; // 重置为展开状态
     await scrollToBottom();
   }
 };
@@ -80,6 +132,7 @@ const sendMessage = async () => {
     </div>
 
     <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4">
+      <!-- 历史消息 -->
       <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
         <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
              :class="msg.role === 'user'
@@ -89,11 +142,23 @@ const sendMessage = async () => {
           <div v-else class="markdown-body" v-html="renderMarkdown(msg.text)"></div>
         </div>
       </div>
-      <div v-if="isThinking" class="flex w-full justify-start">
-        <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm flex items-center gap-2"
-             :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-400 rounded-bl-sm' : 'bg-white text-stone-500 border border-stone-200 rounded-bl-sm'">
-          <Loader2 class="w-4 h-4 animate-spin" />
-          <span>思考中...</span>
+
+      <!-- 流式响应区域 -->
+      <div v-if="isThinking" class="space-y-4">
+        <!-- 思考过程面板 -->
+        <ThinkingProcess
+          :is-thinking="isThinking"
+          :content="thinkingContent"
+          :show="showThinkingProcess"
+          @toggle="(show) => showThinkingProcess = show"
+        />
+
+        <!-- 正式回答内容 -->
+        <div v-if="answerContent.trim()" class="flex w-full justify-start">
+          <AnswerContent
+            :content="answerContent"
+            :is-streaming="isThinking"
+          />
         </div>
       </div>
     </div>

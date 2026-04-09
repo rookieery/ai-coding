@@ -31,7 +31,8 @@ export interface ChatResponse {
  * 流式聊天响应块
  */
 export interface ChatStreamChunk {
-  content: string;
+  type: 'thinking' | 'answer';
+  text: string;
   done?: boolean;
   error?: string;
 }
@@ -135,8 +136,26 @@ export class ChatApiService {
               }
 
               try {
-                const parsed = JSON.parse(data) as ChatStreamChunk;
-                onChunk(parsed);
+                const parsed = JSON.parse(data);
+                // 兼容旧格式和新格式
+                if (parsed.type && parsed.text) {
+                  // 新格式: { type: 'thinking' | 'answer', text: string }
+                  onChunk(parsed as ChatStreamChunk);
+                } else if (parsed.content) {
+                  // 旧格式: { content: string }
+                  // 转换为新格式，默认类型为 'answer'
+                  onChunk({
+                    type: 'answer',
+                    text: parsed.content,
+                  });
+                } else if (parsed.error) {
+                  // 错误格式
+                  onChunk({
+                    type: 'answer',
+                    text: '',
+                    error: parsed.error,
+                  });
+                }
               } catch (e) {
                 console.error('Error parsing SSE data:', e, data);
               }
