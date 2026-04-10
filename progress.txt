@@ -5,3 +5,4 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-10 20:10 | S2 | 实现棋盘初始化和状态管理 | PASS | 在 gomoku-web/src/chinese-chess/boardState.ts 中实现了标准棋盘初始化（9x10）、棋子位置设置、当前回合管理和游戏状态管理函数，包括棋子移动、坐标校验和游戏状态更新。
 2026-04-10 20:09 | S3 | 实现车（Rook）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/rook.ts 中实现了车的移动规则：直线移动，不能越过其他棋子。
 2026-04-10 20:12 | S4 | 实现马（Knight）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/knight.ts 中实现了马的移动规则：日字移动，检查绊马腿（马腿位置是否有棋子）。
+2026-04-10 20:13 | S5 | 实现炮（Cannon）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/cannon.ts 中实现了炮的移动规则：直线移动，吃子时必须隔一个棋子（炮架）。
