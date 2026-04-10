@@ -79,7 +79,11 @@ export function generateAllLegalMoves(board: BoardState, side: PlayerSide): Arra
         const targetCoord: BoardCoord = { col, row };
         const result = validator(board, piece.coord, targetCoord);
         if (result.isValid) {
-          legalMoves.push({ from: piece.coord, to: targetCoord });
+          // 模拟移动，检查移动后是否导致己方被将军
+          const simulatedBoard = simulateMove(board, piece.coord, targetCoord);
+          if (!isCheck(simulatedBoard, side)) {
+            legalMoves.push({ from: piece.coord, to: targetCoord });
+          }
         }
       }
     }

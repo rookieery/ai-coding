@@ -74,22 +74,58 @@
       "passes": true
     },
     {
-      "id": "S13",
-      "title": "为每种棋子规则编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/ 目录下分别为车、马、炮、兵、士、象、将编写测试用例。预估代码总计约 350 行。",
-      "passes": false
+      "id": "S13a",
+      "title": "为车（Rook）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/rook.test.ts 中编写车的移动规则测试用例，包括直线移动、路径阻塞、吃子验证等。预估代码约 50 行。",
+      "passes": true
+    },
+    {
+      "id": "S13b",
+      "title": "为马（Knight）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/knight.test.ts 中编写马的移动规则测试用例，包括日字移动、绊马腿检测、吃子验证等。预估代码约 50 行。",
+      "passes": true
+    },
+    {
+      "id": "S13c",
+      "title": "为炮（Cannon）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/cannon.test.ts 中编写炮的移动规则测试用例，包括直线移动、炮架检测、吃子验证等。预估代码约 50 行。",
+      "passes": true
+    },
+    {
+      "id": "S13d",
+      "title": "为兵（Pawn）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/pawn.test.ts 中编写兵的移动规则测试用例，包括过河前后移动、不能后退、吃子验证等。预估代码约 50 行。",
+      "passes": true
+    },
+    {
+      "id": "S13e",
+      "title": "为士（Advisor）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/advisor-elephant.test.ts 中编写士的移动规则测试用例，包括九宫格内斜线移动、边界检测、吃子验证等。预估代码约 25 行。",
+      "passes": true
+    },
+    {
+      "id": "S13f",
+      "title": "为象（Elephant）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/advisor-elephant.test.ts 中编写象的移动规则测试用例，包括田字移动、塞象眼检测、过河限制、吃子验证等。预估代码约 25 行。",
+      "passes": true
+    },
+    {
+      "id": "S13g",
+      "title": "为将（King）编写单元测试",
+      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/king.test.ts 中编写将的移动规则测试用例，包括九宫格内移动、将帅照面检测、吃子验证等。预估代码约 50 行。",
+      "passes": true
     },
     {
       "id": "S14",
       "title": "为将军和将死检测编写单元测试",
       "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/check.test.ts 中测试将军和将死检测的各种场景。预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S15",
       "title": "创建中国象棋 AI 基础框架",
       "description": "在 gomoku-web/src/chinese-chess/ai/minimax.ts 中实现基本的 minimax 搜索，评估函数（棋子价值、位置）。预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S16",

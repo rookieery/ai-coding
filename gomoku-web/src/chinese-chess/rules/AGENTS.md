@@ -40,5 +40,6 @@ These functions are already well‑tested and should be reused.
 ## Next Steps
 
 - Integrate all rules into a unified game logic module (`gameLogic.ts`). **(Completed)**
-- Write unit tests for checkmate and stalemate detection.
+- Write unit tests for checkmate and stalemate detection. **(Completed)**
+- Fix `generateAllLegalMoves` to filter out moves that leave the king in check. **(Completed)**
 - Optimize move generation (e.g., by pre‑computing attack maps) if performance becomes an issue.
