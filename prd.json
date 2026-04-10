@@ -71,7 +71,7 @@
       "id": "S12",
       "title": "编写单元测试框架配置",
       "description": "在 gomoku-web/vitest.config.ts 或扩展现有配置，配置测试环境支持 TypeScript。预估代码约 40 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S13",
