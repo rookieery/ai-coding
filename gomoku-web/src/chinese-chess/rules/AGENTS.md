@@ -39,6 +39,6 @@ These functions are already well‑tested and should be reused.
 
 ## Next Steps
 
-- Integrate all rules into a unified game logic module (`gameLogic.ts`).
+- Integrate all rules into a unified game logic module (`gameLogic.ts`). **(Completed)**
 - Write unit tests for checkmate and stalemate detection.
 - Optimize move generation (e.g., by pre‑computing attack maps) if performance becomes an issue.

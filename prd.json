@@ -65,7 +65,7 @@
       "id": "S11",
       "title": "创建游戏逻辑主文件",
       "description": "在 gomoku-web/src/chinese-chess/gameLogic.ts 中集成所有规则，导出主要函数（移动验证、将军检测、胜负判定等）。预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S12",

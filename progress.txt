@@ -11,3 +11,4 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-10 20:18 | S8 | 实现将（King）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/king.ts 中实现了将的移动规则：九宫格内移动，将帅不能直接照面（中间无棋子）。
 2026-04-10 20:23 | S9 | 实现将军检测逻辑 | PASS | 在 gomoku-web/src/chinese-chess/rules/check.ts 中实现了将军检测：检查当前玩家是否被将军（将/帅受到攻击）。
 2026-04-10 20:30 | S10 | 实现将死检测逻辑 | PASS | 在 gomoku-web/src/chinese-chess/rules/checkmate.ts 中实现了将死检测：生成所有合法移动，检查是否被将军且无逃脱移动，同时检测困毙。
+2026-04-10 21:00 | S11 | 创建游戏逻辑主文件 | PASS | 在 gomoku-web/src/chinese-chess/gameLogic.ts 中集成所有规则，导出主要函数（移动验证、将军检测、胜负判定等）。
