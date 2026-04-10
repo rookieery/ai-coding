@@ -16,3 +16,4 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-10 21:10 | S13 | 为每种棋子规则编写单元测试 | PASS | 已为车、马、炮、兵、士、象、将编写完整的单元测试，修复了将左移测试的棋盘配置，所有测试通过。
 2026-04-10 21:35 | S14 | 为将军和将死检测编写单元测试 | PASS | 修复了原有的错误测试用例，调整了将军、将死和困毙的测试场景，确保所有单元测试通过。同时修复了 generateAllLegalMoves 函数，使其过滤掉导致己方被将军的移动。
 2026-04-10 22:21 | S15 | 创建中国象棋 AI 基础框架 | PASS | 在 gomoku-web/src/chinese-chess/ai/minimax.ts 中实现了基本的 minimax 搜索算法，包含棋子价值评估、位置价值表、Alpha-Beta 剪枝，支持不同难度级别。
+2026-04-10 22:25 | S16 | 将 AI 算法迁移到 Web Worker | PASS | 在 gomoku-web/src/chinese-chess/ai/aiWorker.ts 中创建了 Web Worker，接收棋盘状态、AI 玩家方和难度级别，调用 minimax 算法返回最佳移动。

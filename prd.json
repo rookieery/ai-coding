@@ -131,7 +131,7 @@
       "id": "S16",
       "title": "将 AI 算法迁移到 Web Worker",
       "description": "在 gomoku-web/src/chinese-chess/ai/aiWorker.ts 中创建 Worker，接收棋盘状态，返回最佳移动。预估代码约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S17",
