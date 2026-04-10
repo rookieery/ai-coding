@@ -35,7 +35,7 @@
       "id": "S6",
       "title": "实现兵（Pawn）的移动规则验证",
       "description": "在 gomoku-web/src/chinese-chess/rules/pawn.ts 中实现兵的移动规则：过河前只能向前，过河后可左右移动，不能后退。预估代码约 60 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S7",
