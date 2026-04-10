@@ -41,7 +41,7 @@
       "id": "S7",
       "title": "实现士（Advisor）和象（Elephant）的移动规则验证",
       "description": "在 gomoku-web/src/chinese-chess/rules/advisor-elephant.ts 中实现士和象的移动规则：士斜线移动（九宫格内）；象田字移动，不能过河，塞象眼。预估代码约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S8",
