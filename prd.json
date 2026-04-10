@@ -11,13 +11,13 @@
       "id": "S2",
       "title": "实现棋盘初始化和状态管理",
       "description": "在 gomoku-web/src/chinese-chess/boardState.ts 中实现标准棋盘初始化（9x10）、棋子位置设置、当前回合管理和游戏状态管理。预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S3",
       "title": "实现车（Rook）的移动规则验证",
       "description": "在 gomoku-web/src/chinese-chess/rules/rook.ts 中实现车的移动规则：直线移动，不能越过其他棋子。预估代码约 60 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S4",
