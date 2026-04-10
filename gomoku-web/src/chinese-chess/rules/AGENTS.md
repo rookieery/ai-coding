@@ -32,9 +32,13 @@ All rule modules import the following utilities from `../boardState`:
 
 These functions are already well‑tested and should be reused.
 
+## Implemented Rules (Continued)
+
+8. **Check detection** (`check.ts`): Finds the king of a given side and tests whether any opponent piece can legally move to that square.
+9. **Checkmate detection** (`checkmate.ts`): Generates all legal moves for the side in check; if none can break the check, the position is checkmate. Also detects stalemate (no legal moves while not in check).
+
 ## Next Steps
 
-- Create a barrel file (`index.ts`) to re‑export all validation functions.
-- Implement check detection (`check.ts`) that loops over all opponent pieces and uses the per‑piece validators.
-- Implement checkmate detection (`checkmate.ts`) that generates all legal moves for the side in check and tests if any escape exists.
 - Integrate all rules into a unified game logic module (`gameLogic.ts`).
+- Write unit tests for checkmate and stalemate detection.
+- Optimize move generation (e.g., by pre‑computing attack maps) if performance becomes an issue.

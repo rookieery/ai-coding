@@ -59,7 +59,7 @@
       "id": "S10",
       "title": "实现将死检测逻辑",
       "description": "在 gomoku-web/src/chinese-chess/rules/checkmate.ts 中实现将死检测：检查当前玩家是否无合法移动（将死）。预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S11",
