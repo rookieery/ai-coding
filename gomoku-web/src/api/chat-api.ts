@@ -168,7 +168,7 @@ export class ChatApiService {
     } catch (error) {
       console.error('Error in stream chat:', error);
       onError?.(error as Error);
-      onChunk({ content: '', error: (error as Error).message });
+      onChunk({ type: 'answer', text: '', error: (error as Error).message });
     }
   }
 

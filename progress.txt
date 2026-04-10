@@ -1,0 +1,4 @@
+# Ralph Progress Log
+Started: Fri Apr 10 19:52:09     2026
+---
+2026-04-10 20:02 | S1 | 创建中国象棋类型定义文件 | PASS | 在 gomoku-web/src/chinese-chess/types.ts 中定义了完整的类型系统，包括棋子类型、玩家方、棋盘坐标、游戏状态、移动历史等接口，严格遵循 TypeScript 类型规范。
