@@ -23,7 +23,7 @@
       "id": "S4",
       "title": "实现马（Knight）的移动规则验证",
       "description": "在 gomoku-web/src/chinese-chess/rules/knight.ts 中实现马的移动规则：日字移动，检查绊马腿（马腿位置是否有棋子）。预估代码约 70 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S5",
