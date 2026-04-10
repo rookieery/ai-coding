@@ -8,3 +8,4 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-10 20:13 | S5 | 实现炮（Cannon）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/cannon.ts 中实现了炮的移动规则：直线移动，吃子时必须隔一个棋子（炮架）。
 2026-04-10 20:14 | S6 | 实现兵（Pawn）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/pawn.ts 中实现了兵的移动规则：过河前只能向前，过河后可左右移动，不能后退。
 2026-04-10 20:16 | S7 | 实现士（Advisor）和象（Elephant）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/advisor-elephant.ts 中实现了士和象的移动规则：士斜线移动（九宫格内）；象田字移动，不能过河，塞象眼。
+2026-04-10 20:18 | S8 | 实现将（King）的移动规则验证 | PASS | 在 gomoku-web/src/chinese-chess/rules/king.ts 中实现了将的移动规则：九宫格内移动，将帅不能直接照面（中间无棋子）。

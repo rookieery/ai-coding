@@ -47,7 +47,7 @@
       "id": "S8",
       "title": "实现将（King）的移动规则验证",
       "description": "在 gomoku-web/src/chinese-chess/rules/king.ts 中实现将的移动规则：九宫格内移动，将帅不能直接照面（中间无棋子）。预估代码约 70 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S9",
