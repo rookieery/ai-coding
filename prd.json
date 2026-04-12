@@ -203,13 +203,13 @@
       "id": "S26a",
       "title": "实现中国象棋标准记谱法逻辑",
       "description": "开发专门的记谱器（Notation Generator），将坐标移动转换为‘炮二平五’、‘马八进七’等标准中文术语。需处理红黑方差异。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S26b",
       "title": "实时渲染对局棋谱列表",
       "description": "在右侧面板展示 S26a 生成的术语列表，支持自动滚动至底部。样式需与五子棋对战记录保持一致。",
-      "passes": false
+      "passes": true
     }
   ]
 }

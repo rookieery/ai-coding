@@ -27,6 +27,7 @@ import {
 import { createInitialBoard, movePiece as boardMovePiece, getPieceAt } from '../chinese-chess/boardState';
 import Board from '../components/chinese-chess/Board.vue';
 import GameControls from '../components/chinese-chess/GameControls.vue';
+import ChineseChessHistoryPanel from '../components/chinese-chess/HistoryPanel.vue';
 import { t, currentTheme } from '../i18n';
 import { gameApi, type FrontendGame } from '../api/game-api';
 import { useGlobalAuth } from '../composables/useAuth';
@@ -751,28 +752,7 @@ const showHint = () => {
              ]">
           {{ statusText }}
         </div>
-        <!-- 历史面板暂时省略，复用 Gomoku 的 HistoryPanel 需要适配 -->
-        <div class="flex-1 min-h-0 overflow-hidden rounded-lg shadow-md border transition-colors"
-             :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
-          <div class="p-4 border-b font-semibold rounded-t-lg transition-colors"
-               :class="currentTheme === 'dark' ? 'bg-stone-800/50 border-stone-700 text-stone-200' : 'bg-stone-50 border-stone-200 text-stone-700'">
-            {{ t('history') }}
-          </div>
-          <div class="p-4 overflow-y-auto h-full">
-            <div v-if="moveHistory.length === 0" class="text-center py-8 opacity-50">
-              {{ t('noMoves') }}
-            </div>
-            <div v-else class="space-y-2">
-              <div v-for="(move, index) in moveHistory" :key="index"
-                   class="flex items-center justify-between p-2 rounded transition-colors"
-                   :class="currentTheme === 'dark' ? 'hover:bg-stone-700' : 'hover:bg-stone-100'">
-                <span class="font-mono text-sm">{{ index + 1 }}.</span>
-                <span class="text-sm">{{ move.side === PlayerSide.RED ? t('red') : t('black') }}</span>
-                <span class="font-mono text-sm">{{ String.fromCharCode(97 + move.from.col) }}{{ move.from.row + 1 }} → {{ String.fromCharCode(97 + move.to.col) }}{{ move.to.row + 1 }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ChineseChessHistoryPanel :moveHistory="moveHistory" @copySuccess="handleCopySuccess" />
       </div>
     </div>
 
