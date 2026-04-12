@@ -167,7 +167,7 @@
       "id": "S22",
       "title": "进行端到端测试和 UI 验证",
       "description": "手动测试游戏流程，AI 对战，规则正确性，验证各组件集成。无需新代码，但需要完整验证。",
-      "passes": false
+      "passes": true
     }
   ]
 }
