@@ -227,7 +227,7 @@
       "id": "S28",
       "title": "棋林智能体（Agent）提示词升级",
       "description": "更新 AI Agent 的系统提示词文件。将设定从五子棋专用改为‘棋林通用棋类专家’，使其能同时理解五子棋和中国象棋的规则。同步更新 UI 中的智能体名称。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S29",
