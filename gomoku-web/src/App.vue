@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { currentTheme, toggleTheme, toggleLocale, t } from './i18n';
 import { Moon, Sun, Globe, User, LogOut, Settings, ChevronDown } from 'lucide-vue-next';
 import { useGlobalAuth } from './composables/useAuth';
-import SettingsModal from './components/SettingsModal.vue';
+import SettingsModal from './common/components/ui/SettingsModal.vue';
 
 const route = useRoute();
 const router = useRouter();

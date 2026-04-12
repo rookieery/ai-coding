@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useMarkdown } from '../composables/useMarkdown';
-import { currentTheme, t } from '../i18n';
+import { useMarkdown } from '@/src/composables/useMarkdown';
+import { currentTheme, t } from '@/src/i18n';
 import MessageActions from './MessageActions.vue';
 
 defineOptions({

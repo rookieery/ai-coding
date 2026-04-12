@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-vue-next';
-import { currentTheme, t } from '../i18n';
+import { currentTheme, t } from '@/src/i18n';
 
 defineOptions({
   name: 'ThinkingProcess'

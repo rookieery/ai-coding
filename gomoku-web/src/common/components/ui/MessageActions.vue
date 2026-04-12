@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Copy, RefreshCw, Volume2, VolumeX, Check } from 'lucide-vue-next';
-import { currentTheme, t } from '../i18n';
-import { useClipboard } from '../composables/useClipboard';
-import { useSpeech } from '../composables/useSpeech';
+import { currentTheme, t } from '@/src/i18n';
+import { useClipboard } from '@/src/composables/useClipboard';
+import { useSpeech } from '@/src/composables/useSpeech';
 
 defineOptions({
   name: 'MessageActions'

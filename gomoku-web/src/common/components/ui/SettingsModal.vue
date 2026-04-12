@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { X, Check, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
-import { currentTheme, t } from '../i18n';
-import { authApi } from '../api/auth-api';
-import { validatePassword, isPasswordValid } from '../utils/password';
+import { currentTheme, t } from '@/src/i18n';
+import { authApi } from '@/src/api/auth-api';
+import { validatePassword, isPasswordValid } from '@/src/utils/password';
 
 export interface Props {
   open: boolean;

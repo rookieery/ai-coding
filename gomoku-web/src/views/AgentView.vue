@@ -4,9 +4,9 @@ import { Send } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
 import { useMarkdown } from '../composables/useMarkdown';
-import ThinkingProcess from '../components/ThinkingProcess.vue';
-import AnswerContent from '../components/AnswerContent.vue';
-import MessageActions from '../components/MessageActions.vue';
+import ThinkingProcess from '../common/components/ui/ThinkingProcess.vue';
+import AnswerContent from '../common/components/ui/AnswerContent.vue';
+import MessageActions from '../common/components/ui/MessageActions.vue';
 
 defineOptions({
   name: 'AgentView'
