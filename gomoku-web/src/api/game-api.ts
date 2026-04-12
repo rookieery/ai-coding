@@ -275,7 +275,6 @@ export class GameApiService {
         try {
           await this.saveGame(game);
           migratedCount++;
-          console.log(`Migrated game: ${game.name}`);
         } catch (error) {
           console.error(`Failed to migrate game ${game.name}:`, error);
         }

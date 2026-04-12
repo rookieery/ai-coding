@@ -41,7 +41,6 @@ export class GomokuNN {
     if (this.model || this.isInitializing) return;
     this.isInitializing = true;
 
-    console.log('正在初始化Gomoku神经网络...');
 
     // 尝试加载预训练模型
     if (this.config.loadPretrained && this.config.modelUrl) {
@@ -63,7 +62,6 @@ export class GomokuNN {
     // 创建新模型（随机初始化）
     await this.createNewModel();
     this.isInitializing = false;
-    console.log("Gomoku神经网络已初始化（随机权重）。");
   }
 
   /**
@@ -74,11 +72,9 @@ export class GomokuNN {
       throw new Error('未提供模型URL');
     }
 
-    console.log(`正在加载预训练模型: ${this.config.modelUrl}`);
 
     try {
       this.model = await tf.loadLayersModel(this.config.modelUrl);
-      console.log('预训练模型加载成功');
 
       // 验证模型架构
       this.validateModelArchitecture();
@@ -102,7 +98,6 @@ export class GomokuNN {
     if (!inputShape || inputShape.length !== 4) {
       console.warn(`模型输入形状异常: ${inputShape}`);
     } else {
-      console.log(`模型输入形状: ${inputShape}`);
     }
 
     if (outputs.length !== 2) {

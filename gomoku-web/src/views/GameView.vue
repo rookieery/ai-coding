@@ -211,9 +211,7 @@ const importGame = async (game: SavedGame) => {
   if ((game.moveCount && game.moveCount > 0 && game.moveHistory.length === 0) ||
       game.board.every(row => row.every(cell => cell === EMPTY))) {
     try {
-      console.log('Fetching full game data from API for:', game.id);
       fullGame = await gameApi.getGame(game.id);
-      console.log('Full game data loaded:', fullGame);
     } catch (error) {
       console.error('Failed to fetch full game data from API:', error);
       // 继续使用现有的游戏数据

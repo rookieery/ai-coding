@@ -48,3 +48,46 @@ Translation keys:
 - `columnBottomChineseNumbers`: comma‑separated Chinese numerals "九,八,七,六,五,四,三,二,一"
 
 Both sequences are defined in each locale's message dictionary (`i18n.ts`) and split in `Board.vue`'s computed properties `topColumnLabels` and `bottomColumnLabels`. The coordinate divs use the same width classes as the board cells for pixel‑perfect alignment.
+## Notation Generator (`notation.ts`)
+
+Implements standard Xiangqi notation (Chinese Descriptive Notation) that converts coordinate moves to traditional terms like "炮二平五" (cannon from column 2 to column 5 horizontally) and "马八进七" (knight from column 8 forward to column 7).
+
+### Key Functions
+
+1. **`moveToNotation(move: MoveHistory, boardState?: any): string`**
+   - Returns a notation string with translation keys, e.g., `pieceRedCannon八平五`.
+   - Used when the caller needs to translate the piece character later.
+
+2. **`moveToDisplayNotation(move: MoveHistory, t: (key: string) => string, boardState?: any): string`**
+   - Returns a fully translated notation string, e.g., `炮八平五`.
+   - Accepts the i18n `t` function to resolve piece names.
+
+3. **`movesToNotations(moveHistory: MoveHistory[], boardStates?: any[]): string[]`**
+   - Batch conversion of move history.
+
+### Coordinate Mapping
+
+- Red side: uses Chinese numerals (一 to 九), right‑to‑left. Internal column `0` → "九", column `8` → "一".
+- Black side: uses Arabic digits (1 to 9), left‑to‑right. Internal column `0` → "1", column `8` → "9".
+
+### Direction Detection
+
+- **平** (horizontal): when row does not change.
+- **进** (forward): when row changes toward the opponent's side (Red upward, Black downward).
+- **退** (backward): when row changes toward the player's own side.
+
+### Distance Description
+
+- For horizontal moves (`平`): target column name.
+- For vertical moves (`进`/`退`) with same column: number of steps (absolute row difference).
+- For diagonal moves (`进`/`退`) with different column: target column name.
+
+### UI Integration
+
+The `ChineseChessHistoryPanel` component (in `src/components/chinese‑chess/HistoryPanel.vue`) displays the notation list in the right sidebar, with auto‑scroll to bottom and copy‑to‑clipboard support.
+
+### Future Extensions
+
+- Distinguish between multiple identical pieces on the same column (前车 vs. 后车).
+- Support algebraic notation (e.g., "R2=5") for international users.
+- Include capture markers (吃) and check markers (将) in the notation.
