@@ -87,6 +87,15 @@ onUnmounted(() => {
             {{ t('navGame') }}
           </button>
           <button
+            @click="router.push('/chinese-chess')"
+            class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
+            :class="route.path === '/chinese-chess'
+              ? (currentTheme === 'dark' ? 'bg-stone-700 text-white shadow-sm' : 'bg-white text-stone-900 shadow-sm')
+              : (currentTheme === 'dark' ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-700')"
+          >
+            {{ t('navChineseChess') }}
+          </button>
+          <button
             v-if="userRole === 'ADMIN'"
             @click="router.push('/admin')"
             class="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
@@ -160,7 +169,7 @@ onUnmounted(() => {
     <main class="flex-1 flex flex-col w-full">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
-          <keep-alive :include="['AgentView', 'GameView', 'AdminView']">
+          <keep-alive :include="['AgentView', 'GameView', 'AdminView', 'ChineseChessView']">
             <component :is="Component" />
           </keep-alive>
         </transition>

@@ -3,6 +3,7 @@ import AgentView from '../views/AgentView.vue';
 import GameView from '../views/GameView.vue';
 import LoginView from '../views/LoginView.vue';
 import AdminView from '../views/AdminView.vue';
+import ChineseChessView from '../views/ChineseChessView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -29,6 +30,12 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: AdminView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/chinese-chess',
+      name: 'chinese-chess',
+      component: ChineseChessView,
       meta: { requiresAuth: true }
     }
   ]

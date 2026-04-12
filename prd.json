@@ -155,13 +155,13 @@
       "id": "S20",
       "title": "在 i18n 中添加中国象棋翻译键",
       "description": "在 gomoku-web/src/i18n.ts 中添加标题、棋子名称、游戏状态等翻译，确保所有用户界面文本使用 i18n 翻译。预估代码约 50 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S21",
       "title": "集成到现有路由和导航",
       "description": "在 gomoku-web/src/router/index.ts 中添加中国象棋路由，更新导航菜单。预估代码约 30 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S22",
