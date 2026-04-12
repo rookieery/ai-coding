@@ -83,27 +83,27 @@ const handleCellClick = (coord: BoardCoord) => {
 const BOARD_COLS = 9;
 const BOARD_ROWS = 10;
 
-// 棋子 Unicode 字符映射
-const pieceChars = {
+// 棋子 Unicode 字符映射（通过 i18n 获取）
+const pieceChars = computed(() => ({
   [PlayerSide.RED]: {
-    [PieceType.KING]: '帅',
-    [PieceType.ADVISOR]: '仕',
-    [PieceType.ELEPHANT]: '相',
-    [PieceType.KNIGHT]: '马',
-    [PieceType.ROOK]: '车',
-    [PieceType.CANNON]: '炮',
-    [PieceType.PAWN]: '兵',
+    [PieceType.KING]: t('pieceRedKing'),
+    [PieceType.ADVISOR]: t('pieceRedAdvisor'),
+    [PieceType.ELEPHANT]: t('pieceRedElephant'),
+    [PieceType.KNIGHT]: t('pieceRedKnight'),
+    [PieceType.ROOK]: t('pieceRedRook'),
+    [PieceType.CANNON]: t('pieceRedCannon'),
+    [PieceType.PAWN]: t('pieceRedPawn'),
   },
   [PlayerSide.BLACK]: {
-    [PieceType.KING]: '将',
-    [PieceType.ADVISOR]: '士',
-    [PieceType.ELEPHANT]: '象',
-    [PieceType.KNIGHT]: '马',
-    [PieceType.ROOK]: '车',
-    [PieceType.CANNON]: '炮',
-    [PieceType.PAWN]: '卒',
+    [PieceType.KING]: t('pieceBlackKing'),
+    [PieceType.ADVISOR]: t('pieceBlackAdvisor'),
+    [PieceType.ELEPHANT]: t('pieceBlackElephant'),
+    [PieceType.KNIGHT]: t('pieceBlackKnight'),
+    [PieceType.ROOK]: t('pieceBlackRook'),
+    [PieceType.CANNON]: t('pieceBlackCannon'),
+    [PieceType.PAWN]: t('pieceBlackPawn'),
   },
-};
+}));
 
 // 棋子颜色类名
 const pieceColorClass = (side: PlayerSide) =>
