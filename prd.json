@@ -233,7 +233,7 @@
       "id": "S29",
       "title": "前端目录模块化：提取共享逻辑",
       "description": "在 src 目录下创建 common 或 shared 文件夹，移动通用的 UI 组件（如按钮、弹窗）和工具函数，为后续隔离 Gomoku 和 Chess 做准备。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S30a",
