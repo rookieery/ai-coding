@@ -17,3 +17,5 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-10 21:35 | S14 | 为将军和将死检测编写单元测试 | PASS | 修复了原有的错误测试用例，调整了将军、将死和困毙的测试场景，确保所有单元测试通过。同时修复了 generateAllLegalMoves 函数，使其过滤掉导致己方被将军的移动。
 2026-04-10 22:21 | S15 | 创建中国象棋 AI 基础框架 | PASS | 在 gomoku-web/src/chinese-chess/ai/minimax.ts 中实现了基本的 minimax 搜索算法，包含棋子价值评估、位置价值表、Alpha-Beta 剪枝，支持不同难度级别。
 2026-04-10 22:25 | S16 | 将 AI 算法迁移到 Web Worker | PASS | 在 gomoku-web/src/chinese-chess/ai/aiWorker.ts 中创建了 Web Worker，接收棋盘状态、AI 玩家方和难度级别，调用 minimax 算法返回最佳移动。
+2026-04-10 22:45 | S17 | 创建中国象棋棋盘 UI 组件 | PASS | 在 gomoku-web/src/components/chinese-chess/Board.vue 中实现了 9x10 棋盘 UI，支持棋子显示、点击交互、选中高亮、合法移动提示，使用 i18n 翻译和 Tailwind 语义化颜色。
+2026-04-12 00:00 | S18 | 创建中国象棋游戏控制组件 | PASS | 在 gomoku-web/src/components/chinese-chess/GameControls.vue 中实现了游戏控制组件，包括模式选择、难度设置、AI执方选择、悔棋、重新开始、提示、显示步骤、保存棋谱等功能，复用现有 Gomoku 组件结构和样式，使用 i18n 翻译和 Tailwind 语义化颜色。

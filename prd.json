@@ -137,13 +137,13 @@
       "id": "S17",
       "title": "创建中国象棋棋盘 UI 组件",
       "description": "在 gomoku-web/src/components/chinese-chess/Board.vue 中渲染 9x10 棋盘，显示棋子（汉字或图标），处理点击事件，复用现有样式。预估代码约 150 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S18",
       "title": "创建中国象棋游戏控制组件",
       "description": "在 gomoku-web/src/components/chinese-chess/GameControls.vue 中实现游戏模式选择、难度设置、悔棋、重新开始等，复用现有组件结构。预估代码约 120 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S19",
