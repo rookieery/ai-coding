@@ -12,6 +12,7 @@ import {
   type MoveHistory,
   type GameState,
   type GameConfig,
+  type CapturedPiece,
 } from '../chinese-chess/types';
 import {
   validateMove,
@@ -516,7 +517,7 @@ const executeMove = (from: BoardCoord, to: BoardCoord, player: PlayerSide) => {
 
   // 执行移动
   const targetPiece = getPieceAt(board.value, to);
-  const capturedPiece = targetPiece ? targetPiece.type : undefined;
+  const capturedPiece = targetPiece ? { type: targetPiece.type, side: targetPiece.side } : undefined;
 
   board.value = boardMovePiece(board.value, from, to);
   moveHistory.value.push({
@@ -600,7 +601,12 @@ const undo = () => {
       board.value = boardMovePiece(board.value, lastMove.to, lastMove.from);
       // 如果有被吃掉的棋子，恢复
       if (lastMove.capturedPiece) {
-        // 需要在目标位置恢复被吃掉的棋子（简化处理，暂不实现）
+        // 在目标位置恢复被吃掉的棋子
+        board.value[lastMove.to.row][lastMove.to.col] = {
+          type: lastMove.capturedPiece.type,
+          side: lastMove.capturedPiece.side,
+          coord: { ...lastMove.to }
+        };
       }
       currentPlayer.value = lastMove.side;
     }
@@ -609,6 +615,14 @@ const undo = () => {
     const lastMove = moveHistory.value.pop();
     if (lastMove) {
       board.value = boardMovePiece(board.value, lastMove.to, lastMove.from);
+      // 如果有被吃掉的棋子，恢复
+      if (lastMove.capturedPiece) {
+        board.value[lastMove.to.row][lastMove.to.col] = {
+          type: lastMove.capturedPiece.type,
+          side: lastMove.capturedPiece.side,
+          coord: { ...lastMove.to }
+        };
+      }
       currentPlayer.value = lastMove.side;
     }
     if (currentPlayer.value === aiPlayer.value) {
@@ -616,6 +630,14 @@ const undo = () => {
         const prevMove = moveHistory.value.pop();
         if (prevMove) {
           board.value = boardMovePiece(board.value, prevMove.to, prevMove.from);
+          // 如果有被吃掉的棋子，恢复
+          if (prevMove.capturedPiece) {
+            board.value[prevMove.to.row][prevMove.to.col] = {
+              type: prevMove.capturedPiece.type,
+              side: prevMove.capturedPiece.side,
+              coord: { ...prevMove.to }
+            };
+          }
           currentPlayer.value = prevMove.side;
         }
       } else {

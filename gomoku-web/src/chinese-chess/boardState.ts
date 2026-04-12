@@ -12,6 +12,7 @@ import {
   GameConfig,
   GameMode,
   Difficulty,
+  CapturedPiece,
 } from './types';
 
 // 棋盘尺寸
@@ -197,7 +198,7 @@ export function updateGameState(
   newBoard: BoardState,
   moveFrom?: BoardCoord,
   moveTo?: BoardCoord,
-  capturedPiece?: PieceType
+  capturedPiece?: CapturedPiece
 ): GameState {
   let newStatus = currentState.status;
 

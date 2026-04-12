@@ -105,6 +105,18 @@ const pieceChars = computed(() => ({
   },
 }));
 
+// 顶部横坐标数字（1-9）
+const topColumnLabels = computed(() => {
+  const numbersStr = t('columnTopNumbers');
+  return numbersStr.split(',');
+});
+
+// 底部横坐标中文数字（九至一）
+const bottomColumnLabels = computed(() => {
+  const chineseNumbersStr = t('columnBottomChineseNumbers');
+  return chineseNumbersStr.split(',');
+});
+
 // 棋子颜色类名
 const pieceColorClass = (side: PlayerSide) =>
   side === PlayerSide.RED ? 'text-red-600 dark:text-red-400' : 'text-stone-900 dark:text-stone-300';
@@ -169,6 +181,12 @@ const isCheckHighlight = computed(() => {
     </div>
 
     <div class="flex flex-col">
+      <!-- 顶部横坐标（数字 1-9） -->
+      <div class="flex mb-1 sm:mb-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm select-none opacity-70">
+        <div v-for="(num, index) in topColumnLabels" :key="index" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
+          {{ num }}
+        </div>
+      </div>
       <!-- 棋盘主体 -->
       <div class="relative z-10 grid" :style="{ gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))` }">
         <template v-for="(row, rowIndex) in board" :key="rowIndex">
@@ -285,7 +303,7 @@ const isCheckHighlight = computed(() => {
             <!-- 合法移动目标指示（当有棋子被选中时） -->
             <div
               v-else-if="selectedCoord && legalTargets.value.some(t => t.col === colIndex && t.row === rowIndex)"
-              class="relative z-10 w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-green-500/80"
+              class="relative z-10 w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-green-500 breathing-dot"
             ></div>
 
             <!-- 悬停指示（轮到当前玩家且游戏未结束） -->
@@ -298,13 +316,23 @@ const isCheckHighlight = computed(() => {
         </template>
       </div>
 
-      <!-- 底部横坐标（字母 a-i） -->
+      <!-- 底部横坐标（中文数字 九至一） -->
       <div class="flex mt-1 sm:mt-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm select-none opacity-70">
-        <div v-for="l in BOARD_COLS" :key="l" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
-          {{ String.fromCharCode(96 + l) }}
+        <div v-for="(num, index) in bottomColumnLabels" :key="index" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
+          {{ num }}
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes breathing {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+.breathing-dot {
+  animation: breathing 1.5s ease-in-out infinite;
+}
+</style>
 

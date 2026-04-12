@@ -32,6 +32,12 @@ export interface Piece {
   coord: BoardCoord;
 }
 
+// 被吃掉的棋子信息
+export interface CapturedPiece {
+  type: PieceType;
+  side: PlayerSide;
+}
+
 // 移动历史记录
 export interface MoveHistory {
   from: BoardCoord;
@@ -39,7 +45,7 @@ export interface MoveHistory {
   piece: PieceType;
   side: PlayerSide;
   timestamp: number;
-  capturedPiece?: PieceType; // 被吃掉的棋子类型（如果有）
+  capturedPiece?: CapturedPiece; // 被吃掉的棋子（如果有）
 }
 
 // 游戏状态枚举

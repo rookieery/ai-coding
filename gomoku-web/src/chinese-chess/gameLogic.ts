@@ -15,6 +15,7 @@ import {
   GameMode,
   GameConfig,
   MoveHistory,
+  CapturedPiece,
 } from './types';
 
 import {
@@ -159,9 +160,9 @@ export function makeMove(
     throw new Error(`非法移动: ${validation.reason}`);
   }
 
-  // 获取被吃掉的棋子类型（如果有）
+  // 获取被吃掉的棋子信息（如果有）
   const targetPiece = getPieceAt(gameState.board, to);
-  const capturedPiece = targetPiece ? targetPiece.type : undefined;
+  const capturedPiece = targetPiece ? { type: targetPiece.type, side: targetPiece.side } : undefined;
 
   // 执行移动
   const newBoard = movePiece(gameState.board, from, to);

@@ -168,6 +168,48 @@
       "title": "进行端到端测试和 UI 验证",
       "description": "手动测试游戏流程，AI 对战，规则正确性，验证各组件集成。无需新代码，但需要完整验证。",
       "passes": true
+    },
+    {
+      "id": "S23a",
+      "title": "实现落子合法路径计算逻辑",
+      "description": "在 engine.ts 中新增 getLegalMovesForPiece 方法，根据当前棋子位置和规则引擎返回所有可落子的坐标数组。需包含单元测试验证。",
+      "passes": true
+    },
+    {
+      "id": "S23b",
+      "title": "渲染带呼吸灯效果的落子提示",
+      "description": "在 Board.vue 中，当棋子被选中时，渲染合法落子位置的提示点。提示点需具备呼吸动画效果：透明度在 0.3 到 0.8 之间循环，周期为 1.5s。使用 Tailwind 的 animate-pulse 或自定义 CSS 实现。",
+      "passes": true
+    },
+    {
+      "id": "S24",
+      "title": "重构象棋传统坐标系显示",
+      "description": "修改棋盘边缘渲染，上方（黑方）显示数字 1-9，下方（红方）显示中文数字‘九’至‘一’。确保与棋盘格子精准对齐。",
+      "passes": true
+    },
+    {
+      "id": "S25a",
+      "title": "完善悔棋底层数据结构",
+      "description": "修改 boardState.ts 中的移动记录逻辑，确保每一条 move 记录都包含被吃掉棋子的类型和颜色（capturedPiece）。",
+      "passes": true
+    },
+    {
+      "id": "S25b",
+      "title": "修复悔棋 UI 复原逻辑",
+      "description": "根据 S25a 完善的数据，在执行 undo 操作时，不仅回退坐标，还要将 capturedPiece 重新渲染到棋盘上。",
+      "passes": true
+    },
+    {
+      "id": "S26a",
+      "title": "实现中国象棋标准记谱法逻辑",
+      "description": "开发专门的记谱器（Notation Generator），将坐标移动转换为‘炮二平五’、‘马八进七’等标准中文术语。需处理红黑方差异。",
+      "passes": false
+    },
+    {
+      "id": "S26b",
+      "title": "实时渲染对局棋谱列表",
+      "description": "在右侧面板展示 S26a 生成的术语列表，支持自动滚动至底部。样式需与五子棋对战记录保持一致。",
+      "passes": false
     }
   ]
 }
