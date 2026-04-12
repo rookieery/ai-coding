@@ -33,3 +33,5 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-12 21:15 | S26a | 实现中国象棋标准记谱法逻辑 | PASS | 开发专门的记谱器（Notation Generator），将坐标移动转换为‘炮二平五’、‘马八进七’等标准中文术语。处理红黑方差异。
 2026-04-12 21:15 | S26b | 实时渲染对局棋谱列表 | PASS | 在右侧面板展示记谱术语列表，支持自动滚动至底部，样式与五子棋对战记录保持一致。
 2026-04-12 21:30 | S27 | 移除调试日志语句 | PASS | 移除所有 console.log 语句以符合生产代码规范，清理了 GameView.vue、GomokuNN.ts、game-api.ts 中的调试输出。
+2026-04-12 21:45 | S27a | 全局品牌更名：棋林（QiLin） | PASS | 在前端 i18n、HTML Title 和 Footer 中，将所有'五林'或'五子棋'品牌文案更改为'棋林'。更新了 i18n.ts 中的 agentTitle、agentGreeting、agentDisclaimer、agentResponse、loginSubtitleLogin、navAgent 等翻译键，将'五林'改为'棋林'，英文'Wulin'改为'Qilin'，日文'五林エージェント'改为'棋林エージェント'。同时更新了 App.vue 和 LoginView.vue 中的标题，以及 index.html 的页面标题。
+2026-04-12 21:45 | S27b | 导航栏与路由标签优化 | PASS | 在前端组件中将'去下棋'标签重命名为'五子棋'，更新了 i18n.ts 中的 navGame 翻译键（简体中文、繁体中文、英文、日文）。新增的'中国象棋'标签已存在。确保路由配置文件中的面包屑和页面标题已更新。
