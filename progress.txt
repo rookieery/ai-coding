@@ -19,3 +19,4 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-10 22:25 | S16 | 将 AI 算法迁移到 Web Worker | PASS | 在 gomoku-web/src/chinese-chess/ai/aiWorker.ts 中创建了 Web Worker，接收棋盘状态、AI 玩家方和难度级别，调用 minimax 算法返回最佳移动。
 2026-04-10 22:45 | S17 | 创建中国象棋棋盘 UI 组件 | PASS | 在 gomoku-web/src/components/chinese-chess/Board.vue 中实现了 9x10 棋盘 UI，支持棋子显示、点击交互、选中高亮、合法移动提示，使用 i18n 翻译和 Tailwind 语义化颜色。
 2026-04-12 00:00 | S18 | 创建中国象棋游戏控制组件 | PASS | 在 gomoku-web/src/components/chinese-chess/GameControls.vue 中实现了游戏控制组件，包括模式选择、难度设置、AI执方选择、悔棋、重新开始、提示、显示步骤、保存棋谱等功能，复用现有 Gomoku 组件结构和样式，使用 i18n 翻译和 Tailwind 语义化颜色。
+2026-04-12 11:20 | S19 | 创建中国象棋主视图 | PASS | 在 gomoku-web/src/views/ChineseChessView.vue 中创建了中国象棋主视图，整合棋盘、控制面板、状态显示，管理游戏状态，复用 GameView.vue 的结构，添加了必要的 i18n 翻译键。
