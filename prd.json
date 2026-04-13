@@ -47,7 +47,7 @@
       "id": "S33",
       "title": "后端：中国象棋业务逻辑迁移",
       "description": "将已有的中国象棋后端验证逻辑或 AI 接口移动到对应的业务模块中。修复所有的 import/require 路径。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S34",
