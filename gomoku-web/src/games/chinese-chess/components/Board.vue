@@ -40,7 +40,7 @@ const selectedCoord = computed(() => props.selectedPiece ?? internalSelected.val
 const legalTargets = computed(() => {
   if (!selectedCoord.value) return [];
   // 如果父组件提供了 validMoves，则使用父组件的；否则自己计算
-  if (props.validMoves) return props.validMoves;
+  if (props.validMoves && Array.isArray(props.validMoves)) return props.validMoves;
   // 这里可以调用 gameLogic.getPieceLegalMoves，但需要完整的 gameState，暂不实现
   return [];
 });
@@ -57,9 +57,9 @@ const handleCellClick = (coord: BoardCoord) => {
       return;
     }
     // 检查是否是合法目标
-    const isLegalTarget = legalTargets.value.some(
+    const isLegalTarget = legalTargets.value?.some(
       target => target.col === coord.col && target.row === coord.row
-    );
+    ) ?? false;
     if (isLegalTarget) {
       emit('movePiece', selectedCoord.value, coord);
       internalSelected.value = null;
@@ -265,7 +265,7 @@ const isCheckHighlight = computed(() => {
               :class="[
                 pieceColorClass(cell.side),
                 selectedCoord?.col === colIndex && selectedCoord?.row === rowIndex
-                  ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-amber-100 dark:ring-offset-amber-900'
+                  ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-amber-100 dark:ring-offset-amber-900 scale-105'
                   : '',
                 isCheckHighlight && cell.type === PieceType.KING ? 'ring-4 ring-red-500 animate-pulse' : '',
               ]"
@@ -302,7 +302,7 @@ const isCheckHighlight = computed(() => {
 
             <!-- 合法移动目标指示（当有棋子被选中时） -->
             <div
-              v-else-if="selectedCoord && legalTargets.value.some(t => t.col === colIndex && t.row === rowIndex)"
+              v-else-if="selectedCoord && legalTargets?.some(t => t.col === colIndex && t.row === rowIndex)"
               class="relative z-10 w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-green-500 breathing-dot"
             ></div>
 

@@ -111,7 +111,7 @@ const canEditGame = (game: SavedGame) => {
 const saveCurrentGame = async () => {
   if (!saveName.value.trim()) return;
 
-  if (savedGames.value.some(g => g.name === saveName.value.trim())) {
+  if (savedGames.value?.some(g => g.name === saveName.value.trim())) {
     saveNameError.value = t('nameExists');
     return;
   }
@@ -575,7 +575,7 @@ const handleMovePiece = (from: BoardCoord, to: BoardCoord) => {
 const handleClickCell = (coord: BoardCoord) => {
   // 如果已经有选中棋子且点击的是合法目标，则移动
   if (selectedPiece.value) {
-    const isLegal = validMoves.value.some(m => m.col === coord.col && m.row === coord.row);
+    const isLegal = validMoves.value?.some(m => m.col === coord.col && m.row === coord.row) ?? false;
     if (isLegal) {
       handleMovePiece(selectedPiece.value, coord);
       return;
