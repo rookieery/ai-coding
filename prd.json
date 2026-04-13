@@ -17,7 +17,7 @@
       "id": "S30a3",
       "title": "前端：五子棋视图与全局路由修复",
       "description": "将五子棋的主视图（View/Page）移入 src/games/gomoku/。全面扫描 router 路由配置和 App 入口，修复所有指向五子棋模块的失效 import 路径。必须运行 npm run typecheck 确保 0 报错。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S30b1",

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted, onMounted, onActivated, onDeactivated } from 'vue';
 import { Download, Trash2, X, RefreshCw } from 'lucide-vue-next';
-import { BOARD_SIZE, EMPTY, BLACK, WHITE, checkWin, checkDraw, type Difficulty, type RuleMode, getForbiddenType } from '../games/gomoku/gameLogic';
+import { BOARD_SIZE, EMPTY, BLACK, WHITE, checkWin, checkDraw, type Difficulty, type RuleMode, getForbiddenType } from '../gameLogic';
 import Board from '../components/Board.vue';
 import HistoryPanel from '../components/HistoryPanel.vue';
 import GameControls from '../components/GameControls.vue';
-import { t, currentTheme } from '../i18n';
-import { gameApi, type FrontendGame } from '../api/game-api';
-import { useGlobalAuth } from '../composables/useAuth';
+import { t, currentTheme } from '../../../i18n';
+import { gameApi, type FrontendGame } from '../../../api/game-api';
+import { useGlobalAuth } from '../../../composables/useAuth';
 
 defineOptions({
   name: 'GameView'
@@ -507,7 +507,7 @@ const aiMove = () => {
 
   terminateWorker();
   isAiThinking.value = true;
-  worker = new Worker(new URL('../games/gomoku/aiWorker.ts', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('../aiWorker.ts', import.meta.url), { type: 'module' });
 
   worker.onmessage = (e) => {
     if (e.data.type === 'thinking') {
@@ -669,7 +669,7 @@ const showHint = () => {
 
   terminateWorker();
   isAiThinking.value = true;
-  worker = new Worker(new URL('../games/gomoku/aiWorker.ts', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('../aiWorker.ts', import.meta.url), { type: 'module' });
 
   worker.onmessage = (e) => {
     if (e.data.type === 'thinking') {

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AgentView from '../views/AgentView.vue';
-import GameView from '../views/GameView.vue';
+import GameView from '../games/gomoku/views/GameView.vue';
 import LoginView from '../views/LoginView.vue';
 import AdminView from '../views/AdminView.vue';
 import ChineseChessView from '../views/ChineseChessView.vue';
