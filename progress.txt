@@ -8,3 +8,5 @@ Started: Fri Apr 10 19:52:09     2026
 [S32] - 后端：五子棋业务逻辑迁移 - 2026-04-13 - Completed
 [S33] - 后端：中国象棋业务逻辑迁移 - 2026-04-13 - Completed
 [S34] - 后端：重构主入口文件（app.ts/index.ts） - 2026-04-13 - Completed[S35] - 全链路冒烟测试与重构验证 - 2026-04-13 - Completed
+[Bugfix-1] - 修复 Board.vue 渲染崩溃与完善选中交互 - 2026-04-13 - Completed
+[Bugfix-2] - 修复并实现右侧对战记录（棋谱）渲染 - 2026-04-13 - Completed

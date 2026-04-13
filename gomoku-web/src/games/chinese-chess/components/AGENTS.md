@@ -31,3 +31,17 @@ Following the established Gomoku patterns:
 - Follow the same import path patterns (relative to game module root)
 - Ensure dark mode compatibility using `currentTheme` from i18n
 - Use semantic color classes from Tailwind theme config
+
+### Bug Fixes & Safety Patterns
+
+**Array method safety**: When calling `.some`, `.map`, `.filter` on reactive arrays that may be undefined or null, always use optional chaining (`?.`) and provide a default fallback (`?? []`). Example:
+
+```ts
+const isLegal = validMoves.value?.some(m => m.col === col && m.row === row) ?? false;
+```
+
+**Prop validation**: For optional array props, verify the prop is indeed an array before using it, as Vue may pass `null` or `undefined`. Use `Array.isArray(props.validMoves)`.
+
+**Selected piece highlighting**: Add visual feedback beyond a ring—consider a slight scale transformation (`scale-105`) to make the selected piece more prominent.
+
+**Breathing dot animation**: Use CSS keyframes with opacity range 0.3–0.8 and a smooth easing function for a “breathing” effect.
