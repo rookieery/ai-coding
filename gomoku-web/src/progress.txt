@@ -1,0 +1,5 @@
+# Ralph Progress Log
+Started: Fri Apr 10 19:52:09     2026
+[S30a2] - 前端：五子棋 UI 组件层迁移 - 2026-04-13 - Completed
+[S30a3] - 前端：五子棋视图与全局路由修复 - 2026-04-13 - Completed
+[S30b1] - 前端：中国象棋逻辑与状态层迁移 - 2026-04-13 - Completed

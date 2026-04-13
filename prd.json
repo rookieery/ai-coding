@@ -23,7 +23,7 @@
       "id": "S30b1",
       "title": "前端：中国象棋逻辑与状态层迁移",
       "description": "将中国象棋的类型定义、规则引擎 (engine) 和状态管理移动到 src/games/chinese-chess/ 下。修复模块内部的引用路径。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S30b2",

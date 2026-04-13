@@ -1,12 +1,6 @@
 /**
- * 中国象棋规则验证函数统一导出
+ * 重新导出中国象棋规则验证函数
+ * 实际文件已移至 games/chinese-chess/rules/
  */
 
-export { validateRookMove } from './rook';
-export { validateKnightMove } from './knight';
-export { validateCannonMove } from './cannon';
-export { validatePawnMove } from './pawn';
-export { validateAdvisorMove, validateElephantMove } from './advisor-elephant';
-export { validateKingMove } from './king';
-export { isCheck, getCheckingPieces } from './check';
-export { generateAllLegalMoves, isCheckmate, isStalemate, isLosing } from './checkmate';
+export * from '../games/chinese-chess/rules/index.ts';
