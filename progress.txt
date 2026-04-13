@@ -37,3 +37,4 @@ Started: Fri Apr 10 19:52:09     2026
 2026-04-12 21:45 | S27b | 导航栏与路由标签优化 | PASS | 在前端组件中将'去下棋'标签重命名为'五子棋'，更新了 i18n.ts 中的 navGame 翻译键（简体中文、繁体中文、英文、日文）。新增的'中国象棋'标签已存在。确保路由配置文件中的面包屑和页面标题已更新。
 2026-04-12 21:58 | S28 | 棋林智能体（Agent）提示词升级 | PASS | 更新后端聊天服务的系统提示词，从五子棋专用改为棋林通用棋类专家。更新前端 i18n 翻译键，使智能体问候语和占位符包含五子棋和中国象棋。
 2026-04-12 22:16 | S29 | 前端目录模块化：提取共享逻辑 | PASS | 在 src 目录下创建 common 文件夹，移动 SettingsModal、AnswerContent、MessageActions、ThinkingProcess 四个通用 UI 组件到 common/components/ui/，更新 App.vue 和 AgentView.vue 中的导入路径，删除原始文件。
+2026-04-13 18:57 | S30a1 | 前端：五子棋逻辑与状态层迁移 | PASS | 在 src/games/gomoku/ 下建立基础结构，移动五子棋专属的类型定义、AI Web Worker、状态管理文件（gameLogic.ts、aiWorker.ts、openingBook.ts、nn/GomokuNN.ts），更新相关导入路径，确保类型检查通过。

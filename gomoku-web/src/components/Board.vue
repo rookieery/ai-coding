@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { BOARD_SIZE, EMPTY, BLACK, WHITE, isStarPoint } from '../gameLogic';
+import { BOARD_SIZE, EMPTY, BLACK, WHITE, isStarPoint } from '../games/gomoku/gameLogic';
 
 const props = defineProps<{
   board: number[][];

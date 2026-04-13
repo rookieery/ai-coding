@@ -236,15 +236,33 @@
       "passes": true
     },
     {
-      "id": "S30a",
-      "title": "前端：五子棋（Gomoku）模块隔离",
-      "description": "在 src/games/gomoku 下集中管理五子棋的所有专属代码。修复文件移动后的相对路径引用。运行 npm run typecheck 确保通过。",
+      "id": "S30a1",
+      "title": "前端：五子棋逻辑与状态层迁移",
+      "description": "在 src/games/gomoku/ 下建立基础结构。将五子棋专属的类型定义(types)、AI Web Worker 代码、以及状态管理相关文件移动过去。此阶段只关注底层文件，仅修复它们之间的相互引用。",
+      "passes": true
+    },
+    {
+      "id": "S30a2",
+      "title": "前端：五子棋 UI 组件层迁移",
+      "description": "将五子棋专属的 UI 组件（棋盘 Board、控制面板等）移动到 src/games/gomoku/components 目录。修复这些组件内部对 S30a1 中逻辑文件的引用路径。",
       "passes": false
     },
     {
-      "id": "S30b",
-      "title": "前端：中国象棋（Chess）模块隔离",
-      "description": "在 src/games/chinese-chess 下集中管理中国象棋的所有专属代码。修复文件移动后的相对路径引用。",
+      "id": "S30a3",
+      "title": "前端：五子棋视图与全局路由修复",
+      "description": "将五子棋的主视图（View/Page）移入 src/games/gomoku/。全面扫描 router 路由配置和 App 入口，修复所有指向五子棋模块的失效 import 路径。必须运行 npm run typecheck 确保 0 报错。",
+      "passes": false
+    },
+    {
+      "id": "S30b1",
+      "title": "前端：中国象棋逻辑与状态层迁移",
+      "description": "将中国象棋的类型定义、规则引擎 (engine) 和状态管理移动到 src/games/chinese-chess/ 下。修复模块内部的引用路径。",
+      "passes": false
+    },
+    {
+      "id": "S30b2",
+      "title": "前端：中国象棋 UI 组件与视图迁移",
+      "description": "将中国象棋的组件和视图移入 src/games/chinese-chess/。修复 router 中的路径引用。最后运行一次全局的前端编译和类型检查，确保模块化重构成功。",
       "passes": false
     },
     {

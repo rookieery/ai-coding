@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
-import { BLACK } from '../gameLogic';
+import { BLACK } from '../games/gomoku/gameLogic';
 import { t, currentTheme } from '../i18n';
 import { Copy } from 'lucide-vue-next';
 
