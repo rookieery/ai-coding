@@ -13,7 +13,7 @@ import {
   type GameState,
   type GameConfig,
   type CapturedPiece,
-} from '../chinese-chess/types';
+} from '../types';
 import {
   validateMove,
   makeMove,
@@ -23,14 +23,14 @@ import {
   isGameOver,
   getWinner,
   evaluateGameResult,
-} from '../chinese-chess/gameLogic';
-import { createInitialBoard, movePiece as boardMovePiece, getPieceAt } from '../chinese-chess/boardState';
-import Board from '../components/chinese-chess/Board.vue';
-import GameControls from '../components/chinese-chess/GameControls.vue';
-import ChineseChessHistoryPanel from '../components/chinese-chess/HistoryPanel.vue';
-import { t, currentTheme } from '../i18n';
-import { gameApi, type FrontendGame } from '../api/game-api';
-import { useGlobalAuth } from '../composables/useAuth';
+} from '../gameLogic';
+import { createInitialBoard, movePiece as boardMovePiece, getPieceAt } from '../boardState';
+import Board from '../components/Board.vue';
+import GameControls from '../components/GameControls.vue';
+import ChineseChessHistoryPanel from '../components/HistoryPanel.vue';
+import { t, currentTheme } from '../../../i18n';
+import { gameApi, type FrontendGame } from '../../../api/game-api';
+import { useGlobalAuth } from '../../../composables/useAuth';
 
 defineOptions({
   name: 'ChineseChessView'
@@ -436,7 +436,7 @@ const aiMove = () => {
 
   terminateWorker();
   isAiThinking.value = true;
-  worker = new Worker(new URL('../chinese-chess/ai/aiWorker.ts', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('../ai/aiWorker.ts', import.meta.url), { type: 'module' });
 
   worker.onmessage = (e) => {
     if (e.data.type === 'thinking') {
@@ -654,7 +654,7 @@ const showHint = () => {
 
   terminateWorker();
   isAiThinking.value = true;
-  worker = new Worker(new URL('../chinese-chess/ai/aiWorker.ts', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('../ai/aiWorker.ts', import.meta.url), { type: 'module' });
 
   worker.onmessage = (e) => {
     if (e.data.type === 'thinking') {

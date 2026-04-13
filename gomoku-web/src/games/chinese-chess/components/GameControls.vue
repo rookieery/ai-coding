@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { User, Bot, RotateCcw, Undo2, Lightbulb, BookOpen, Brain, Eye, EyeOff, Save, List } from 'lucide-vue-next';
-import type { Difficulty, GameMode } from '../../chinese-chess/types';
-import { PlayerSide } from '../../chinese-chess/types';
-import { t, currentTheme } from '../../i18n';
+import type { Difficulty, GameMode } from '../types';
+import { PlayerSide } from '../types';
+import { t, currentTheme } from '../../../i18n';
 
 const props = defineProps<{
   mode: GameMode;

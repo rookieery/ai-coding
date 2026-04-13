@@ -29,7 +29,7 @@
       "id": "S30b2",
       "title": "前端：中国象棋 UI 组件与视图迁移",
       "description": "将中国象棋的组件和视图移入 src/games/chinese-chess/。修复 router 中的路径引用。最后运行一次全局的前端编译和类型检查，确保模块化重构成功。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S31",

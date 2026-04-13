@@ -3,4 +3,4 @@
  * 实际文件已移至 games/chinese-chess/rules/
  */
 
-export * from '../games/chinese-chess/rules/index.ts';
+export * from '../../games/chinese-chess/rules/index.ts';

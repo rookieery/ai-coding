@@ -8,8 +8,8 @@ import {
   BoardCoord,
   GameMode,
   MoveHistory,
-} from '../../chinese-chess/types';
-import { t } from '../../i18n';
+} from '../types';
+import { t } from '../../../i18n';
 
 const props = defineProps<{
   board: BoardState;

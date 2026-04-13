@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
-import { PlayerSide, type MoveHistory } from '../../chinese-chess/types';
-import { t as i18nT, currentTheme } from '../../i18n';
-import { moveToDisplayNotation } from '../../chinese-chess/notation';
+import { PlayerSide, type MoveHistory } from '../types';
+import { t as i18nT, currentTheme } from '../../../i18n';
+import { moveToDisplayNotation } from '../notation';
 import { Copy } from 'lucide-vue-next';
 
 const props = defineProps<{

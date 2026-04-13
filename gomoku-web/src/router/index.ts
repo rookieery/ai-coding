@@ -3,7 +3,7 @@ import AgentView from '../views/AgentView.vue';
 import GameView from '../games/gomoku/views/GameView.vue';
 import LoginView from '../views/LoginView.vue';
 import AdminView from '../views/AdminView.vue';
-import ChineseChessView from '../views/ChineseChessView.vue';
+import ChineseChessView from '../games/chinese-chess/views/ChineseChessView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
