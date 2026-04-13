@@ -53,7 +53,7 @@
       "id": "S34",
       "title": "后端：重构主入口文件（app.ts/index.ts）",
       "description": "修改 Express 主入口，按模块注册路由（例如 app.use('/api/gomoku', ...) 和 app.use('/api/chess', ...)）。确保中间件配置依然生效。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S35",
