@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, withDefaults } from 'vue';
 import { PlayerSide, type MoveHistory } from '../types';
 import { t as i18nT, currentTheme } from '../../../i18n';
 import { moveToDisplayNotation } from '../notation';
 import { Copy } from 'lucide-vue-next';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   moveHistory: MoveHistory[];
-}>();
+}>(), {
+  moveHistory: () => []
+});
 
 const emit = defineEmits<{
   (e: 'copySuccess'): void;
