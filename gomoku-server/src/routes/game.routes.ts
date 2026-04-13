@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { gameController } from '../controllers/game.controller';
+import { gomokuController } from '../controllers/gomoku.controller';
 import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import {
   validateGameCreate,
@@ -29,14 +30,14 @@ router.get('/my', authenticate, gameController.getMyGames.bind(gameController));
  * @desc    从前端格式创建棋谱（可选认证）
  * @access  Public (可选认证)
  */
-router.post('/frontend', optionalAuthenticate, gameController.createGameFromFrontend.bind(gameController));
+router.post('/frontend', optionalAuthenticate, gomokuController.createGameFromFrontend.bind(gomokuController));
 
 /**
  * @route   GET /api/games/frontend
  * @desc    获取前端格式的棋谱列表
  * @access  Public
  */
-router.get('/frontend', gameController.getGamesForFrontend.bind(gameController));
+router.get('/frontend', gomokuController.getGamesForFrontend.bind(gomokuController));
 
 /**
  * @route   GET /api/games/:id
@@ -72,6 +73,6 @@ router.delete('/:id', optionalAuthenticate, validateId(), gameController.deleteG
  * @desc    获取单个前端格式的棋谱
  * @access  Public
  */
-router.get('/frontend/:id', validateId(), gameController.getGameForFrontend.bind(gameController));
+router.get('/frontend/:id', validateId(), gomokuController.getGameForFrontend.bind(gomokuController));
 
 export default router;

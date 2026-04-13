@@ -4,3 +4,5 @@ Started: Fri Apr 10 19:52:09     2026
 [S30a3] - 前端：五子棋视图与全局路由修复 - 2026-04-13 - Completed
 [S30b1] - 前端：中国象棋逻辑与状态层迁移 - 2026-04-13 - Completed (by previous work)
 [S30b2] - 前端：中国象棋 UI 组件与视图迁移 - 2026-04-13 - Completed
+[S31] - 后端 Express：创建模块化路由结构 - 2026-04-13 - Completed
+[S32] - 后端：五子棋业务逻辑迁移 - 2026-04-13 - Completed

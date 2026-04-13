@@ -35,13 +35,13 @@
       "id": "S31",
       "title": "后端 Express：创建模块化路由结构",
       "description": "在 Express 后端 src/routes 目录下建立子目录结构。为不同的游戏业务预留独立的挂载点。确保符合项目现有的代码规范。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S32",
       "title": "后端：五子棋业务逻辑迁移",
       "description": "将现有的五子棋 API 路由和控制器移动到后端的独立业务模块中。更新 express.Router() 的导出方式，确保模块化清晰。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S33",
