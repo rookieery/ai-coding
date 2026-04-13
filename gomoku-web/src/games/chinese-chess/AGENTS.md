@@ -91,3 +91,29 @@ The `ChineseChessHistoryPanel` component (in `src/components/chinese‑chess/His
 - Distinguish between multiple identical pieces on the same column (前车 vs. 后车).
 - Support algebraic notation (e.g., "R2=5") for international users.
 - Include capture markers (吃) and check markers (将) in the notation.
+
+## Move Outcome Detection (`evaluateMoveResult`)
+
+Added to `gameLogic.ts` to provide detailed move outcome detection after a move is made.
+
+### Purpose
+
+Detects four key game states triggered by a move:
+1. **Capture** (吃子) – whether the move captured an opponent's piece
+2. **Check** (将军) – whether the move puts the opponent's king in check
+3. **Checkmate** (绝杀) – whether the move results in checkmate
+4. **Stalemate** (困毙) – whether the move results in stalemate (no legal moves while not in check)
+
+### Usage
+
+```typescript
+const outcome = evaluateMoveResult(board, player, isCapture);
+// outcome.capture, outcome.check, outcome.checkmate, outcome.stalemate, outcome.gameOver
+```
+
+### Implementation Notes
+
+- Handles the edge case where the opponent's king has been captured (treats as checkmate).
+- Reuses existing `isCheck`, `isCheckmate`, `isStalemate` functions from the rules module.
+- Returns a simple object that can be easily consumed by UI components for notifications, sound effects, etc.
+- Integrated into `ChineseChessView.vue` via the `moveResult` reactive variable, updated after each move.

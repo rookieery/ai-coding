@@ -23,6 +23,7 @@ import {
   isGameOver,
   getWinner,
   evaluateGameResult,
+  evaluateMoveResult,
 } from '../gameLogic';
 import { createInitialBoard, movePiece as boardMovePiece, getPieceAt } from '../boardState';
 import Board from '../components/Board.vue';
@@ -50,6 +51,15 @@ const showSteps = ref<boolean>(false);
 const thinkingPath = ref<{coord: BoardCoord, side: PlayerSide}[]>([]);
 const currentRecordId = ref<string | null>(null);
 const isAiThinking = ref<boolean>(false);
+
+// 移动结果状态
+const moveResult = ref<{
+  capture: boolean;
+  check: boolean;
+  checkmate: boolean;
+  stalemate: boolean;
+  gameOver: boolean;
+} | null>(null);
 
 // 获取认证信息
 const auth = useGlobalAuth();
@@ -471,6 +481,7 @@ const resetGame = () => {
   hintMove.value = null;
   isAnalysisMode.value = false;
   currentRecordId.value = null;
+  moveResult.value = null;
 
   if (mode.value === 'pve' && aiPlayer.value === PlayerSide.RED) {
     aiMove();
@@ -531,6 +542,10 @@ const executeMove = (from: BoardCoord, to: BoardCoord, player: PlayerSide) => {
   });
   playSound();
   hintMove.value = null;
+
+  // 检测移动结果（吃子、将军、绝杀、困毙）
+  const moveOutcome = evaluateMoveResult(board.value, player, !!capturedPiece);
+  moveResult.value = moveOutcome;
 
   // 更新游戏状态
   const gameState: GameState = {

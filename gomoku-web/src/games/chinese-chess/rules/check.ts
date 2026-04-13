@@ -23,7 +23,7 @@ import { getPieceAt } from '../boardState';
 /**
  * 查找指定方的将/帅坐标
  */
-function findKingCoord(board: BoardState, side: PlayerSide): BoardCoord | null {
+export function findKingCoord(board: BoardState, side: PlayerSide): BoardCoord | null {
   for (let row = 0; row < board.length; row++) {
     for (let col = 0; col < board[row].length; col++) {
       const piece = board[row][col];

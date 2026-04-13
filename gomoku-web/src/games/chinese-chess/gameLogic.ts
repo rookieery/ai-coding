@@ -38,6 +38,7 @@ import {
 import {
   isCheck,
   getCheckingPieces,
+  findKingCoord,
 } from './rules/check';
 
 import {
@@ -224,6 +225,59 @@ export function evaluateGameResult(gameState: GameState): GameState {
   // 检查是否和棋（例如长将、长捉、双方无攻击子力等，简化版：暂无实现）
   // 目前仅返回原状态
   return gameState;
+}
+
+/**
+ * 评估移动结果，检测吃子、将军、绝杀、困毙等状态
+ * @param board 移动后的棋盘状态
+ * @param player 刚刚移动的玩家方
+ * @param isCapture 移动是否吃子
+ * @returns 移动结果对象
+ */
+export function evaluateMoveResult(
+  board: BoardState,
+  player: PlayerSide,
+  isCapture: boolean
+): {
+  capture: boolean;
+  check: boolean;
+  checkmate: boolean;
+  stalemate: boolean;
+  gameOver: boolean;
+} {
+  const opponent = player === PlayerSide.RED ? PlayerSide.BLACK : PlayerSide.RED;
+
+  // 检查对方将是否存在
+  const opponentKingExists = findKingCoord(board, opponent) !== null;
+  if (!opponentKingExists) {
+    // 对方将已被吃掉，游戏结束，视为绝杀
+    return {
+      capture: isCapture,
+      check: false,
+      checkmate: true,
+      stalemate: false,
+      gameOver: true,
+    };
+  }
+
+  // 检测是否将军
+  const check = isCheck(board, opponent);
+
+  // 检测是否绝杀
+  const checkmate = check && isCheckmate(board, opponent);
+
+  // 检测是否困毙（未被将军但无合法移动）
+  const stalemate = !check && isStalemate(board, opponent);
+
+  const gameOver = checkmate || stalemate;
+
+  return {
+    capture: isCapture,
+    check,
+    checkmate,
+    stalemate,
+    gameOver,
+  };
 }
 
 /**

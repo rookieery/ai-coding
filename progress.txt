@@ -12,3 +12,4 @@ Started: Fri Apr 10 19:52:09     2026
 [Bugfix-2] - 修复并实现右侧对战记录（棋谱）渲染 - 2026-04-13 - Completed
 
 [Bugfix-3] - 修复吃子目标格无提示灯的 Bug - 2026-04-13 - Completed
+[Feature-1a] - 实现特殊对局状态的检测与事件派发 - 2026-04-13 - Completed
