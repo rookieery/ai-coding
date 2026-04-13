@@ -65,7 +65,7 @@ onUnmounted(() => {
             :class="currentTheme === 'dark' ? 'bg-stone-800/50 border-stone-700' : 'bg-white/50 border-stone-200'">
       <div class="flex items-center gap-6">
         <h1 class="text-xl font-bold tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">
-          棋林
+          {{ t('appName') }}
         </h1>
         <nav class="flex items-center gap-2 bg-stone-200/50 dark:bg-stone-800/50 p-1 rounded-lg" v-if="isAuthenticated">
           <button

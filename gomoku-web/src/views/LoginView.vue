@@ -166,10 +166,10 @@ const isFormValid = computed(() => {
       <!-- Logo/标题 -->
       <div class="text-center mb-8">
         <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-          <span class="text-3xl text-white font-bold">棋</span>
+          <span class="text-3xl text-white font-bold">{{ t('appLogoChar') }}</span>
         </div>
         <h1 class="text-3xl font-bold tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">
-          棋林
+          {{ t('appName') }}
         </h1>
         <p class="mt-2" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
           {{ isLoginMode ? t('loginSubtitleLogin') : t('loginSubtitleRegister') }}
