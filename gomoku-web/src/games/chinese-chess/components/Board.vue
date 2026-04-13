@@ -45,6 +45,11 @@ const legalTargets = computed(() => {
   return [];
 });
 
+// 判断指定坐标是否为合法目标
+const isLegalTarget = (coord: BoardCoord) => {
+  return legalTargets.value?.some(t => t.col === coord.col && t.row === coord.row) ?? false;
+};
+
 // 点击单元格处理
 const handleCellClick = (coord: BoardCoord) => {
   const piece = props.board[coord.row][coord.col];
@@ -270,8 +275,13 @@ const isCheckHighlight = computed(() => {
                 isCheckHighlight && cell.type === PieceType.KING ? 'ring-4 ring-red-500 animate-pulse' : '',
               ]"
             >
+              <!-- 合法目标提示（吃子） -->
+              <div
+                v-if="isLegalTarget({ col: colIndex, row: rowIndex })"
+                class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
+              ></div>
               <!-- 棋子字符 -->
-              <span class="text-lg sm:text-xl font-bold">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-lg sm:text-xl font-bold">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"

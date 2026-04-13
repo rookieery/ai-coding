@@ -45,3 +45,5 @@ const isLegal = validMoves.value?.some(m => m.col === col && m.row === row) ?? f
 **Selected piece highlighting**: Add visual feedback beyond a ring—consider a slight scale transformation (`scale-105`) to make the selected piece more prominent.
 
 **Breathing dot animation**: Use CSS keyframes with opacity range 0.3–0.8 and a smooth easing function for a “breathing” effect.
+
+**Legal target hints for capture**: When a legal target square contains an opponent's piece, the hint should still be visible. Add a conditional overlay (e.g., red border or crosshair icon) inside the piece element, since the green breathing dot is only rendered for empty squares. Use a method `isLegalTarget` to check if the coordinate is in `legalTargets` and display a red border with `animate-pulse`.

@@ -2,16 +2,22 @@
   "branchName": "feature/chinese-chess",
   "stories": [
     {
-      "id": "Bugfix-1",
-      "title": "修复 Board.vue 渲染崩溃与完善选中交互",
-      "description": "1. 修复 Bug：解决 Board.vue 中 'Cannot read properties of undefined (reading \"some\")' 的渲染报错，确保在调用数组方法前使用可选链 (?.) 或默认空数组判断。2. 优化 UI：当点击己方棋子时，被选中的棋子本身需增加明显的活跃状态（如外发光或轻微放大 scale-105）。3. 优化 UI：确保被选中棋子的合法落子点正确渲染出‘呼吸灯’效果（CSS opacity 在 0.3 到 0.8 之间循环过渡）。",
+      "id": "Bugfix-3",
+      "title": "修复吃子目标格无提示灯的 Bug",
+      "description": "排查 Board.vue 中合法落子提示（呼吸灯）的渲染逻辑。当前当合法落子点存在敌方棋子时（例如红炮可以跨子吃黑卒），该格子没有提示。请修改 Vue 模板或 CSS（如 z-index），确保敌方棋子所在格也能正常显示提示（建议使用红色边框高亮或叠加准星图标来区分普通的移动提示）。",
       "passes": true
     },
     {
-      "id": "Bugfix-2",
-      "title": "修复并实现右侧对战记录（棋谱）渲染",
-      "description": "排查右侧对战记录面板始终显示‘暂无落子记录’的问题。确保象棋的引擎状态（boardState）与 HistoryPanel 组件的数据绑定是响应式的。将内部的历史移动数据，正确转换为中国象棋标准记谱法（如‘炮二平五’、‘马八进七’）并实时渲染在列表中，每次新增记录需自动滚动到底部。",
-      "passes": true
+      "id": "Feature-1a",
+      "title": "实现特殊对局状态的检测与事件派发",
+      "description": "在 boardState.ts 或 engine 逻辑中，完善落子后的结算逻辑。精确判断当前回合是否触发了：吃子、将军、绝杀、困毙。将这些状态通过 Vue 响应式变量或事件抛出给外层视图。确保包含单元测试验证这些状态的触发。",
+      "passes": false
+    },
+    {
+      "id": "Feature-1b",
+      "title": "实现状态话术弹窗与音效调用",
+      "description": "在主视图中监听 Feature-1a 抛出的状态。1. UI展现：使用居中的醒目弹窗/Toast短时间展示‘吃’、‘将军！’、‘绝杀！’等文案。2. 音效逻辑：封装一个 playSound 工具函数，使用 HTML5 Audio API 播放音效。音效路径暂定为 '/sounds/capture.mp3', '/sounds/check.mp3', '/sounds/checkmate.mp3', '/sounds/stalemate.mp3'。处理好浏览器可能拦截自动播放的异常。",
+      "passes": false
     }
   ]
 }

@@ -234,6 +234,78 @@
       "title": "前端目录模块化：提取共享逻辑",
       "description": "在 src 目录下创建 common 或 shared 文件夹，移动通用的 UI 组件（如按钮、弹窗）和工具函数，为后续隔离 Gomoku 和 Chess 做准备。",
       "passes": true
+    },
+    {
+      "id": "S30a1",
+      "title": "前端：五子棋逻辑与状态层迁移",
+      "description": "在 src/games/gomoku/ 下建立基础结构。将五子棋专属的类型定义(types)、AI Web Worker 代码、以及状态管理相关文件移动过去。此阶段只关注底层文件，仅修复它们之间的相互引用。",
+      "passes": true
+    },
+    {
+      "id": "S30a2",
+      "title": "前端：五子棋 UI 组件层迁移",
+      "description": "将五子棋专属的 UI 组件（棋盘 Board、控制面板等）移动到 src/games/gomoku/components 目录。修复这些组件内部对 S30a1 中逻辑文件的引用路径。",
+      "passes": true
+    },
+    {
+      "id": "S30a3",
+      "title": "前端：五子棋视图与全局路由修复",
+      "description": "将五子棋的主视图（View/Page）移入 src/games/gomoku/。全面扫描 router 路由配置和 App 入口，修复所有指向五子棋模块的失效 import 路径。必须运行 npm run typecheck 确保 0 报错。",
+      "passes": true
+    },
+    {
+      "id": "S30b1",
+      "title": "前端：中国象棋逻辑与状态层迁移",
+      "description": "将中国象棋的类型定义、规则引擎 (engine) 和状态管理移动到 src/games/chinese-chess/ 下。修复模块内部的引用路径。",
+      "passes": true
+    },
+    {
+      "id": "S30b2",
+      "title": "前端：中国象棋 UI 组件与视图迁移",
+      "description": "将中国象棋的组件和视图移入 src/games/chinese-chess/。修复 router 中的路径引用。最后运行一次全局的前端编译和类型检查，确保模块化重构成功。",
+      "passes": true
+    },
+    {
+      "id": "S31",
+      "title": "后端 Express：创建模块化路由结构",
+      "description": "在 Express 后端 src/routes 目录下建立子目录结构。为不同的游戏业务预留独立的挂载点。确保符合项目现有的代码规范。",
+      "passes": true
+    },
+    {
+      "id": "S32",
+      "title": "后端：五子棋业务逻辑迁移",
+      "description": "将现有的五子棋 API 路由和控制器移动到后端的独立业务模块中。更新 express.Router() 的导出方式，确保模块化清晰。",
+      "passes": true
+    },
+    {
+      "id": "S33",
+      "title": "后端：中国象棋业务逻辑迁移",
+      "description": "将已有的中国象棋后端验证逻辑或 AI 接口移动到对应的业务模块中。修复所有的 import/require 路径。",
+      "passes": true
+    },
+    {
+      "id": "S34",
+      "title": "后端：重构主入口文件（app.ts/index.ts）",
+      "description": "修改 Express 主入口，按模块注册路由（例如 app.use('/api/gomoku', ...) 和 app.use('/api/chess', ...)）。确保中间件配置依然生效。",
+      "passes": true
+    },
+    {
+      "id": "S35",
+      "title": "全链路冒烟测试与重构验证",
+      "description": "启动前端和后端服务。验证五子棋和中国象棋的功能是否依然正常（包括下棋、悔棋和 AI 对战）。检查是否有遗漏的‘五林’文案。",
+      "passes": true
+    },
+    {
+      "id": "Bugfix-1",
+      "title": "修复 Board.vue 渲染崩溃与完善选中交互",
+      "description": "1. 修复 Bug：解决 Board.vue 中 'Cannot read properties of undefined (reading \"some\")' 的渲染报错，确保在调用数组方法前使用可选链 (?.) 或默认空数组判断。2. 优化 UI：当点击己方棋子时，被选中的棋子本身需增加明显的活跃状态（如外发光或轻微放大 scale-105）。3. 优化 UI：确保被选中棋子的合法落子点正确渲染出‘呼吸灯’效果（CSS opacity 在 0.3 到 0.8 之间循环过渡）。",
+      "passes": true
+    },
+    {
+      "id": "Bugfix-2",
+      "title": "修复并实现右侧对战记录（棋谱）渲染",
+      "description": "排查右侧对战记录面板始终显示‘暂无落子记录’的问题。确保象棋的引擎状态（boardState）与 HistoryPanel 组件的数据绑定是响应式的。将内部的历史移动数据，正确转换为中国象棋标准记谱法（如‘炮二平五’、‘马八进七’）并实时渲染在列表中，每次新增记录需自动滚动到底部。",
+      "passes": true
     }
   ]
 }
