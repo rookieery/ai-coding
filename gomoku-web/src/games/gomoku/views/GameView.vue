@@ -8,6 +8,7 @@ import GameControls from '../components/GameControls.vue';
 import { t, currentTheme } from '../../../i18n';
 import { gameApi, type FrontendGame } from '../../../api/game-api';
 import { useGlobalAuth } from '../../../composables/useAuth';
+import { useGlobalSettings } from '../../../composables/useSettings';
 
 defineOptions({
   name: 'GameView'
@@ -29,6 +30,7 @@ const isAiThinking = ref<boolean>(false);
 
 // 获取认证信息
 const auth = useGlobalAuth();
+const settings = useGlobalSettings();
 
 type SavedGame = FrontendGame & { moveCount?: number };
 
@@ -723,6 +725,7 @@ const showHint = () => {
       :showThinking="showThinking"
       :showSteps="showSteps"
       :isAiThinking="isAiThinking"
+      :theme="settings.gomokuTheme"
       @setMode="setMode"
       @setAiDifficulty="setAiDifficulty"
       @setAiRole="setAiRole"
@@ -735,6 +738,7 @@ const showHint = () => {
       @toggleSteps="showSteps = !showSteps"
       @saveGame="openSaveModal"
       @showRecords="openRecordsModal"
+      @updateTheme="settings.setGomokuTheme"
     />
 
     <div class="flex flex-col lg:flex-row items-start justify-center w-full px-4 gap-4 sm:gap-6 lg:gap-8">
@@ -755,6 +759,7 @@ const showHint = () => {
           :thinkingPath="thinkingPath"
           :forbiddenPoints="forbiddenPoints"
           :showSteps="showSteps"
+          :theme="settings.gomokuTheme"
           @placePiece="placePiece"
         />
       </div>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE, isStarPoint } from '../gameLogic';
+import type { ThemeKey } from '../../../common/theme';
+import { getThemeColors } from '../../../common/theme';
 
 const props = defineProps<{
   board: number[][];
@@ -15,6 +17,7 @@ const props = defineProps<{
   thinkingPath?: {r: number, c: number, player: number}[];
   forbiddenPoints?: {r: number, c: number}[];
   showSteps?: boolean;
+  theme?: ThemeKey;
 }>();
 
 const emit = defineEmits<{
@@ -49,12 +52,17 @@ const thinkingMap = computed(() => {
   }
   return map;
 });
+
+const themeColors = computed(() => {
+  const themeKey = props.theme || 'default';
+  return getThemeColors(themeKey);
+});
 </script>
 
 <template>
-  <div class="relative bg-[#DEB887] p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] border-[#8B4513] flex">
+  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
     <!-- Left Coordinates (Numbers) -->
-    <div class="flex flex-col mr-1 sm:mr-2 text-stone-800 font-bold text-xs sm:text-sm select-none opacity-70">
+    <div class="flex flex-col mr-1 sm:mr-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
       <div v-for="n in 15" :key="n" class="h-5 sm:h-6 md:h-7 lg:h-9 xl:h-10 flex items-center justify-center w-2.5 sm:w-3 md:w-3.5 lg:w-4.5 xl:w-5">{{ n }}</div>
     </div>
     
@@ -70,22 +78,22 @@ const thinkingMap = computed(() => {
           >
             <!-- Cross lines -->
             <div class="absolute inset-0 pointer-events-none">
-              <div class="absolute top-1/2 h-[1px] bg-stone-800/60" 
+              <div class="absolute top-1/2 h-[1px]" :class="themeColors.lineBackground" 
                    :style="{ left: c === 0 ? '50%' : '0', right: c === BOARD_SIZE - 1 ? '50%' : '0' }"></div>
-              <div class="absolute left-1/2 w-[1px] bg-stone-800/60" 
+              <div class="absolute left-1/2 w-[1px]" :class="themeColors.lineBackground" 
                    :style="{ top: r === 0 ? '50%' : '0', bottom: r === BOARD_SIZE - 1 ? '50%' : '0' }"></div>
             </div>
 
             <!-- Star point -->
             <div v-if="isStarPoint(r, c)" 
-                 class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 bg-stone-800 rounded-full pointer-events-none"></div>
+                 class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full pointer-events-none" :class="themeColors.piecePrimary"></div>
 
             <!-- Piece -->
             <div 
               v-if="cell !== EMPTY"
               class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center"
               :class="[
-                cell === BLACK ? 'bg-gradient-to-br from-stone-600 to-stone-900' : 'bg-gradient-to-br from-white to-stone-200 border border-stone-300',
+                cell === BLACK ? themeColors.piecePrimary : [themeColors.pieceSecondary, 'border border-stone-300'],
                 isWinningPiece(r, c) ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-[#DEB887] animate-pulse z-20' : ''
               ]"
             >
@@ -113,7 +121,7 @@ const thinkingMap = computed(() => {
               v-else-if="thinkingMap.has(`${r},${c}`)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
               :class="[
-                thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'bg-gradient-to-br from-stone-600 to-stone-900' : 'bg-gradient-to-br from-white to-stone-200 border border-stone-300',
+                thinkingMap.get(`${r},${c}`)!.player === BLACK ? themeColors.piecePrimary : [themeColors.pieceSecondary, 'border border-stone-300'],
                 showSteps ? (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-blue-400' : 'text-blue-600') : (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-white' : 'text-stone-800')
               ]"
             >
@@ -124,7 +132,7 @@ const thinkingMap = computed(() => {
             <div 
               v-else-if="winner === EMPTY && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
-              :class="currentPlayer === BLACK ? 'bg-stone-900' : 'bg-white'"
+              :class="currentPlayer === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary"
             ></div>
 
             <!-- Forbidden Point -->
@@ -139,7 +147,7 @@ const thinkingMap = computed(() => {
       </div>
       
       <!-- Bottom Coordinates (Letters) -->
-      <div class="flex mt-1 sm:mt-2 text-stone-800 font-bold text-xs sm:text-sm select-none opacity-70">
+      <div class="flex mt-1 sm:mt-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
         <div v-for="l in 15" :key="l" class="w-5 sm:w-6 md:w-7 lg:w-9 xl:w-10 flex items-center justify-center">{{ String.fromCharCode(96 + l) }}</div>
       </div>
     </div>

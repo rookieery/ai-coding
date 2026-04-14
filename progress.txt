@@ -12,4 +12,7 @@ Started: Fri Apr 10 19:52:09     2026
 [Bugfix-2] - 修复并实现右侧对战记录（棋谱）渲染 - 2026-04-13 - Completed
 
 [Bugfix-3] - 修复吃子目标格无提示灯的 Bug - 2026-04-13 - Completed
-[Feature-1a] - 实现特殊对局状态的检测与事件派发 - 2026-04-13 - Completed
+[Feature-1a] - 实现特殊对局状态的检测与事件派发 - 2026-04-13 - Completed[Feature-Theme-1] - 定义全局主题配置与常量 - 2026-04-14 - Completed
+[Feature-Theme-2] - 实现独立的主题状态管理 - 2026-04-14 - Completed
+[Feature-Theme-3] - 开发公共的主题切换选择器 - 2026-04-14 - Completed
+[Feature-Theme-4] - 将主题应用到五子棋视图 - 2026-04-14 - Completed

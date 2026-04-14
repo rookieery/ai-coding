@@ -2,6 +2,8 @@
 import { RotateCcw, Undo2, Lightbulb, User, Bot, BookOpen, Brain, Eye, EyeOff, Save, List } from 'lucide-vue-next';
 import type { Difficulty, RuleMode } from '../gameLogic';
 import { t, currentTheme } from '../../../i18n';
+import type { ThemeKey } from '../../../common/theme';
+import { ThemeSelector } from '../../../common/components';
 
 const props = defineProps<{
   mode: 'pvp' | 'pve';
@@ -15,9 +17,10 @@ const props = defineProps<{
   showThinking: boolean;
   showSteps: boolean;
   isAiThinking: boolean;
+  theme: ThemeKey;
 }>();
 
-const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDifficulty', 'setAiRole', 'toggleAnalysisMode', 'toggleThinking', 'setRuleMode', 'toggleSteps', 'saveGame', 'showRecords']);
+const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDifficulty', 'setAiRole', 'toggleAnalysisMode', 'toggleThinking', 'setRuleMode', 'toggleSteps', 'saveGame', 'showRecords', 'updateTheme']);
 </script>
 
 <template>
@@ -82,6 +85,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
     </div>
 
     <div class="flex gap-2 sm:gap-3 flex-wrap justify-center">
+      <ThemeSelector :model-value="theme" @update:model-value="emit('updateTheme', $event)" />
       <select
         :value="ruleMode"
         @change="emit('setRuleMode', ($event.target as HTMLSelectElement).value)"

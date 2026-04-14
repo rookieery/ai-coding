@@ -28,4 +28,7 @@ You are an autonomous senior full-stack engineer. Your current goal is to implem
    - APPEND your progress to `progress.txt` (see format below).
    - Update or create `AGENTS.md` in the modified directories if new reusable knowledge was found.
 
+## Testing & Validation
+1. Strict Build Check: Before marking ANY UI or structural task as "passes": true, you MUST run npm run typecheck or verify that the Vue component compiles without Vite import errors. Do not rely solely on isolated unit tests for architectural changes.
+
 ## Progress Report Format
