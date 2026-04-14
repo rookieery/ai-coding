@@ -3,6 +3,8 @@ import { User, Bot, RotateCcw, Undo2, Lightbulb, BookOpen, Brain, Eye, EyeOff, S
 import type { Difficulty, GameMode } from '../types';
 import { PlayerSide } from '../types';
 import { t, currentTheme } from '../../../i18n';
+import type { ThemeKey } from '../../../common/theme';
+import { ThemeSelector } from '../../../common/components';
 
 const props = defineProps<{
   mode: GameMode;
@@ -15,9 +17,10 @@ const props = defineProps<{
   showThinking: boolean;
   showSteps: boolean;
   isAiThinking: boolean;
+  theme?: ThemeKey;
 }>();
 
-const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDifficulty', 'setAiRole', 'toggleAnalysisMode', 'toggleThinking', 'toggleSteps', 'saveGame', 'showRecords']);
+const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDifficulty', 'setAiRole', 'toggleAnalysisMode', 'toggleThinking', 'toggleSteps', 'saveGame', 'showRecords', 'updateTheme']);
 </script>
 
 <template>
@@ -86,6 +89,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
 
     <!-- 主要控制按钮行 -->
     <div class="flex gap-2 sm:gap-3 flex-wrap justify-center">
+      <ThemeSelector :model-value="theme || 'default'" @update:model-value="emit('updateTheme', $event)" />
       <!-- 难度选择 -->
       <select
         :value="aiDifficulty"

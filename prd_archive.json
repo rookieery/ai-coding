@@ -312,6 +312,30 @@
       "title": "修复吃子目标格无提示灯的 Bug",
       "description": "排查 Board.vue 中合法落子提示（呼吸灯）的渲染逻辑。当前当合法落子点存在敌方棋子时（例如红炮可以跨子吃黑卒），该格子没有提示。请修改 Vue 模板或 CSS（如 z-index），确保敌方棋子所在格也能正常显示提示（建议使用红色边框高亮或叠加准星图标来区分普通的移动提示）。",
       "passes": true
+    },
+    {
+      "id": "Feature-Theme-1",
+      "title": "定义全局主题配置与常量",
+      "description": "在 src/common/ (或全局 types 目录) 下新建 theme.ts，定义四种主题配置对象：1. 'default' (经典默认)；2. 'zen' (墨韵檀香：暖木色/宣纸背景，低对比度线条)；3. 'cyber' (赛博弈域：深灰蓝背景，带发光质感的强调色)；4. 'minimal' (极简奢华：石板灰背景，莫兰迪色系搭配)。配置需包含棋盘背景色、线条色、棋子主色和文字色。",
+      "passes": true
+    },
+    {
+      "id": "Feature-Theme-2",
+      "title": "实现独立的主题状态管理",
+      "description": "在项目中统一的状态管理处（如 Pinia store 或 Vue 组合式函数 useSettings），新增两个独立的状态：gomokuTheme 和 chessTheme，默认值均为 'default'。必须实现 localStorage 的持久化存储，确保刷新页面后两种棋的独立主题配置不丢失。",
+      "passes": true
+    },
+    {
+      "id": "Feature-Theme-3",
+      "title": "开发公共的主题切换选择器",
+      "description": "在 src/common/components/ 下创建一个公用的 ThemeSelector.vue 下拉选择器组件，支持传入当前选中的主题 key 和 update 事件。分别将该组件引入到五子棋和中国象棋的 GameControls.vue 控制面板中，并绑定各自独立的主题状态 (gomokuTheme / chessTheme)。",
+      "passes": true
+    },
+    {
+      "id": "Feature-Theme-4",
+      "title": "将主题应用到五子棋视图",
+      "description": "修改 src/games/gomoku 下的 Board.vue 和 Piece.vue。读取当前 gomokuTheme 的状态，利用 Vue 的动态 style 或 class (推荐计算属性结合 Feature-Theme-1 定义的颜色变量)，动态渲染五子棋的棋盘背景、网格线和黑白棋子颜色。确保切换主题时无刷新平滑过渡。",
+      "passes": true
     }
   ]
 }

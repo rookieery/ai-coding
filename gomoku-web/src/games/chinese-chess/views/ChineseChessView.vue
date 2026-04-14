@@ -32,6 +32,7 @@ import ChineseChessHistoryPanel from '../components/HistoryPanel.vue';
 import { t, currentTheme } from '../../../i18n';
 import { gameApi, type FrontendGame } from '../../../api/game-api';
 import { useGlobalAuth } from '../../../composables/useAuth';
+import { useGlobalSettings } from '../../../composables/useSettings';
 
 defineOptions({
   name: 'ChineseChessView'
@@ -63,6 +64,7 @@ const moveResult = ref<{
 
 // 获取认证信息
 const auth = useGlobalAuth();
+const settings = useGlobalSettings();
 
 type SavedGame = FrontendGame & { moveCount?: number };
 
@@ -721,6 +723,7 @@ const showHint = () => {
       :showThinking="showThinking"
       :showSteps="showSteps"
       :isAiThinking="isAiThinking"
+      :theme="settings.chessTheme"
       @setMode="setMode"
       @setAiDifficulty="setAiDifficulty"
       @setAiRole="setAiRole"
@@ -732,6 +735,7 @@ const showHint = () => {
       @toggleSteps="showSteps = !showSteps"
       @saveGame="openSaveModal"
       @showRecords="openRecordsModal"
+      @updateTheme="settings.setChessTheme"
     />
 
     <div class="flex flex-col lg:flex-row items-start justify-center w-full px-4 gap-4 sm:gap-6 lg:gap-8">
@@ -753,6 +757,7 @@ const showHint = () => {
           :showSteps="showSteps"
           :selectedPiece="selectedPiece"
           :validMoves="validMoves"
+          :theme="settings.chessTheme"
           @selectPiece="handleSelectPiece"
           @movePiece="handleMovePiece"
           @clickCell="handleClickCell"

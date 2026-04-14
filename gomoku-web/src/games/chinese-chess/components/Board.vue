@@ -10,6 +10,8 @@ import {
   MoveHistory,
 } from '../types';
 import { t } from '../../../i18n';
+import type { ThemeKey } from '../../../common/theme';
+import { getThemeColors } from '../../../common/theme';
 
 const props = defineProps<{
   board: BoardState;
@@ -24,6 +26,7 @@ const props = defineProps<{
   showSteps?: boolean;
   selectedPiece?: BoardCoord | null;
   validMoves?: BoardCoord[];
+  theme?: ThemeKey;
 }>();
 
 const emit = defineEmits<{
@@ -49,6 +52,12 @@ const legalTargets = computed(() => {
 const isLegalTarget = (coord: BoardCoord) => {
   return legalTargets.value?.some(t => t.col === coord.col && t.row === coord.row) ?? false;
 };
+
+// 主题颜色计算
+const themeColors = computed(() => {
+  const themeKey = props.theme || 'default';
+  return getThemeColors(themeKey);
+});
 
 // 点击单元格处理
 const handleCellClick = (coord: BoardCoord) => {
@@ -124,7 +133,7 @@ const bottomColumnLabels = computed(() => {
 
 // 棋子颜色类名
 const pieceColorClass = (side: PlayerSide) =>
-  side === PlayerSide.RED ? 'text-red-600 dark:text-red-400' : 'text-stone-900 dark:text-stone-300';
+  side === PlayerSide.RED ? themeColors.piecePrimary : themeColors.pieceSecondary;
 
 // 是否为河界行（第4和第5行之间，即 row=4 和 row=5 之间的间隙）
 const isRiverRow = (row: number) => row === 4 || row === 5;
@@ -177,9 +186,9 @@ const isCheckHighlight = computed(() => {
 </script>
 
 <template>
-  <div class="relative bg-amber-100 dark:bg-amber-900 border-amber-800 dark:border-amber-700 p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex">
+  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
     <!-- 左侧纵坐标（数字 1-10） -->
-    <div class="flex flex-col mr-1 sm:mr-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm select-none opacity-70">
+    <div class="flex flex-col mr-1 sm:mr-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
       <div v-for="n in BOARD_ROWS" :key="n" class="h-6 sm:h-7 md:h-8 lg:h-9 xl:h-10 flex items-center justify-center w-3 sm:w-3.5 md:w-4 lg:w-4.5 xl:w-5">
         {{ BOARD_ROWS - n + 1 }}
       </div>
@@ -187,7 +196,7 @@ const isCheckHighlight = computed(() => {
 
     <div class="flex flex-col">
       <!-- 顶部横坐标（数字 1-9） -->
-      <div class="flex mb-1 sm:mb-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm select-none opacity-70">
+      <div class="flex mb-1 sm:mb-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
         <div v-for="(num, index) in topColumnLabels" :key="index" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
           {{ num }}
         </div>
@@ -200,8 +209,8 @@ const isCheckHighlight = computed(() => {
             :key="`${rowIndex}-${colIndex}`"
             class="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex items-center justify-center cursor-pointer group"
             :class="[
-              (rowIndex + colIndex) % 2 === 0 ? 'bg-amber-100 dark:bg-amber-900' : 'bg-amber-200 dark:bg-amber-800',
-              isRiverRow(rowIndex) ? 'border-t border-b border-dashed border-amber-700 dark:border-amber-600' : '',
+              (rowIndex + colIndex) % 2 === 0 ? themeColors.boardBackground : themeColors.lineBackground,
+              isRiverRow(rowIndex) ? 'border-t border-b border-dashed' : '', isRiverRow(rowIndex) ? themeColors.lineColor : '',
             ]"
             @click="handleCellClick({ col: colIndex, row: rowIndex })"
           >
@@ -209,12 +218,12 @@ const isCheckHighlight = computed(() => {
             <div class="absolute inset-0 pointer-events-none">
               <!-- 横线 -->
               <div
-                class="absolute top-1/2 h-[1px] bg-amber-800 dark:bg-amber-700"
+                class="absolute top-1/2 h-[1px]" :class="themeColors.lineColor"
                 :style="{ left: colIndex === 0 ? '50%' : '0', right: colIndex === BOARD_COLS - 1 ? '50%' : '0' }"
               ></div>
               <!-- 竖线 -->
               <div
-                class="absolute left-1/2 w-[1px] bg-amber-800 dark:bg-amber-700"
+                class="absolute left-1/2 w-[1px]" :class="themeColors.lineColor"
                 :style="{ top: rowIndex === 0 ? '50%' : '0', bottom: rowIndex === BOARD_ROWS - 1 ? '50%' : '0' }"
               ></div>
             </div>
@@ -222,7 +231,7 @@ const isCheckHighlight = computed(() => {
             <!-- 河界文字 -->
             <div
               v-if="rowIndex === 4 || rowIndex === 5"
-              class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 text-amber-800 dark:text-amber-700 font-bold text-xs sm:text-sm"
+              class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 font-bold text-xs sm:text-sm" :class="themeColors.lineColor"
             >
               {{ rowIndex === 4 ? t('riverChu') : t('riverHan') }}
             </div>
@@ -234,14 +243,14 @@ const isCheckHighlight = computed(() => {
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(0% 0%, 100% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] bg-amber-800 dark:bg-amber-700 transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
               </div>
               <div
                 v-if="(colIndex === 5 && rowIndex === 7) || (colIndex === 3 && rowIndex === 9)"
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(100% 0%, 0% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] bg-amber-800 dark:bg-amber-700 transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
               </div>
             </template>
 
@@ -252,14 +261,14 @@ const isCheckHighlight = computed(() => {
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(0% 0%, 100% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] bg-amber-800 dark:bg-amber-700 transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
               </div>
               <div
                 v-if="(colIndex === 5 && rowIndex === 0) || (colIndex === 3 && rowIndex === 2)"
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(100% 0%, 0% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] bg-amber-800 dark:bg-amber-700 transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
               </div>
             </template>
 
@@ -303,8 +312,8 @@ const isCheckHighlight = computed(() => {
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
               :class="[
                 thinkingMap.get(`${colIndex},${rowIndex}`)!.side === PlayerSide.RED
-                  ? 'bg-red-200 dark:bg-red-900/70'
-                  : 'bg-stone-300 dark:bg-stone-700',
+                  ? `${themeColors.piecePrimary} bg-opacity-20 dark:bg-opacity-40`
+                  : `${themeColors.pieceSecondary} bg-opacity-20 dark:bg-opacity-40`,
               ]"
             >
               {{ thinkingMap.get(`${colIndex},${rowIndex}`)!.index }}
@@ -320,14 +329,14 @@ const isCheckHighlight = computed(() => {
             <div
               v-else-if="!winner && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
-              :class="currentPlayer === PlayerSide.RED ? 'bg-red-900' : 'bg-stone-900'"
+              :class="currentPlayer === PlayerSide.RED ? `${themeColors.piecePrimary} bg-opacity-20` : `${themeColors.pieceSecondary} bg-opacity-20`"
             ></div>
           </div>
         </template>
       </div>
 
       <!-- 底部横坐标（中文数字 九至一） -->
-      <div class="flex mt-1 sm:mt-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm select-none opacity-70">
+      <div class="flex mt-1 sm:mt-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
         <div v-for="(num, index) in bottomColumnLabels" :key="index" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
           {{ num }}
         </div>
