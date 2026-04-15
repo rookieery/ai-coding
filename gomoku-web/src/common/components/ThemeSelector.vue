@@ -27,14 +27,13 @@ const selected = computed({
 <template>
   <select
     v-model="selected"
-    class="px-3 py-2 border rounded-lg outline-none transition-colors font-medium text-sm"
-    :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-100 hover:bg-stone-700' : 'bg-white border-stone-300 text-stone-800 hover:bg-stone-50'"
+    class="px-2 py-1.5 sm:px-3 sm:py-2 border rounded-lg outline-none transition-colors shadow-sm text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-200 hover:bg-stone-700' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'"
   >
     <option
       v-for="option in themeOptions"
       :key="option.value"
       :value="option.value"
-      class="bg-white dark:bg-stone-800"
     >
       {{ option.label }}
     </option>
