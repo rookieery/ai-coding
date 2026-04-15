@@ -1,4 +1,23 @@
 {
   "branchName": "feature/chinese-chess",
-  "stories": []
+  "stories": [
+    {
+      "id": "UI-Refine-1",
+      "title": "修复棋盘底层网格错误 (去除国际象棋格子)",
+      "description": "严重Bug：当前中国象棋棋盘被错误渲染成了国际象棋的黑白相间格子。请立即修改 Board.vue，删除所有交替格子（alternating squares）的背景色逻辑。棋盘必须是一个统一的、纯色的底层背景色（boardBackground），网格只能通过边框线（border）来体现。楚河汉界区域也不得有任何填色异常。",
+      "passes": true
+    },
+    {
+      "id": "UI-Refine-2",
+      "title": "强制恢复棋子红黑阵营颜色与可读性",
+      "description": "严重Bug：棋子无法区分红黑方且看不清文字。修改 Piece.vue：1. 棋子必须有不透明的实心背景色（如白色或浅米色），加上边框（border）和阴影（shadow-md）使其浮在棋盘上。2. 无论什么主题，红方棋子的文字颜色必须是红色系（如 text-red-600 或 #C82C2C），黑方必须是深色系（如 text-gray-900 或 #1A1A1A）。【赛博主题除外：赛博主题下红方用荧光粉/红，黑方用青/蓝，且自带发光特效】。",
+      "passes": true
+    },
+    {
+      "id": "UI-Refine-3",
+      "title": "重新注入四大主题的精确色号定义",
+      "description": "修改 theme.ts，严格使用以下色彩规范重写主题配置，严禁随意发挥：\n1. default: 棋盘 bg-[#F3E5AB] (原木色), 线条 border-[#8B4513], 棋子底色 bg-white, 选中高亮 ring-green-500。\n2. zen (墨韵): 棋盘 bg-[#E8DCC4] (柔和宣纸色), 线条 border-[#5C4033], 棋子底色 bg-[#F5F5DC], 红字 #8B0000, 黑字 #1A1A1A。\n3. cyber (赛博): 棋盘 bg-[#0F172A] (深渊蓝), 线条 border-[#38BDF8]/50 (半透明天蓝), 棋子底色 bg-[#1E293B], 红方 text-[#F43F5E] 并带 drop-shadow, 黑方 text-[#2DD4BF] 带 drop-shadow。\n4. minimal (极简): 棋盘 bg-[#F9FAFB], 线条 border-[#D1D5DB], 棋子底色 bg-white 且无明显边框(仅极淡阴影), 红字 #EF4444, 黑字 #374151。",
+      "passes": true
+    }
+  ]
 }

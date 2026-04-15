@@ -133,7 +133,7 @@ const bottomColumnLabels = computed(() => {
 
 // 棋子颜色类名
 const pieceColorClass = (side: PlayerSide) =>
-  side === PlayerSide.RED ? themeColors.piecePrimary : themeColors.pieceSecondary;
+  side === PlayerSide.RED ? themeColors.pieceTextPrimary : themeColors.pieceTextSecondary;
 
 // 是否为河界行（第4和第5行之间，即 row=4 和 row=5 之间的间隙）
 const isRiverRow = (row: number) => row === 4 || row === 5;
@@ -209,7 +209,7 @@ const isCheckHighlight = computed(() => {
             :key="`${rowIndex}-${colIndex}`"
             class="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex items-center justify-center cursor-pointer group"
             :class="[
-              (rowIndex + colIndex) % 2 === 0 ? themeColors.boardBackground : themeColors.lineBackground,
+              themeColors.boardBackground,
               isRiverRow(rowIndex) ? 'border-t border-b border-dashed' : '', isRiverRow(rowIndex) ? themeColors.lineColor : '',
             ]"
             @click="handleCellClick({ col: colIndex, row: rowIndex })"
@@ -275,9 +275,9 @@ const isCheckHighlight = computed(() => {
             <!-- 棋子 -->
             <div
               v-if="cell"
-              class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center"
+              class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600"
               :class="[
-                pieceColorClass(cell.side),
+                themeColors.pieceBackground,
                 selectedCoord?.col === colIndex && selectedCoord?.row === rowIndex
                   ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-amber-100 dark:ring-offset-amber-900 scale-105'
                   : '',
@@ -290,7 +290,7 @@ const isCheckHighlight = computed(() => {
                 class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
               ></div>
               <!-- 棋子字符 -->
-              <span class="relative z-10 text-lg sm:text-xl font-bold">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-lg sm:text-xl font-bold" :class="pieceColorClass(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"
@@ -312,8 +312,8 @@ const isCheckHighlight = computed(() => {
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
               :class="[
                 thinkingMap.get(`${colIndex},${rowIndex}`)!.side === PlayerSide.RED
-                  ? `${themeColors.piecePrimary} bg-opacity-20 dark:bg-opacity-40`
-                  : `${themeColors.pieceSecondary} bg-opacity-20 dark:bg-opacity-40`,
+                  ? `${themeColors.piecePrimary}`
+                  : `${themeColors.pieceSecondary}`,
               ]"
             >
               {{ thinkingMap.get(`${colIndex},${rowIndex}`)!.index }}
@@ -329,7 +329,7 @@ const isCheckHighlight = computed(() => {
             <div
               v-else-if="!winner && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
-              :class="currentPlayer === PlayerSide.RED ? `${themeColors.piecePrimary} bg-opacity-20` : `${themeColors.pieceSecondary} bg-opacity-20`"
+              :class="currentPlayer === PlayerSide.RED ? `${themeColors.piecePrimary}` : `${themeColors.pieceSecondary}`"
             ></div>
           </div>
         </template>

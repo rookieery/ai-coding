@@ -77,9 +77,12 @@ describe('evaluateMoveResult', () => {
       board = Array(10).fill(null).map(() => Array(9).fill(null));
       // 黑方将在 (4,0)
       board[0][4] = { type: PieceType.KING, side: PlayerSide.BLACK, coord: { col: 4, row: 0 } };
-      // 红方车在 (3,0) 和 (5,0) 将军，黑方将无法移动
+      // 红方车在 (4,1) 垂直将军
+      board[1][4] = { type: PieceType.ROOK, side: PlayerSide.RED, coord: { col: 4, row: 1 } };
+      // 红方车在 (3,0) 水平将军
       board[0][3] = { type: PieceType.ROOK, side: PlayerSide.RED, coord: { col: 3, row: 0 } };
-      board[0][5] = { type: PieceType.ROOK, side: PlayerSide.RED, coord: { col: 5, row: 0 } };
+      // 红方马在 (2,2) 控制 (3,1) 和 (5,1) 等位置
+      board[2][2] = { type: PieceType.KNIGHT, side: PlayerSide.RED, coord: { col: 2, row: 2 } };
       // 红方刚移动完，将军
       const result = evaluateMoveResult(board, PlayerSide.RED, false);
 
@@ -93,9 +96,14 @@ describe('evaluateMoveResult', () => {
     it('困毙局面应返回 stalemate=true 和 gameOver=true', () => {
       // 构造困毙局面：黑方将无子可动且未被将军
       board = Array(10).fill(null).map(() => Array(9).fill(null));
+      // 黑方将在 (4,0)
       board[0][4] = { type: PieceType.KING, side: PlayerSide.BLACK, coord: { col: 4, row: 0 } };
-      // 红方车放在 (5,1)，控制黑方将的移动
+      // 红方车在 (3,1) 控制 (3,0) 和 (3,1) 等位置
+      board[1][3] = { type: PieceType.ROOK, side: PlayerSide.RED, coord: { col: 3, row: 1 } };
+      // 红方车在 (5,1) 控制 (5,0) 和 (5,1)
       board[1][5] = { type: PieceType.ROOK, side: PlayerSide.RED, coord: { col: 5, row: 1 } };
+      // 红方马在 (2,2) 控制 (4,1) 等位置
+      board[2][2] = { type: PieceType.KNIGHT, side: PlayerSide.RED, coord: { col: 2, row: 2 } };
       // 红方刚移动完，轮到黑方走棋
       const result = evaluateMoveResult(board, PlayerSide.RED, false);
 

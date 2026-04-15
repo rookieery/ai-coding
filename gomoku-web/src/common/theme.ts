@@ -13,10 +13,16 @@ export interface ThemeColors {
   lineColor: string;
   /** 棋盘线条背景色（用于交叉线） - 对应 Tailwind 背景类 */
   lineBackground: string;
-  /** 棋子主色（如五子棋黑子、象棋红子） - 对应 Tailwind 文字/背景类 */
+  /** 棋子背景色 - 对应 Tailwind 背景类 */
+  pieceBackground: string;
+  /** 棋子主色（红方背景颜色） - 对应 Tailwind 背景类 */
   piecePrimary: string;
-  /** 棋子次色（如五子棋白子、象棋黑子） - 对应 Tailwind 文字/背景类 */
+  /** 棋子次色（黑方背景颜色） - 对应 Tailwind 背景类 */
   pieceSecondary: string;
+  /** 棋子主文字颜色（红方文字颜色） - 对应 Tailwind 文字类 */
+  pieceTextPrimary: string;
+  /** 棋子次文字颜色（黑方文字颜色） - 对应 Tailwind 文字类 */
+  pieceTextSecondary: string;
   /** 主要文字颜色 - 对应 Tailwind 文字类 */
   textPrimary: string;
   /** 次要文字颜色 - 对应 Tailwind 文字类 */
@@ -25,39 +31,51 @@ export interface ThemeColors {
 
 export const themes: Record<ThemeKey, ThemeColors> = {
   default: {
-    boardBackground: 'bg-stone-100 dark:bg-stone-900',
-    lineColor: 'border-stone-300 dark:border-stone-700',
-    lineBackground: 'bg-stone-300/60 dark:bg-stone-700/60',
-    piecePrimary: 'bg-stone-900 dark:bg-stone-100',
-    pieceSecondary: 'bg-stone-500 dark:bg-stone-400',
-    textPrimary: 'text-stone-800 dark:text-stone-200',
-    textSecondary: 'text-stone-500 dark:text-stone-500',
+    boardBackground: 'bg-[#F3E5AB] dark:bg-[#F3E5AB]',
+    lineColor: 'border-[#8B4513] dark:border-[#8B4513]',
+    lineBackground: 'bg-[#8B4513]/60 dark:bg-[#8B4513]/60',
+    pieceBackground: 'bg-white dark:bg-white',
+    piecePrimary: 'bg-red-500/20 dark:bg-red-500/20',
+    pieceSecondary: 'bg-gray-800/20 dark:bg-gray-800/20',
+    pieceTextPrimary: 'text-red-600 dark:text-red-600',
+    pieceTextSecondary: 'text-gray-900 dark:text-gray-900',
+    textPrimary: 'text-gray-800 dark:text-gray-800',
+    textSecondary: 'text-gray-500 dark:text-gray-500',
   },
   zen: {
-    boardBackground: 'bg-amber-50 dark:bg-amber-950',
-    lineColor: 'border-amber-300 dark:border-amber-800',
-    lineBackground: 'bg-amber-300/60 dark:bg-amber-800/60',
-    piecePrimary: 'bg-amber-900 dark:bg-amber-200',
-    pieceSecondary: 'bg-amber-700 dark:bg-amber-400',
-    textPrimary: 'text-amber-800 dark:text-amber-300',
-    textSecondary: 'text-amber-600 dark:text-amber-500',
+    boardBackground: 'bg-[#E8DCC4] dark:bg-[#E8DCC4]',
+    lineColor: 'border-[#5C4033] dark:border-[#5C4033]',
+    lineBackground: 'bg-[#5C4033]/60 dark:bg-[#5C4033]/60',
+    pieceBackground: 'bg-[#F5F5DC] dark:bg-[#F5F5DC]',
+    piecePrimary: 'bg-[#8B0000]/20 dark:bg-[#8B0000]/20',
+    pieceSecondary: 'bg-[#1A1A1A]/20 dark:bg-[#1A1A1A]/20',
+    pieceTextPrimary: 'text-[#8B0000] dark:text-[#8B0000]',
+    pieceTextSecondary: 'text-[#1A1A1A] dark:text-[#1A1A1A]',
+    textPrimary: 'text-gray-800 dark:text-gray-800',
+    textSecondary: 'text-gray-500 dark:text-gray-500',
   },
   cyber: {
-    boardBackground: 'bg-slate-900 dark:bg-slate-950',
-    lineColor: 'border-slate-600 dark:border-slate-500',
-    lineBackground: 'bg-slate-600/60 dark:bg-slate-500/60',
-    piecePrimary: 'bg-cyan-400 dark:bg-cyan-300',
-    pieceSecondary: 'bg-purple-400 dark:bg-purple-300',
-    textPrimary: 'text-slate-300 dark:text-slate-200',
-    textSecondary: 'text-slate-500 dark:text-slate-400',
+    boardBackground: 'bg-[#0F172A] dark:bg-[#0F172A]',
+    lineColor: 'border-[#38BDF8]/50 dark:border-[#38BDF8]/50',
+    lineBackground: 'bg-[#38BDF8]/30 dark:bg-[#38BDF8]/30',
+    pieceBackground: 'bg-[#1E293B] dark:bg-[#1E293B]',
+    piecePrimary: 'bg-[#F43F5E]/20 dark:bg-[#F43F5E]/20',
+    pieceSecondary: 'bg-[#2DD4BF]/20 dark:bg-[#2DD4BF]/20',
+    pieceTextPrimary: 'text-[#F43F5E] drop-shadow-md dark:text-[#F43F5E] dark:drop-shadow-md',
+    pieceTextSecondary: 'text-[#2DD4BF] drop-shadow-md dark:text-[#2DD4BF] dark:drop-shadow-md',
+    textPrimary: 'text-slate-300 dark:text-slate-300',
+    textSecondary: 'text-slate-500 dark:text-slate-500',
   },
   minimal: {
-    boardBackground: 'bg-gray-200 dark:bg-gray-800',
-    lineColor: 'border-gray-400 dark:border-gray-600',
-    lineBackground: 'bg-gray-400/60 dark:bg-gray-600/60',
-    piecePrimary: 'bg-gray-800 dark:bg-gray-300',
-    pieceSecondary: 'bg-gray-600 dark:bg-gray-400',
-    textPrimary: 'text-gray-700 dark:text-gray-300',
+    boardBackground: 'bg-[#F9FAFB] dark:bg-[#F9FAFB]',
+    lineColor: 'border-[#D1D5DB] dark:border-[#D1D5DB]',
+    lineBackground: 'bg-[#D1D5DB]/60 dark:bg-[#D1D5DB]/60',
+    pieceBackground: 'bg-white dark:bg-white',
+    piecePrimary: 'bg-[#EF4444]/20 dark:bg-[#EF4444]/20',
+    pieceSecondary: 'bg-[#374151]/20 dark:bg-[#374151]/20',
+    pieceTextPrimary: 'text-[#EF4444] dark:text-[#EF4444]',
+    pieceTextSecondary: 'text-[#374151] dark:text-[#374151]',
+    textPrimary: 'text-gray-700 dark:text-gray-700',
     textSecondary: 'text-gray-500 dark:text-gray-500',
   },
 };
