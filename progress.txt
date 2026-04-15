@@ -4,3 +4,4 @@ Started: Fri Apr 10 19:52:09     2026
 
 UI-Refine-2: Updated piece styling with solid opaque background (pieceBackground), border, and shadow. Red/black text colors now properly defined per theme with cyber theme getting fluorescent colors and drop-shadow effects. - 2026年04月15日 18:31:16
 UI-Refine-3: Rewrote theme.ts with exact color specifications per requirements. All four themes (default, zen, cyber, minimal) now use precise hex colors for board, lines, piece background, and text colors. - 2026年04月15日 18:31:16
+UI-Fix-Piece-Color, UI-Fix-Grid-Lines: Updated theme.ts to fix piece text colors (removed dark: variants, forced red/black colors) and increased grid line contrast per theme. - 2026年04月15日 19:51:34

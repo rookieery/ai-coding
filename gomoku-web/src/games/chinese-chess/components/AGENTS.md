@@ -96,3 +96,25 @@ Pass the `theme` prop from the parent view (e.g., `ChineseChessView.vue`), which
 - `src/common/theme.ts` – added fallback to default theme in `getThemeColors()`
 
 **Testing**: Run `npm run lint` to verify no TypeScript errors; visually confirm the board renders with the selected theme.
+
+## Visual Bug Fix: Piece Text Color and Grid Line Contrast (UI-Fix-Piece-Color, UI-Fix-Grid-Lines)
+
+**Problem**: 
+1. Piece text colors were incorrectly reversed in dark mode, making red/black pieces unreadable.
+2. Grid lines (including river boundaries) had insufficient contrast, making them nearly invisible.
+
+**Solution**:
+1. **Piece text colors**: Removed `dark:` responsive variants from `pieceTextPrimary` and `pieceTextSecondary` in all themes, forcing fixed colors regardless of dark/light mode. Red pieces now use `text-red-600` (default), `text-[#8B0000]` (zen), `text-[#F43F5E]` (cyber), `text-[#EF4444]` (minimal). Black pieces use `text-gray-900` (default, minimal), `text-[#1A1A1A]` (zen), `text-[#2DD4BF]` (cyber). Cyber theme retains its fluorescent colors with drop shadows.
+2. **Grid line contrast**: Updated `lineColor` and `lineBackground` for each theme to high‑contrast solid colors:
+   - Default & Zen: `border-[#5C4033]` (deep brown)
+   - Cyber: `border-[#06B6D4]` (bright cyan) with no opacity
+   - Minimal: `border-[#9CA3AF]` (medium gray)
+   Removed opacity/transparency to ensure lines are clearly visible.
+
+**Implementation**:
+- Modified `src/common/theme.ts` only; no component changes required.
+- All theme colors now apply consistently across light/dark modes.
+
+**Verification**:
+- Run `npm run lint` to ensure no TypeScript errors.
+- Visually inspect board grid lines and piece text colors in all four themes.

@@ -1,4 +1,17 @@
 {
   "branchName": "feature/chinese-chess",
-  "stories": []
+  "stories": [
+    {
+      "id": "UI-Fix-Piece-Color",
+      "title": "强制固化红黑棋子字体颜色（禁用暗黑模式反转）",
+      "description": "严重视觉Bug：当前棋子的文字颜色会随着全局 Dark Mode（暗黑模式）错误反转为白色，导致在白底棋子上完全看不见，且彻底丢失了红黑阵营区分。请立即修改 Piece.vue 或 theme.ts：1. 彻底删除棋子文字上的 `dark:text-...` 等响应式类名。2. 强制绑定阵营颜色：红方棋子无论什么主题和模式，文字必须是固定的红色（如 text-red-600 或 #C82C2C）；黑方棋子文字必须是固定的深黑色（如 text-gray-900 或 #111827）。（赛博主题可保持发光设定，但必须严格区分红蓝两方）。",
+      "passes": true
+    },
+    {
+      "id": "UI-Fix-Grid-Lines",
+      "title": "大幅提升棋盘交叉线与楚河汉界对比度",
+      "description": "视觉Bug：目前四个主题的棋盘网格线几乎看不见。请修改 Board.vue 和 theme.ts：1. 严禁使用极低透明度的边框（如 border-black/10 或 opacity 属性）。2. 为每个主题配置【高对比度】的实线颜色 (lineColor)。例如：经典/墨韵使用实心深褐色（#5C4033），极简使用中度灰色（#9CA3AF），赛博使用明亮的青蓝色（#06B6D4）。3. 确保棋盘内部的交叉线、外围边框以及‘楚河汉界’的分割线，统一使用此高对比度颜色，必须清晰可见。",
+      "passes": true
+    }
+  ]
 }
