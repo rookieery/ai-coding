@@ -59,7 +59,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div :class="currentTheme === 'dark' ? 'bg-stone-900 text-stone-100' : 'bg-stone-100 text-stone-800'" class="min-h-screen flex flex-col font-sans transition-colors duration-300">
+  <div :class="currentTheme === 'dark' ? 'dark bg-stone-900 text-stone-100' : 'bg-stone-100 text-stone-800'" class="min-h-screen flex flex-col font-sans transition-colors duration-300">
     <!-- Top Navigation Bar -->
     <header class="w-full px-6 py-4 flex items-center justify-between border-b transition-colors"
             :class="currentTheme === 'dark' ? 'bg-stone-800/50 border-stone-700' : 'bg-white/50 border-stone-200'">

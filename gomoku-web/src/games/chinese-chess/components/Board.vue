@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue';
 import {
   BoardState,
-  Piece,
   PieceType,
   PlayerSide,
   BoardCoord,
@@ -30,7 +29,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'selectPiece', coord: BoardCoord): void;
+  (e: 'selectPiece', coord: BoardCoord | null): void;
   (e: 'movePiece', from: BoardCoord, to: BoardCoord): void;
   (e: 'clickCell', coord: BoardCoord): void;
 }>();
@@ -58,6 +57,9 @@ const themeColors = computed(() => {
   const themeKey = props.theme || 'default';
   return getThemeColors(themeKey);
 });
+
+// 当前主题键
+const currentTheme = computed(() => props.theme || 'default');
 
 // 点击单元格处理
 const handleCellClick = (coord: BoardCoord) => {
@@ -131,9 +133,23 @@ const bottomColumnLabels = computed(() => {
   return chineseNumbersStr.split(',');
 });
 
-// 棋子颜色类名
-const pieceColorClass = (side: PlayerSide) =>
-  side === PlayerSide.RED ? themeColors.pieceTextPrimary : themeColors.pieceTextSecondary;
+// 棋子颜色内联样式
+const pieceColorStyle = (side: PlayerSide) => {
+  const theme = currentTheme.value;
+
+  // 红棋固定红色
+  if (side === PlayerSide.RED) {
+    return { color: '#dc2626 !important' };
+  }
+
+  // 黑棋根据主题
+  if (theme === 'cyber') {
+    return { color: '#ffffff !important' }; // 白色
+  }
+
+  // 其他主题使用黑色
+  return { color: '#111827 !important' };
+};
 
 // 是否为河界行（第4和第5行之间，即 row=4 和 row=5 之间的间隙）
 const isRiverRow = (row: number) => row === 4 || row === 5;
@@ -145,16 +161,6 @@ const isInPalace = (col: number, row: number, side: PlayerSide) => {
   return palaceCols.includes(col) && palaceRows.includes(row);
 };
 
-// 是否为九宫格对角线交叉点（士的走法点）
-const isAdvisorDiagonal = (col: number, row: number, side: PlayerSide) => {
-  if (!isInPalace(col, row, side)) return false;
-  const palaceCenter = { col: 4, row: side === PlayerSide.RED ? 8 : 1 };
-  return Math.abs(col - palaceCenter.col) === 1 && Math.abs(row - palaceCenter.row) === 1;
-};
-
-// 是否为九宫格中心（将/帅的初始位置）
-const isPalaceCenter = (col: number, row: number, side: PlayerSide) =>
-  col === 4 && (side === PlayerSide.RED ? row === 8 : row === 1);
 
 // 步骤映射（显示步数）
 const stepMap = computed(() => {
@@ -290,7 +296,7 @@ const isCheckHighlight = computed(() => {
                 class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
               ></div>
               <!-- 棋子字符 -->
-              <span class="relative z-10 text-lg sm:text-xl font-bold" :class="pieceColorClass(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-lg sm:text-xl font-bold" :style="pieceColorStyle(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"
