@@ -1,11 +1,4 @@
 {
   "branchName": "feature/chinese-chess",
-  "stories": [
-    {
-      "id": "Bugfix-Theme-Render",
-      "title": "修复主题配置导致的前端渲染崩溃白屏",
-      "description": "修复页面白屏问题。控制台报错提示：1. '[Vue warn]: Invalid prop: type check failed for prop \"theme\". Expected String, got Object'. 2. 'Uncaught TypeError: Cannot read properties of undefined (reading \"boardBackground\")' 位于 Board.vue。请排查主题数据的传递链路（Store/Composable -> GameView -> Board）。如果 Board.vue 接收的是主题 key (String)，请在内部通过 key 从 theme.ts 获取完整对象；如果在读取 boardBackground 时报错，请检查响应式绑定并添加可选链 (?.)。必须确保棋盘 UI 重新正常渲染。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
