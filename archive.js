@@ -19,17 +19,14 @@ if (fs.existsSync(prdPath)) {
         const pending = prd.stories.filter(s => s.passes === false);
 
         if (completed.length > 0) {
-            // 读取或初始化归档文件
             let archive = { branchName: prd.branchName, stories: [] };
             if (fs.existsSync(prdArchivePath)) {
                 archive = JSON.parse(fs.readFileSync(prdArchivePath, 'utf8'));
             }
             
-            // 将完成的任务追加到归档中
             archive.stories.push(...completed);
             fs.writeFileSync(prdArchivePath, JSON.stringify(archive, null, 2));
 
-            // 更新原 prd.json，只保留未完成的任务
             prd.stories = pending;
             fs.writeFileSync(prdPath, JSON.stringify(prd, null, 2));
             console.log(`✅ 已将 ${completed.length} 个完成的任务归档到 prd_archive.json`);
@@ -40,25 +37,42 @@ if (fs.existsSync(prdPath)) {
 }
 
 // ==========================================
-// 2. 处理 progress.txt (保留头部规范，归档旧日志)
+// 2. 处理 progress.txt (按行智能归档)
 // ==========================================
 if (fs.existsSync(progressPath)) {
     const progressContent = fs.readFileSync(progressPath, 'utf8');
-    // 以 "## 202" (日期开头) 作为分割点
-    const parts = progressContent.split(/(?=## \d{4}-\d{2}-\d{2})/); 
+    // 按换行符分割文件内容
+    const lines = progressContent.split(/\r?\n/);
     
-    // parts[0] 是头部信息 (包含 Codebase Patterns)
-    // parts[1...n] 是具体的历史日志
-    if (parts.length > 3) { // 只有当历史日志超过 2 条时才触发归档
-        const header = parts[0];
-        const oldLogs = parts.slice(1, parts.length - 2).join(''); // 归档较旧的
-        const recentLogs = parts.slice(parts.length - 2).join(''); // 保留最近的2条
+    let headerEndIndex = 0;
+    // 动态寻找头部信息结束的位置（通常在 "Started:" 之后的一个空行）
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('Started:')) {
+            headerEndIndex = i + 1;
+            // 跳过紧接着的空行
+            while(headerEndIndex < lines.length && lines[headerEndIndex].trim() === '') {
+                headerEndIndex++;
+            }
+            break;
+        }
+    }
 
-        // 追加到归档文件
+    // 提取头部 (包含规范和Started) 和 日志主体 (过滤掉纯空行)
+    const header = lines.slice(0, headerEndIndex).join('\n');
+    const logLines = lines.slice(headerEndIndex).filter(line => line.trim() !== '');
+
+    // 只要真实日志行数超过 3 行，就触发归档
+    if (logLines.length > 3) {
+        const oldLogs = logLines.slice(0, logLines.length - 2).join('\n') + '\n';
+        const recentLogs = logLines.slice(logLines.length - 2).join('\n') + '\n';
+
+        // 追加旧日志到归档文件
         fs.appendFileSync(progressArchivePath, oldLogs);
 
-        // 重写 progress.txt (只保留头部和最近2条记录)
-        fs.writeFileSync(progressPath, header + recentLogs);
-        console.log(`✅ 已归档 ${parts.length - 3} 条旧日志到 progress_archive.txt`);
+        // 重写 progress.txt，保留头部和最近的 2 条记录
+        fs.writeFileSync(progressPath, header + '\n\n' + recentLogs);
+        console.log(`✅ 已归档 ${logLines.length - 2} 条旧日志到 progress_archive.txt`);
+    } else {
+        console.log(`ℹ️ progress.txt 只有 ${logLines.length} 条记录，无需归档 (设定的阈值为 > 3)`);
     }
 }
