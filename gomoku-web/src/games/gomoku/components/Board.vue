@@ -57,6 +57,18 @@ const themeColors = computed(() => {
   const themeKey = props.theme || 'default';
   return getThemeColors(themeKey);
 });
+
+// 棋子文字颜色类
+const pieceTextClass = (player: number) => {
+  const theme = props.theme || 'default';
+  const colors = getThemeColors(theme);
+  if (theme === 'cyber') {
+    // cyber主题：棋子文字都用白色
+    return '!text-white';
+  }
+  // 其他主题：黑棋用pieceTextSecondary，白棋用pieceTextPrimary
+  return player === BLACK ? colors.pieceTextSecondary : colors.pieceTextPrimary;
+};
 </script>
 
 <template>
@@ -89,24 +101,25 @@ const themeColors = computed(() => {
                  class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full pointer-events-none" :class="themeColors.piecePrimary"></div>
 
             <!-- Piece -->
-            <div 
+            <div
               v-if="cell !== EMPTY"
-              class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center"
+              class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2"
               :class="[
-                cell === BLACK ? themeColors.piecePrimary : [themeColors.pieceSecondary, 'border border-stone-300'],
+                cell === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary,
+                cell === WHITE ? 'border-gray-300 dark:border-gray-600' : '',
                 isWinningPiece(r, c) ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-[#DEB887] animate-pulse z-20' : ''
               ]"
             >
               <!-- Step Number -->
               <span v-if="showSteps && stepMap.has(`${r},${c}`)"
                     class="text-xs sm:text-sm font-bold"
-                    :class="cell === BLACK ? 'text-white' : 'text-stone-800'">
+                    :class="pieceTextClass(cell)">
                 {{ stepMap.get(`${r},${c}`) }}
               </span>
               <!-- Last move indicator -->
               <div v-else-if="moveHistory.length > 0 && moveHistory[moveHistory.length - 1].r === r && moveHistory[moveHistory.length - 1].c === c"
-                   class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full"
-                   :class="cell === BLACK ? 'bg-white/70' : 'bg-stone-800/70'">
+                   class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full opacity-70"
+                   :class="themeColors.pieceBackground">
               </div>
             </div>
             
@@ -119,10 +132,11 @@ const themeColors = computed(() => {
             <!-- Thinking Path Indicator -->
             <div 
               v-else-if="thinkingMap.has(`${r},${c}`)"
-              class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
+              class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm border-2"
               :class="[
-                thinkingMap.get(`${r},${c}`)!.player === BLACK ? themeColors.piecePrimary : [themeColors.pieceSecondary, 'border border-stone-300'],
-                showSteps ? (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-blue-400' : 'text-blue-600') : (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-white' : 'text-stone-800')
+                thinkingMap.get(`${r},${c}`)!.player === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary,
+                thinkingMap.get(`${r},${c}`)!.player === WHITE ? 'border-gray-300 dark:border-gray-600' : '',
+                showSteps ? (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-blue-400' : 'text-blue-600') : pieceTextClass(thinkingMap.get(`${r},${c}`)!.player)
               ]"
             >
               {{ thinkingMap.get(`${r},${c}`)!.index }}

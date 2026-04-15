@@ -31,6 +31,8 @@ const isAiThinking = ref<boolean>(false);
 // 获取认证信息
 const auth = useGlobalAuth();
 const settings = useGlobalSettings();
+// 主题解包（因为 settings.gomokuTheme 是 ref，模板中需要自动解包）
+const theme = computed(() => settings.gomokuTheme.value);
 
 type SavedGame = FrontendGame & { moveCount?: number };
 
@@ -725,7 +727,7 @@ const showHint = () => {
       :showThinking="showThinking"
       :showSteps="showSteps"
       :isAiThinking="isAiThinking"
-      :theme="settings.gomokuTheme"
+      :theme="theme"
       @setMode="setMode"
       @setAiDifficulty="setAiDifficulty"
       @setAiRole="setAiRole"
@@ -759,7 +761,7 @@ const showHint = () => {
           :thinkingPath="thinkingPath"
           :forbiddenPoints="forbiddenPoints"
           :showSteps="showSteps"
-          :theme="settings.gomokuTheme"
+          :theme="theme"
           @placePiece="placePiece"
         />
       </div>
