@@ -118,3 +118,37 @@ Pass the `theme` prop from the parent view (e.g., `ChineseChessView.vue`), which
 **Verification**:
 - Run `npm run lint` to ensure no TypeScript errors.
 - Visually inspect board grid lines and piece text colors in all four themes.
+
+## Visual Bug Fix: Board Boundary Clarity and Piece Text Color Enforcement (UI-Fix-Piece-Contrast, UI-Fix-Board-Boundary)
+
+**Problem**:
+1. Board boundary had decorative blur/shadow effects (`shadow-2xl`) that reduced clarity.
+2. Grid lines (horizontal/vertical) were too thin (1px) with insufficient contrast.
+3. Piece text colors could still be affected by dark mode inversion in some scenarios.
+
+**Solution**:
+1. **Board boundary**: Removed `shadow-2xl` from the board container, replaced with a crisp solid border (`border-4`). This eliminates blurry decorative effects.
+2. **Grid line thickness**: Increased all grid lines from 1px to 2px:
+   - Horizontal lines (`h-[1px]` → `h-[2px]`)
+   - Vertical lines (`w-[1px]` → `w-[2px]`)
+   - Palace diagonal lines (`h-[1px]` → `h-[2px]`)
+3. **River text visibility**: Increased opacity from 30% to 70% for "楚河"/"汉界" labels.
+4. **Piece text color enforcement**: Standardized piece text colors across themes:
+   - Default, Zen, Minimal: Red pieces use `text-red-600`, black pieces use `text-gray-900`
+   - Cyber theme: Red pieces keep `text-[#F43F5E]`, black pieces changed to `text-blue-600` (maintains red/blue distinction while improving readability)
+   - Removed any potential dark mode inversion by ensuring no `dark:` variants on piece text colors.
+
+**Implementation**:
+- Modified `src/games/chinese-chess/components/Board.vue`:
+  - Removed `shadow-2xl`, increased border width
+  - Increased grid line thickness
+  - Increased river text opacity
+- Modified `src/common/theme.ts`:
+  - Standardized piece text colors across themes
+  - Cyber theme black pieces changed from cyan (`text-[#2DD4BF]`) to blue (`text-blue-600`) for better contrast
+
+**Verification**:
+- Run `npm run lint` and `npm run build` to ensure no TypeScript or compilation errors.
+- Visually inspect board boundaries (should be crisp solid lines without blur).
+- Check grid lines are clearly visible (2px thick).
+- Verify piece text colors remain consistent in both light and dark modes.

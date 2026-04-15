@@ -186,7 +186,7 @@ const isCheckHighlight = computed(() => {
 </script>
 
 <template>
-  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
+  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md border-4 flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
     <!-- 左侧纵坐标（数字 1-10） -->
     <div class="flex flex-col mr-1 sm:mr-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
       <div v-for="n in BOARD_ROWS" :key="n" class="h-6 sm:h-7 md:h-8 lg:h-9 xl:h-10 flex items-center justify-center w-3 sm:w-3.5 md:w-4 lg:w-4.5 xl:w-5">
@@ -218,12 +218,12 @@ const isCheckHighlight = computed(() => {
             <div class="absolute inset-0 pointer-events-none">
               <!-- 横线 -->
               <div
-                class="absolute top-1/2 h-[1px]" :class="themeColors.lineColor"
+                class="absolute top-1/2 h-[2px]" :class="themeColors.lineColor"
                 :style="{ left: colIndex === 0 ? '50%' : '0', right: colIndex === BOARD_COLS - 1 ? '50%' : '0' }"
               ></div>
               <!-- 竖线 -->
               <div
-                class="absolute left-1/2 w-[1px]" :class="themeColors.lineColor"
+                class="absolute left-1/2 w-[2px]" :class="themeColors.lineColor"
                 :style="{ top: rowIndex === 0 ? '50%' : '0', bottom: rowIndex === BOARD_ROWS - 1 ? '50%' : '0' }"
               ></div>
             </div>
@@ -231,7 +231,7 @@ const isCheckHighlight = computed(() => {
             <!-- 河界文字 -->
             <div
               v-if="rowIndex === 4 || rowIndex === 5"
-              class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 font-bold text-xs sm:text-sm" :class="themeColors.lineColor"
+              class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-70 font-bold text-xs sm:text-sm" :class="themeColors.lineColor"
             >
               {{ rowIndex === 4 ? t('riverChu') : t('riverHan') }}
             </div>
@@ -243,14 +243,14 @@ const isCheckHighlight = computed(() => {
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(0% 0%, 100% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineColor"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineColor"></div>
               </div>
               <div
                 v-if="(colIndex === 5 && rowIndex === 7) || (colIndex === 3 && rowIndex === 9)"
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(100% 0%, 0% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineColor"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineColor"></div>
               </div>
             </template>
 
@@ -261,14 +261,14 @@ const isCheckHighlight = computed(() => {
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(0% 0%, 100% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineColor"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineColor"></div>
               </div>
               <div
                 v-if="(colIndex === 5 && rowIndex === 0) || (colIndex === 3 && rowIndex === 2)"
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(100% 0%, 0% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineColor"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineColor"></div>
               </div>
             </template>
 
