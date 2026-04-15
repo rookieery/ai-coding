@@ -243,14 +243,14 @@ const isCheckHighlight = computed(() => {
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(0% 0%, 100% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineColor"></div>
               </div>
               <div
                 v-if="(colIndex === 5 && rowIndex === 7) || (colIndex === 3 && rowIndex === 9)"
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(100% 0%, 0% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineColor"></div>
               </div>
             </template>
 
@@ -261,14 +261,14 @@ const isCheckHighlight = computed(() => {
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(0% 0%, 100% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineColor"></div>
               </div>
               <div
                 v-if="(colIndex === 5 && rowIndex === 0) || (colIndex === 3 && rowIndex === 2)"
                 class="absolute top-0 left-0 w-full h-full"
                 style="clip-path: polygon(100% 0%, 0% 100%);"
               >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] :class="themeColors.lineColor" transform -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+                <div class="absolute top-1/2 left-1/2 w-[141%] h-[1px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineColor"></div>
               </div>
             </template>
 

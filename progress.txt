@@ -2,3 +2,4 @@
 Started: Fri Apr 10 19:52:09     2026
 
 Feature-Theme-5: Applied theme system to Chinese Chess board components (Board.vue). Replaced hardcoded amber colors with dynamic theme colors from theme.ts. Updated piece colors, board background, lines, river styles, and dynamic elements (thinking path, hover indicators) to use theme colors. Ensured smooth transitions and preserved breathing dots and capture hints.
+Bugfix-Theme-Render: Fixed frontend white‑screen crash caused by theme configuration. Resolved prop type mismatch (Object vs String) by unwrapping the ref `settings.chessTheme` in ChineseChessView.vue. Added defensive fallback in `getThemeColors()` to prevent undefined access. Board UI now renders correctly with dynamic theme colors.

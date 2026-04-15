@@ -77,3 +77,22 @@ Pass the `theme` prop from the parent view (e.g., `ChineseChessView.vue`), which
 - Consider adding theme‑specific river‑text characters (e.g., different calligraphy for "楚河"/"汉界").
 - Allow themes to define custom piece Unicode characters (e.g., different font families for cyber/minimal themes).
 - Add theme‑aware sound effects or animations (e.g., piece‑move sounds that match the theme's aesthetic).
+
+## Bug Fix: Theme Prop Type Mismatch (Bugfix-Theme-Render)
+
+**Problem**: The board component received a `Ref<ThemeKey>` object instead of a plain `ThemeKey` string, causing Vue prop type warnings and a white‑screen crash (`Cannot read properties of undefined (reading "boardBackground")`).
+
+**Root cause**: The `useSettings().chessTheme` is a `Ref<ThemeKey>`. When passed directly via `:theme="settings.chessTheme"` in the template, Vue does **not** automatically unwrap a ref that is nested inside a plain object (`settings` is not a reactive object, just a plain object holding a ref). The ref object was passed as‑is, triggering the prop type error.
+
+**Solution**: 
+1. **Unwrap the ref in the parent view**: Create a computed property `const theme = computed(() => settings.chessTheme.value)` and bind `:theme="theme"` instead.
+2. **Defensive fallback in `getThemeColors()`**: Ensure the function returns the default theme when an invalid key is supplied (prevents `undefined` access).
+3. **No changes needed in the board component** – it already handles `undefined` theme by falling back to `'default'`.
+
+**Prevention**: When passing a ref as a prop, always unwrap it first unless the child component explicitly expects a ref. Use a computed property or `toRef()` with `toValue()` if the value might be a ref, a computed, or a plain value.
+
+**Files changed**:
+- `src/games/chinese‑chess/views/ChineseChessView.vue` – added computed `theme`
+- `src/common/theme.ts` – added fallback to default theme in `getThemeColors()`
+
+**Testing**: Run `npm run lint` to verify no TypeScript errors; visually confirm the board renders with the selected theme.

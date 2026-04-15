@@ -336,6 +336,12 @@
       "title": "将主题应用到五子棋视图",
       "description": "修改 src/games/gomoku 下的 Board.vue 和 Piece.vue。读取当前 gomokuTheme 的状态，利用 Vue 的动态 style 或 class (推荐计算属性结合 Feature-Theme-1 定义的颜色变量)，动态渲染五子棋的棋盘背景、网格线和黑白棋子颜色。确保切换主题时无刷新平滑过渡。",
       "passes": true
+    },
+    {
+      "id": "Feature-Theme-5",
+      "title": "将主题应用到中国象棋视图",
+      "description": "修改 src/games/chinese-chess 下的 Board.vue 和 棋盘相关的组件。读取当前 chessTheme 的状态，动态渲染中国象棋的棋盘底色、楚河汉界样式、以及红黑双方棋子的底色和文字颜色。确保切换主题时无刷新平滑过渡，且不影响之前做好的‘呼吸灯’和吃子提示功能。",
+      "passes": true
     }
   ]
 }

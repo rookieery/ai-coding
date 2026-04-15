@@ -65,6 +65,8 @@ const moveResult = ref<{
 // 获取认证信息
 const auth = useGlobalAuth();
 const settings = useGlobalSettings();
+// 主题解包（因为 settings.chessTheme 是 ref，模板中需要自动解包）
+const theme = computed(() => settings.chessTheme.value);
 
 type SavedGame = FrontendGame & { moveCount?: number };
 
@@ -723,7 +725,7 @@ const showHint = () => {
       :showThinking="showThinking"
       :showSteps="showSteps"
       :isAiThinking="isAiThinking"
-      :theme="settings.chessTheme"
+      :theme="theme"
       @setMode="setMode"
       @setAiDifficulty="setAiDifficulty"
       @setAiRole="setAiRole"
@@ -757,7 +759,7 @@ const showHint = () => {
           :showSteps="showSteps"
           :selectedPiece="selectedPiece"
           :validMoves="validMoves"
-          :theme="settings.chessTheme"
+          :theme="theme"
           @selectPiece="handleSelectPiece"
           @movePiece="handleMovePiece"
           @clickCell="handleClickCell"

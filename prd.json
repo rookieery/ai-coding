@@ -2,9 +2,9 @@
   "branchName": "feature/chinese-chess",
   "stories": [
     {
-      "id": "Feature-Theme-5",
-      "title": "将主题应用到中国象棋视图",
-      "description": "修改 src/games/chinese-chess 下的 Board.vue 和 棋盘相关的组件。读取当前 chessTheme 的状态，动态渲染中国象棋的棋盘底色、楚河汉界样式、以及红黑双方棋子的底色和文字颜色。确保切换主题时无刷新平滑过渡，且不影响之前做好的‘呼吸灯’和吃子提示功能。",
+      "id": "Bugfix-Theme-Render",
+      "title": "修复主题配置导致的前端渲染崩溃白屏",
+      "description": "修复页面白屏问题。控制台报错提示：1. '[Vue warn]: Invalid prop: type check failed for prop \"theme\". Expected String, got Object'. 2. 'Uncaught TypeError: Cannot read properties of undefined (reading \"boardBackground\")' 位于 Board.vue。请排查主题数据的传递链路（Store/Composable -> GameView -> Board）。如果 Board.vue 接收的是主题 key (String)，请在内部通过 key 从 theme.ts 获取完整对象；如果在读取 boardBackground 时报错，请检查响应式绑定并添加可选链 (?.)。必须确保棋盘 UI 重新正常渲染。",
       "passes": true
     }
   ]

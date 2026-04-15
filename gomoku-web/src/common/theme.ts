@@ -66,7 +66,12 @@ export const themes: Record<ThemeKey, ThemeColors> = {
  * 获取指定主题的颜色配置
  */
 export function getThemeColors(theme: ThemeKey): ThemeColors {
-  return themes[theme];
+  const colors = themes[theme];
+  if (!colors) {
+    console.warn(`Invalid theme key: ${theme}, falling back to default`);
+    return themes.default;
+  }
+  return colors;
 }
 
 /**
