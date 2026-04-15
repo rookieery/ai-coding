@@ -44,6 +44,55 @@ const scrollToBottom = async () => {
   }
 };
 
+// Textarea自适应高度
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
+
+const adjustTextareaHeight = () => {
+  nextTick(() => {
+    if (textareaRef.value) {
+      // 重置高度为auto以计算正确的高度
+      textareaRef.value.style.height = 'auto';
+      // 计算内容高度（最小高度56px，最大7行）
+      const lineHeight = 24; // 1.5rem，假设行高
+      const minHeight = 56; // 最小高度
+      const maxHeight = lineHeight * 7 + 24; // 7行高度加padding
+
+      // 计算scrollHeight
+      const scrollHeight = textareaRef.value.scrollHeight;
+
+      // 应用限制
+      let newHeight = Math.max(minHeight, scrollHeight);
+      newHeight = Math.min(newHeight, maxHeight);
+
+      textareaRef.value.style.height = `${newHeight}px`;
+    }
+  });
+};
+
+const handleTextareaEnter = (event: KeyboardEvent) => {
+  // 如果按下了Ctrl+Enter或Cmd+Enter，发送消息
+  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+    sendMessage();
+  }
+  // 如果只是按下了Enter，添加换行
+  else if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    // 插入换行符
+    query.value += '\n';
+    // 调整高度
+    adjustTextareaHeight();
+  }
+  // Shift+Enter 是默认行为，不处理
+};
+
+const resetTextareaHeight = () => {
+  nextTick(() => {
+    if (textareaRef.value) {
+      textareaRef.value.style.height = '56px'; // 重置为最小高度
+    }
+  });
+};
+
 // 获取指定索引消息的渲染文本
 const getRenderedTextForMessage = async (index: number): Promise<string> => {
   await nextTick();
@@ -68,6 +117,7 @@ const sendMessage = async () => {
   messages.value.push({ role: 'user', text: userQuery });
   currentUserQuery.value = userQuery; // 存储当前用户提问
   query.value = '';
+  resetTextareaHeight(); // 重置textarea高度
 
   // 重置流式响应状态
   isThinking.value = true;
@@ -415,23 +465,25 @@ const regenerateAnswer = async (index: number) => {
     </div>
 
     <div class="w-full max-w-3xl relative mt-auto mb-8">
-      <div class="relative flex items-center w-full rounded-full shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500"
+      <div class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
            :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'">
-        <input 
+        <textarea
+          ref="textareaRef"
           v-model="query"
-          type="text"
           :placeholder="t('agentPlaceholder')"
-          class="w-full bg-transparent px-6 py-4 outline-none"
+          class="w-full bg-transparent px-4 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
           :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
-          @keyup.enter="sendMessage"
+          @keydown.enter.prevent="handleTextareaEnter"
+          @input="adjustTextareaHeight"
           :disabled="isThinking"
+          rows="1"
         />
-        <button 
+        <button
           @click="sendMessage"
-          class="absolute right-2 p-2 rounded-full transition-colors"
+          class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
           :class="[
             query.trim() && !isThinking
-              ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
               : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
           ]"
           :disabled="!query.trim() || isThinking"
