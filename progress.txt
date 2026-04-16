@@ -3,7 +3,8 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-UI-Fix-Piece-Color, UI-Fix-Grid-Lines: Updated theme.ts to fix piece text colors (removed dark: variants, forced red/black colors) and increased grid line contrast per theme. - 2026年04月15日 19:51:34
-Ralph Agent: Verified all stories completed, project ready for new stories. - 2026年04月15日 20:00:00
+
 UI-Fix-Piece-Contrast, UI-Fix-Board-Boundary: Fixed piece text color contrast (removed dark variants, forced red/black colors) and improved board boundary clarity (removed shadows, increased grid line thickness). - 2026年04月15日 20:17:25
 Quality Checks: Passed type checking, linting, tests, and build. All 176 tests passed, build successful. - 2026年04月15日 20:30:00
+
+UI-Opt-Board-Layout: Removed coordinate labels (top, bottom, left) and enlarged board grid and piece sizes (cells w-8->w-12, pieces 90%, text xl/2xl). Passed type check, tests, build. - 2026年04月16日 21:01:03

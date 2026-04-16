@@ -121,17 +121,6 @@ const pieceChars = computed(() => ({
   },
 }));
 
-// 顶部横坐标数字（1-9）
-const topColumnLabels = computed(() => {
-  const numbersStr = t('columnTopNumbers');
-  return numbersStr.split(',');
-});
-
-// 底部横坐标中文数字（九至一）
-const bottomColumnLabels = computed(() => {
-  const chineseNumbersStr = t('columnBottomChineseNumbers');
-  return chineseNumbersStr.split(',');
-});
 
 // 棋子颜色内联样式
 const pieceColorStyle = (side: PlayerSide) => {
@@ -192,28 +181,16 @@ const isCheckHighlight = computed(() => {
 </script>
 
 <template>
-  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md border-4 flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
-    <!-- 左侧纵坐标（数字 1-10） -->
-    <div class="flex flex-col mr-1 sm:mr-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
-      <div v-for="n in BOARD_ROWS" :key="n" class="h-6 sm:h-7 md:h-8 lg:h-9 xl:h-10 flex items-center justify-center w-3 sm:w-3.5 md:w-4 lg:w-4.5 xl:w-5">
-        {{ BOARD_ROWS - n + 1 }}
-      </div>
-    </div>
+  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md border-4" :class="[themeColors.boardBackground, themeColors.lineColor]">
 
     <div class="flex flex-col">
-      <!-- 顶部横坐标（数字 1-9） -->
-      <div class="flex mb-1 sm:mb-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
-        <div v-for="(num, index) in topColumnLabels" :key="index" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
-          {{ num }}
-        </div>
-      </div>
       <!-- 棋盘主体 -->
       <div class="relative z-10 grid" :style="{ gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))` }">
         <template v-for="(row, rowIndex) in board" :key="rowIndex">
           <div
             v-for="(cell, colIndex) in row"
             :key="`${rowIndex}-${colIndex}`"
-            class="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex items-center justify-center cursor-pointer group"
+            class="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 flex items-center justify-center cursor-pointer group"
             :class="[
               themeColors.boardBackground,
               isRiverRow(rowIndex) ? 'border-t border-b border-dashed' : '', isRiverRow(rowIndex) ? themeColors.lineColor : '',
@@ -281,7 +258,7 @@ const isCheckHighlight = computed(() => {
             <!-- 棋子 -->
             <div
               v-if="cell"
-              class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600"
+              class="relative z-10 w-[90%] h-[90%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600"
               :class="[
                 themeColors.pieceBackground,
                 selectedCoord?.col === colIndex && selectedCoord?.row === rowIndex
@@ -296,7 +273,7 @@ const isCheckHighlight = computed(() => {
                 class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
               ></div>
               <!-- 棋子字符 -->
-              <span class="relative z-10 text-lg sm:text-xl font-bold" :style="pieceColorStyle(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-xl sm:text-2xl font-bold" :style="pieceColorStyle(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"
@@ -309,13 +286,13 @@ const isCheckHighlight = computed(() => {
             <!-- 提示移动（hintMove） -->
             <div
               v-else-if="hintMove && hintMove.to.col === colIndex && hintMove.to.row === rowIndex"
-              class="relative z-10 w-[40%] h-[40%] rounded-full bg-emerald-500/80 animate-ping"
+              class="relative z-10 w-[45%] h-[45%] rounded-full bg-emerald-500/80 animate-ping"
             ></div>
 
             <!-- 思考路径标记 -->
             <div
               v-else-if="thinkingMap.has(`${colIndex},${rowIndex}`)"
-              class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
+              class="relative z-10 w-[90%] h-[90%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
               :class="[
                 thinkingMap.get(`${colIndex},${rowIndex}`)!.side === PlayerSide.RED
                   ? `${themeColors.piecePrimary}`
@@ -328,25 +305,19 @@ const isCheckHighlight = computed(() => {
             <!-- 合法移动目标指示（当有棋子被选中时） -->
             <div
               v-else-if="selectedCoord && legalTargets?.some(t => t.col === colIndex && t.row === rowIndex)"
-              class="relative z-10 w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full bg-green-500 breathing-dot"
+              class="relative z-10 w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 rounded-full bg-green-500 breathing-dot"
             ></div>
 
             <!-- 悬停指示（轮到当前玩家且游戏未结束） -->
             <div
               v-else-if="!winner && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
-              class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
+              class="relative z-10 w-[90%] h-[90%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
               :class="currentPlayer === PlayerSide.RED ? `${themeColors.piecePrimary}` : `${themeColors.pieceSecondary}`"
             ></div>
           </div>
         </template>
       </div>
 
-      <!-- 底部横坐标（中文数字 九至一） -->
-      <div class="flex mt-1 sm:mt-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
-        <div v-for="(num, index) in bottomColumnLabels" :key="index" class="w-6 sm:w-7 md:w-8 lg:w-9 xl:w-10 flex items-center justify-center">
-          {{ num }}
-        </div>
-      </div>
     </div>
   </div>
 </template>
