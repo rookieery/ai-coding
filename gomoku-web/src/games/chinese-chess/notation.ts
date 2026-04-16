@@ -9,6 +9,7 @@ import {
   PlayerSide,
   PieceType,
   BoardCoord,
+  BoardState,
 } from './types';
 
 /**
@@ -131,7 +132,7 @@ function getMoveDistanceDescription(
  * @param boardState 棋盘状态（用于同列棋子区分，可选）
  * @returns 标准记谱字符串，如“pieceRedCannon八平五”
  */
-export function moveToNotation(move: MoveHistory, boardState?: any): string {
+export function moveToNotation(move: MoveHistory, boardState?: BoardState): string {
   const { from, to, piece, side } = move;
 
   // 获取棋子翻译键
@@ -160,7 +161,7 @@ export function moveToNotation(move: MoveHistory, boardState?: any): string {
 export function moveToDisplayNotation(
   move: MoveHistory,
   t: (key: string) => string,
-  boardState?: any
+  boardState?: BoardState
 ): string {
   const { from, to, piece, side } = move;
 
@@ -183,7 +184,7 @@ export function moveToDisplayNotation(
 /**
  * 批量转换移动历史为记谱列表
  */
-export function movesToNotations(moveHistory: MoveHistory[], boardStates?: any[]): string[] {
+export function movesToNotations(moveHistory: MoveHistory[], boardStates?: BoardState[]): string[] {
   return moveHistory.map((move, index) => {
     const boardState = boardStates?.[index];
     return moveToNotation(move, boardState);
