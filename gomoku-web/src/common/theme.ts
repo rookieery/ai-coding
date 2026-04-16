@@ -27,6 +27,8 @@ export interface ThemeColors {
   textPrimary: string;
   /** 次要文字颜色 - 对应 Tailwind 文字类 */
   textSecondary: string;
+  /** 河流文字颜色 - 对应 Tailwind 文字类，与线条颜色保持一致 */
+  riverTextColor: string;
 }
 
 export const themes: Record<ThemeKey, ThemeColors> = {
@@ -41,6 +43,7 @@ export const themes: Record<ThemeKey, ThemeColors> = {
     pieceTextSecondary: '!text-gray-900',
     textPrimary: 'text-gray-800 dark:text-gray-200',
     textSecondary: 'text-gray-500 dark:text-gray-400',
+    riverTextColor: 'text-[#5C4033]',
   },
   zen: {
     boardBackground: 'bg-[#E8DCC4] dark:bg-[#C4B59A]',
@@ -53,6 +56,7 @@ export const themes: Record<ThemeKey, ThemeColors> = {
     pieceTextSecondary: '!text-gray-900',
     textPrimary: 'text-gray-800 dark:text-gray-200',
     textSecondary: 'text-gray-500 dark:text-gray-400',
+    riverTextColor: 'text-[#5C4033]',
   },
   cyber: {
     boardBackground: 'bg-[#0F172A] dark:bg-[#020617]',
@@ -65,6 +69,7 @@ export const themes: Record<ThemeKey, ThemeColors> = {
     pieceTextSecondary: '!text-white drop-shadow-md',
     textPrimary: 'text-slate-300 dark:text-slate-200',
     textSecondary: 'text-slate-500 dark:text-slate-400',
+    riverTextColor: 'text-[#06B6D4]',
   },
   minimal: {
     boardBackground: 'bg-[#F9FAFB] dark:bg-[#D1D5DB]',
@@ -77,6 +82,7 @@ export const themes: Record<ThemeKey, ThemeColors> = {
     pieceTextSecondary: '!text-gray-900',
     textPrimary: 'text-gray-700 dark:text-gray-200',
     textSecondary: 'text-gray-500 dark:text-gray-400',
+    riverTextColor: 'text-[#9CA3AF]',
   },
 };
 

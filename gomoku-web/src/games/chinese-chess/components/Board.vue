@@ -122,22 +122,9 @@ const pieceChars = computed(() => ({
 }));
 
 
-// 棋子颜色内联样式
-const pieceColorStyle = (side: PlayerSide) => {
-  const theme = currentTheme.value;
-
-  // 红棋固定红色
-  if (side === PlayerSide.RED) {
-    return { color: '#dc2626 !important' };
-  }
-
-  // 黑棋根据主题
-  if (theme === 'cyber') {
-    return { color: '#ffffff !important' }; // 白色
-  }
-
-  // 其他主题使用黑色
-  return { color: '#111827 !important' };
+// 棋子文字颜色类
+const pieceTextClass = (side: PlayerSide) => {
+  return side === PlayerSide.RED ? themeColors.value.pieceTextPrimary : themeColors.value.pieceTextSecondary;
 };
 
 // 是否为河界行（第4和第5行之间，即 row=4 和 row=5 之间的间隙）
@@ -186,6 +173,13 @@ const isCheckHighlight = computed(() => {
     <div class="flex flex-col">
       <!-- 棋盘主体 -->
       <div class="relative z-10 grid" :style="{ gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))` }">
+        <!-- 河流区域文字 -->
+        <div class="absolute inset-0 pointer-events-none" :style="{ gridColumn: '1 / -1', gridRow: '5 / 7' }">
+          <div class="relative w-full h-full flex items-center justify-between px-4">
+            <span class="font-bold text-lg sm:text-xl md:text-2xl" :class="themeColors.riverTextColor">{{ t('riverChu') }}</span>
+            <span class="font-bold text-lg sm:text-xl md:text-2xl" :class="themeColors.riverTextColor">{{ t('riverHan') }}</span>
+          </div>
+        </div>
         <template v-for="(row, rowIndex) in board" :key="rowIndex">
           <div
             v-for="(cell, colIndex) in row"
@@ -193,7 +187,6 @@ const isCheckHighlight = computed(() => {
             class="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 flex items-center justify-center cursor-pointer group"
             :class="[
               themeColors.boardBackground,
-              isRiverRow(rowIndex) ? 'border-t border-b border-dashed' : '', isRiverRow(rowIndex) ? themeColors.lineColor : '',
             ]"
             @click="handleCellClick({ col: colIndex, row: rowIndex })"
           >
@@ -201,6 +194,7 @@ const isCheckHighlight = computed(() => {
             <div class="absolute inset-0 pointer-events-none">
               <!-- 横线 -->
               <div
+                v-if="!isRiverRow(rowIndex)"
                 class="absolute top-1/2 h-[2px]" :class="themeColors.lineBackground"
                 :style="{ left: colIndex === 0 ? '50%' : '0', right: colIndex === BOARD_COLS - 1 ? '50%' : '0' }"
               ></div>
@@ -211,13 +205,6 @@ const isCheckHighlight = computed(() => {
               ></div>
             </div>
 
-            <!-- 河界文字 -->
-            <div
-              v-if="rowIndex === 4 || rowIndex === 5"
-              class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-70 font-bold text-xs sm:text-sm" :class="themeColors.textPrimary"
-            >
-              {{ rowIndex === 4 ? t('riverChu') : t('riverHan') }}
-            </div>
 
             <!-- 九宫格斜线（红方） -->
             <template v-if="isInPalace(colIndex, rowIndex, PlayerSide.RED)">
@@ -273,7 +260,7 @@ const isCheckHighlight = computed(() => {
                 class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
               ></div>
               <!-- 棋子字符 -->
-              <span class="relative z-10 text-xl sm:text-2xl font-bold" :style="pieceColorStyle(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-xl sm:text-2xl font-bold" :class="pieceTextClass(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"
