@@ -75,6 +75,11 @@ const lineStrokeColor = computed(() => {
   return extractColorFromTailwind(themeColors.value.lineColor);
 });
 
+// 河流文字填充颜色（从 riverTextColor 类名提取）
+const riverTextFillColor = computed(() => {
+  return extractColorFromTailwind(themeColors.value.riverTextColor);
+});
+
 // 当前主题键
 const currentTheme = computed(() => props.theme || 'default');
 
@@ -286,15 +291,27 @@ const isCheckHighlight = computed(() => {
             stroke-width="2"
             stroke-linecap="square"
           />
+          <!-- 河流文字 -->
+          <text
+            x="250"
+            y="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            font-size="45"
+            font-weight="bold"
+            :fill="riverTextFillColor"
+          >{{ t('riverChu') }}</text>
+          <text
+            x="650"
+            y="500"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            font-size="45"
+            font-weight="bold"
+            :fill="riverTextFillColor"
+          >{{ t('riverHan') }}</text>
         </svg>
 
-        <!-- 河流区域文字 -->
-        <div class="absolute inset-0 pointer-events-none" :style="{ gridColumn: '1 / -1', gridRow: '5 / 7' }">
-          <div class="relative w-full h-full flex items-center justify-between px-4">
-            <span class="font-bold text-lg sm:text-xl md:text-2xl" :class="themeColors.riverTextColor">{{ t('riverChu') }}</span>
-            <span class="font-bold text-lg sm:text-xl md:text-2xl" :class="themeColors.riverTextColor">{{ t('riverHan') }}</span>
-          </div>
-        </div>
         <template v-for="(row, rowIndex) in board" :key="rowIndex">
           <div
             v-for="(cell, colIndex) in row"

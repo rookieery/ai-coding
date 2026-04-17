@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess",
   "stories": [
     {
-      "id": "UI-SVG-Math-Blueprint",
-      "title": "注入精确的SVG坐标系与楚河汉界图纸",
-      "description": "目前的 SVG 棋盘缺少线条颜色，且比例错误导致没有河道空间。请严格按照以下数学模型修改 Board.vue 的 SVG 背景：1. 设定 <svg viewBox='0 0 900 1000' width='100%' height='100%'>。这代表留出 50px 的内边距。2. 棋盘网格从 (50, 50) 画到 (850, 950)。3. 所有的 line 和 rect 必须加上 stroke 颜色（读取 lineColor）和 stroke-width='2'。4. 绘制外边框：<rect x='50' y='50' width='800' height='900' fill='none' />。5. 绘制 8 条内部横线：y坐标为 150, 250... 到 850，x 从 50 到 850。6. 绘制内部竖线：x坐标为 150, 250... 到 750。竖线必须断开楚河汉界，即上半段 y 从 50 到 450，下半段 y 从 550 到 950。7. 绘制九宫格斜线（上：350,50到550,250等；下：350,750到550,950等）。",
+      "id": "UI-Tweak-River-Text",
+      "title": "微调楚河汉界文字位置与字体样式",
+      "description": "目前棋盘底层的 SVG 网格和棋子定位已经完美契合，严禁修改任何关于棋子 (Piece) 的布局和定位逻辑。只需微调 Board.vue 中'楚河'与'汉界'的文字：1. 调整文字的垂直位置（无论是修改 absolute 的 top 值，还是调整 SVG text 的 y 坐标），使其正好垂直居中于河道的空白区域内。2. 优化字体样式：适当放大字号（如 text-2xl 或 text-3xl 等级），字重加粗（font-bold），并确保颜色与当前主题的线条色（lineColor）保持一致。",
       "passes": true
-    },
-    {
-      "id": "UI-Piece-Coordinate-Sync",
-      "title": "修复棋子坐标系，精准对齐 SVG 交叉点",
-      "description": "目前棋子没有留出楚河汉界的空间。请重构棋子的定位逻辑，使其严格对齐 900x1000 的 SVG 坐标系：1. 棋盘容器必须相对定位（relative），且保持 9:10 的长宽比（或由内容撑开）。2. 棋子的绝对定位百分比公式必须是：left: `((x * 100 + 50) / 900 * 100)%`，top: `((y * 100 + 50) / 1000 * 100)%`。3. 棋子必须加上 CSS `transform: translate(-50%, -50%)`，确保棋子中心精准落在 SVG 交叉点上。这将在 y=4 和 y=5 之间自然形成一个 100 单位高度的楚河汉界完美留白。",
-      "passes": false
     }
   ]
 }
