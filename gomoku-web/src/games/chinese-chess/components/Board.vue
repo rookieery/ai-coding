@@ -12,6 +12,18 @@ import { t } from '../../../i18n';
 import type { ThemeKey } from '../../../common/theme';
 import { getThemeColors } from '../../../common/theme';
 
+/** 从 Tailwind 颜色类名（如 'border-[#5C4033]'）中提取十六进制颜色值 */
+function extractColorFromTailwind(tailwindClass: string): string {
+  // 匹配 [#...] 或 [rgb(...)] 格式
+  const match = tailwindClass.match(/\[([^\]]+)\]/);
+  if (match) {
+    return match[1]; // 返回 #5C4033 或 rgb(...)
+  }
+  // 如果是简单的颜色名如 'red-500'，可以映射，但这里我们只处理自定义颜色
+  // 默认返回黑色
+  return '#000000';
+}
+
 const props = defineProps<{
   board: BoardState;
   currentPlayer: PlayerSide;
@@ -56,6 +68,11 @@ const isLegalTarget = (coord: BoardCoord) => {
 const themeColors = computed(() => {
   const themeKey = props.theme || 'default';
   return getThemeColors(themeKey);
+});
+
+// SVG 线条描边颜色（从 lineColor 类名提取）
+const lineStrokeColor = computed(() => {
+  return extractColorFromTailwind(themeColors.value.lineColor);
 });
 
 // 当前主题键
@@ -160,6 +177,55 @@ const thinkingMap = computed(() => {
   return map;
 });
 
+// SVG 网格线条数据（基于 900x1000 坐标系）
+const gridLines = computed(() => {
+  const lines = [];
+  const PADDING = 50;
+  const CELL = 100;
+
+  // 内部横线 (8条) - y坐标: 150,250,...,850
+  for (let i = 1; i <= 8; i++) {
+    const y = PADDING + i * CELL;
+    lines.push({
+      type: 'horizontal',
+      d: `M ${PADDING} ${y} L ${PADDING + 8 * CELL} ${y}`
+    });
+  }
+
+  // 内部竖线 (7条) - x坐标: 150,250,...,750
+  // 竖线在楚河汉界处断开：上半段 y 从 50 到 450，下半段 y 从 550 到 950
+  for (let i = 1; i <= 7; i++) {
+    const x = PADDING + i * CELL;
+    lines.push({
+      type: 'vertical',
+      d: `M ${x} ${PADDING} L ${x} ${PADDING + 4 * CELL} M ${x} ${PADDING + 5 * CELL} L ${x} ${PADDING + 9 * CELL}`
+    });
+  }
+
+  return lines;
+});
+
+// 九宫格斜线数据（基于 900x1000 坐标系）
+const palaceDiagonals = computed(() => {
+  const diagonals = [];
+  const PADDING = 50;
+  const CELL = 100;
+
+  // 上九宫格（黑方）斜线
+  // 从 (350,50) 到 (550,250)
+  diagonals.push({ d: `M ${PADDING + 3 * CELL} ${PADDING} L ${PADDING + 5 * CELL} ${PADDING + 2 * CELL}` });
+  // 从 (550,50) 到 (350,250)
+  diagonals.push({ d: `M ${PADDING + 5 * CELL} ${PADDING} L ${PADDING + 3 * CELL} ${PADDING + 2 * CELL}` });
+
+  // 下九宫格（红方）斜线
+  // 从 (350,750) 到 (550,950)
+  diagonals.push({ d: `M ${PADDING + 3 * CELL} ${PADDING + 7 * CELL} L ${PADDING + 5 * CELL} ${PADDING + 9 * CELL}` });
+  // 从 (550,750) 到 (350,950)
+  diagonals.push({ d: `M ${PADDING + 5 * CELL} ${PADDING + 7 * CELL} L ${PADDING + 3 * CELL} ${PADDING + 9 * CELL}` });
+
+  return diagonals;
+});
+
 // 是否被将军的高亮（暂时简化）
 const isCheckHighlight = computed(() => {
   // 可以根据 winner 或 game status 高亮将/帅
@@ -173,6 +239,55 @@ const isCheckHighlight = computed(() => {
     <div class="flex flex-col">
       <!-- 棋盘主体 -->
       <div class="relative z-10 grid" :style="{ gridTemplateColumns: `repeat(${BOARD_COLS}, minmax(0, 1fr))` }">
+        <!-- SVG 网格层 -->
+        <svg
+          class="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox="0 0 900 1000"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!-- 外边框 -->
+          <rect
+            x="50"
+            y="50"
+            width="800"
+            height="900"
+            fill="none"
+            :stroke="lineStrokeColor"
+            stroke-width="2"
+          />
+          <!-- 横线 -->
+          <path
+            v-for="(line, index) in gridLines.filter(l => l.type === 'horizontal')"
+            :key="`h-${index}`"
+            :d="line.d"
+            fill="none"
+            :stroke="lineStrokeColor"
+            stroke-width="2"
+            stroke-linecap="square"
+          />
+          <!-- 竖线 -->
+          <path
+            v-for="(line, index) in gridLines.filter(l => l.type === 'vertical')"
+            :key="`v-${index}`"
+            :d="line.d"
+            fill="none"
+            :stroke="lineStrokeColor"
+            stroke-width="2"
+            stroke-linecap="square"
+          />
+          <!-- 九宫格斜线 -->
+          <path
+            v-for="(diag, index) in palaceDiagonals"
+            :key="`d-${index}`"
+            :d="diag.d"
+            fill="none"
+            :stroke="lineStrokeColor"
+            stroke-width="2"
+            stroke-linecap="square"
+          />
+        </svg>
+
         <!-- 河流区域文字 -->
         <div class="absolute inset-0 pointer-events-none" :style="{ gridColumn: '1 / -1', gridRow: '5 / 7' }">
           <div class="relative w-full h-full flex items-center justify-between px-4">
@@ -185,62 +300,10 @@ const isCheckHighlight = computed(() => {
             v-for="(cell, colIndex) in row"
             :key="`${rowIndex}-${colIndex}`"
             class="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 flex items-center justify-center cursor-pointer group"
-            :class="[
-              themeColors.boardBackground,
-            ]"
             @click="handleCellClick({ col: colIndex, row: rowIndex })"
           >
-            <!-- 单元格边框（横线、竖线） -->
-            <div class="absolute inset-0 pointer-events-none">
-              <!-- 横线 -->
-              <div
-                v-if="!isRiverRow(rowIndex)"
-                class="absolute top-1/2 h-[2px]" :class="themeColors.lineBackground"
-                :style="{ left: colIndex === 0 ? '50%' : '0', right: colIndex === BOARD_COLS - 1 ? '50%' : '0' }"
-              ></div>
-              <!-- 竖线 -->
-              <div
-                class="absolute left-1/2 w-[2px]" :class="themeColors.lineBackground"
-                :style="{ top: rowIndex === 0 ? '50%' : '0', bottom: rowIndex === BOARD_ROWS - 1 ? '50%' : '0' }"
-              ></div>
-            </div>
 
 
-            <!-- 九宫格斜线（红方） -->
-            <template v-if="isInPalace(colIndex, rowIndex, PlayerSide.RED)">
-              <div
-                v-if="(colIndex === 3 && rowIndex === 7) || (colIndex === 5 && rowIndex === 9)"
-                class="absolute top-0 left-0 w-full h-full"
-                style="clip-path: polygon(0% 0%, 100% 100%);"
-              >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineBackground"></div>
-              </div>
-              <div
-                v-if="(colIndex === 5 && rowIndex === 7) || (colIndex === 3 && rowIndex === 9)"
-                class="absolute top-0 left-0 w-full h-full"
-                style="clip-path: polygon(100% 0%, 0% 100%);"
-              >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineBackground"></div>
-              </div>
-            </template>
-
-            <!-- 九宫格斜线（黑方） -->
-            <template v-if="isInPalace(colIndex, rowIndex, PlayerSide.BLACK)">
-              <div
-                v-if="(colIndex === 3 && rowIndex === 0) || (colIndex === 5 && rowIndex === 2)"
-                class="absolute top-0 left-0 w-full h-full"
-                style="clip-path: polygon(0% 0%, 100% 100%);"
-              >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 rotate-45" :class="themeColors.lineBackground"></div>
-              </div>
-              <div
-                v-if="(colIndex === 5 && rowIndex === 0) || (colIndex === 3 && rowIndex === 2)"
-                class="absolute top-0 left-0 w-full h-full"
-                style="clip-path: polygon(100% 0%, 0% 100%);"
-              >
-                <div class="absolute top-1/2 left-1/2 w-[141%] h-[2px] transform -translate-x-1/2 -translate-y-1/2 -rotate-45" :class="themeColors.lineBackground"></div>
-              </div>
-            </template>
 
             <!-- 棋子 -->
             <div

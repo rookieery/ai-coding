@@ -5,7 +5,8 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-UI-Opt-Board-Layout: Removed coordinate labels (top, bottom, left) and enlarged board grid and piece sizes (cells w-8->w-12, pieces 90%, text xl/2xl). Passed type check, tests, build. - 2026年04月16日 21:01:03
-UI-Opt-River-Style: Refactored Chu River/Han Boundary styling - removed duplicate text and dashed borders, merged river area, positioned '楚河' left and '汉界' right with enlarged font matching line color. Passed type check, tests, build. - 2026年04月16日 21:59:59
+
 UI-Fix-Piece-Text-Color: Removed hardcoded HEX colors from piece text styling, replaced with semantic theme classes (pieceTextPrimary/pieceTextSecondary). Passed type check, tests, build. - 2026年04月16日 22:16:00
 Refactor-Any-Types: Replaced any types in notation.ts with proper BoardState types. Passed type check, tests, build. - 2026年04月16日 22:20:00
+UI-Refactor-Board-Grid: Refactored board grid to use SVG background layer with separated piece layer. Implemented 9 vertical lines (broken at river), 10 horizontal lines, palace diagonals using inline SVG. Removed nested div lines, ensured clean architecture. Passed type check, tests, build. - 2026年04月17日 18:52:00
+UI-SVG-Math-Blueprint: Injected precise SVG coordinate system (viewBox 0 0 900 1000) with 50px padding. Added outer border rect, 8 internal horizontal lines, 7 internal vertical lines broken at river, palace diagonals. All lines use stroke color from theme lineColor and stroke-width=2. Passed type check and build. - 2026年04月17日 19:00:00

@@ -152,3 +152,37 @@ Pass the `theme` prop from the parent view (e.g., `ChineseChessView.vue`), which
 - Visually inspect board boundaries (should be crisp solid lines without blur).
 - Check grid lines are clearly visible (2px thick).
 - Verify piece text colors remain consistent in both light and dark modes.
+
+## Board Grid Architecture Refactoring (UI-Refactor-Board-Grid)
+
+**Problem**: The original board grid used nested divs to draw lines within each cell, causing misalignment at intersections and inability to properly break vertical lines at the river (Chu/Han boundary). This approach also mixed grid rendering with piece rendering, making the code difficult to maintain.
+
+**Solution**: 
+1. **SVG background layer**: Created an absolute‑positioned SVG container that draws the entire grid as a single unit.
+2. **Separated concerns**: 
+   - Grid lines (9 vertical, 10 horizontal) drawn with SVG `<path>` elements
+   - Vertical lines intentionally broken between rows 4–5 (river region)
+   - Palace diagonals drawn as separate SVG paths
+   - River text placed as absolute‑positioned divs centered in the river area
+   - Piece layer remains as a CSS Grid overlay, completely independent of the grid lines
+3. **Clean coordinate system**: SVG uses `viewBox="0 0 9 10"` where each unit corresponds to one cell, ensuring perfect alignment regardless of responsive sizing.
+
+**Implementation**:
+- Added computed properties `gridLines` and `palaceDiagonals` that generate SVG path data.
+- Removed all inline‑cell border divs (`h‑[2px]`, `w‑[2px]`) and palace‑diagonal clip‑path hacks.
+- Removed cell background color (`themeColors.boardBackground`) from individual cells, allowing the outer container’s background to show through.
+- SVG lines use `stroke‑width="0.03"` (relative to viewBox) and inherit `themeColors.lineBackground` for consistent theming.
+
+**Benefits**:
+- Perfectly aligned intersections and consistent line thickness.
+- Clear separation between visual layers (grid vs. pieces).
+- Simplified CSS – no more complex positioning calculations per cell.
+- Maintains full theme support; grid lines automatically adopt the current theme's `lineBackground` color.
+- Fully responsive; the SVG scales with the grid container.
+
+**Verification**:
+- Run `npm run lint` and `npm run build` to confirm no TypeScript errors.
+- Visually inspect that all vertical lines are broken between rows 4 and 5 (river).
+- Confirm that palace diagonals appear only in the correct 3×3 palace regions.
+- Ensure pieces render above the grid lines and remain interactive.
+- Test across all four themes to verify grid lines adapt correctly.

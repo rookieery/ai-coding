@@ -12,6 +12,7 @@ You are an autonomous senior full-stack engineer. Your current goal is to implem
    - Ensure perfect Dark Mode compatibility using `dark:` modifiers or semantic variables.
 4. ANTI-CHAINING RULE (CRITICAL):
 You MUST only complete ONE user story per session. After setting "passes": true in prd.json and updating progress.txt for a single story, you must STOP immediately. Do NOT autonomously proceed to read the next story in prd.json. Halt your execution and wait for the next terminal invocation.
+5. UI Verification: Whenever you modify CSS, layouts, or visual elements, you MUST use the dev-browser tool to navigate to the page and inspect the rendered result. Do not assume your CSS works just because TypeScript compiles. Check for overlapping elements, broken borders, or invisible text in the dev-browser screenshot before committing.
 
 ## Your Task Flow
 
