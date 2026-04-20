@@ -1,6 +1,8 @@
 // API配置
 import { API_BASE_URL } from '../config';
 
+export type GameType = 'gomoku' | 'chinese_chess';
+
 /**
  * 前端棋谱数据结构
  */
@@ -14,7 +16,21 @@ export interface FrontendGame {
   aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
   aiRole: 'first' | 'second';
   ruleMode: 'standard' | 'renju';
-  isPublic?: boolean; // 棋谱是否公开，默认false（私有），只有admin用户保存的棋谱默认为true
+  isPublic?: boolean;
+  gameType?: GameType;
+}
+
+export interface GameListItem {
+  id: string;
+  name: string;
+  timestamp: number;
+  moveCount: number;
+  author: string;
+  mode: string;
+  aiDifficulty: string;
+  isPublic: boolean;
+  gameType: GameType;
+  authorId?: string;
 }
 
 /**
@@ -102,7 +118,8 @@ export class GameApiService {
    */
   async saveGame(game: FrontendGame): Promise<{ id: string; name: string; timestamp: number }> {
     try {
-      const response = await fetch(`${this.baseUrl}/games/frontend`, {
+      const gameType = game.gameType || 'gomoku';
+      const response = await fetch(`${this.baseUrl}/games/${gameType === 'chinese_chess' ? 'chinese-chess' : 'gomoku'}/frontend`, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(game),
@@ -117,7 +134,6 @@ export class GameApiService {
 
       return result.data!;
     } catch (error) {
-      console.error('Error saving game:', error);
       throw error;
     }
   }
@@ -125,16 +141,8 @@ export class GameApiService {
   /**
    * 获取棋谱列表
    */
-  async getGames(page: number = 1, pageSize: number = 20): Promise<{
-    games: Array<{
-      id: string;
-      name: string;
-      timestamp: number;
-      moveCount: number;
-      author: string;
-      mode: string;
-      aiDifficulty: string;
-    }>;
+  async getGames(gameType: GameType = 'gomoku', page: number = 1, pageSize: number = 20): Promise<{
+    games: GameListItem[];
     pagination: {
       page: number;
       pageSize: number;
@@ -143,15 +151,16 @@ export class GameApiService {
     };
   }> {
     try {
+      const apiPath = gameType === 'chinese_chess' ? 'chinese-chess' : 'gomoku';
       const response = await fetch(
-        `${this.baseUrl}/games/frontend?page=${page}&pageSize=${pageSize}`,
+        `${this.baseUrl}/games/${apiPath}/frontend?page=${page}&pageSize=${pageSize}`,
         {
           headers: this.getHeaders(),
           credentials: 'include',
         }
       );
 
-      const result: PaginatedResponse<any> = await response.json();
+      const result: PaginatedResponse<GameListItem> = await response.json();
 
       if (!result.success) {
         throw new Error(result.message || result.error || 'Failed to fetch games');
@@ -159,7 +168,6 @@ export class GameApiService {
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching games:', error);
       throw error;
     }
   }
@@ -167,9 +175,10 @@ export class GameApiService {
   /**
    * 获取单个棋谱
    */
-  async getGame(id: string): Promise<FrontendGame> {
+  async getGame(id: string, gameType: GameType = 'gomoku'): Promise<FrontendGame> {
     try {
-      const response = await fetch(`${this.baseUrl}/games/frontend/${id}`, {
+      const apiPath = gameType === 'chinese_chess' ? 'chinese-chess' : 'gomoku';
+      const response = await fetch(`${this.baseUrl}/games/${apiPath}/frontend/${id}`, {
         headers: this.getHeaders(),
         credentials: 'include',
       });
@@ -182,7 +191,6 @@ export class GameApiService {
 
       return result.data!;
     } catch (error) {
-      console.error('Error fetching game:', error);
       throw error;
     }
   }
@@ -192,8 +200,6 @@ export class GameApiService {
    */
   async updateGame(id: string, game: FrontendGame): Promise<void> {
     try {
-      // 注意：更新API可能需要认证，这里暂时使用前端格式的更新
-      // 实际项目中可能需要转换为后端格式
       const body: UpdateGameRequest = {
         title: game.name,
         metadata: {
@@ -206,7 +212,6 @@ export class GameApiService {
         },
       };
 
-      // 只有在有移动历史时才更新moves字段
       if (game.moveHistory && game.moveHistory.length > 0) {
         body.moves = game.moveHistory.map((move, index) => ({
           x: move.c,
@@ -230,7 +235,6 @@ export class GameApiService {
         throw new Error(result.message || result.error || 'Failed to update game');
       }
     } catch (error) {
-      console.error('Error updating game:', error);
       throw error;
     }
   }
@@ -238,9 +242,13 @@ export class GameApiService {
   /**
    * 删除棋谱
    */
-  async deleteGame(id: string): Promise<void> {
+  async deleteGame(id: string, gameType: GameType = 'gomoku'): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/games/${id}`, {
+      const url = gameType === 'chinese_chess'
+        ? `${this.baseUrl}/games/chinese-chess/${id}`
+        : `${this.baseUrl}/games/${id}`;
+
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: this.getHeaders(),
         credentials: 'include',
@@ -252,14 +260,12 @@ export class GameApiService {
         throw new Error(result.message || result.error || 'Failed to delete game');
       }
     } catch (error) {
-      console.error('Error deleting game:', error);
       throw error;
     }
   }
 
   /**
    * 从localStorage迁移数据到后端
-   * @returns 迁移的游戏数量
    */
   async migrateFromLocalStorage(): Promise<number> {
     try {
@@ -275,14 +281,13 @@ export class GameApiService {
         try {
           await this.saveGame(game);
           migratedCount++;
-        } catch (error) {
-          console.error(`Failed to migrate game ${game.name}:`, error);
+        } catch {
+          // Skip failed migrations
         }
       }
 
       return migratedCount;
     } catch (error) {
-      console.error('Error migrating from localStorage:', error);
       throw error;
     }
   }

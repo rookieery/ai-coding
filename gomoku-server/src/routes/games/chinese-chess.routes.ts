@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { chineseChessController } from '../../controllers/chinese-chess.controller';
+import { optionalAuthenticate, authenticate } from '../../middleware/auth';
+import { validateId } from '../../middleware/validation';
 
 const router = Router();
 
@@ -10,15 +12,32 @@ const router = Router();
  */
 router.get('/health', chineseChessController.healthCheck.bind(chineseChessController));
 
-// 将来添加中国象棋专属路由：
-// router.post('/move', validateChessMove, chineseChessController.makeMove);
-// router.get('/ai/suggest', chineseChessController.suggestMove);
-// router.post('/ai/move', chineseChessController.aiMove);
-// router.post('/validate', chineseChessController.validateMove);
+/**
+ * @route   POST /api/games/chinese-chess/frontend
+ * @desc    从前端格式创建中国象棋棋谱（可选认证）
+ * @access  Public (可选认证)
+ */
+router.post('/frontend', optionalAuthenticate, chineseChessController.createGameFromFrontend.bind(chineseChessController));
 
-// 中国象棋前端格式棋谱路由（如果需要）
-// router.post('/frontend', chineseChessController.createGameFromFrontend.bind(chineseChessController));
-// router.get('/frontend', chineseChessController.getGamesForFrontend.bind(chineseChessController));
-// router.get('/frontend/:id', chineseChessController.getGameForFrontend.bind(chineseChessController));
+/**
+ * @route   GET /api/games/chinese-chess/frontend
+ * @desc    获取前端格式的中国象棋棋谱列表
+ * @access  Public (可选认证)
+ */
+router.get('/frontend', optionalAuthenticate, chineseChessController.getGamesForFrontend.bind(chineseChessController));
+
+/**
+ * @route   GET /api/games/chinese-chess/frontend/:id
+ * @desc    获取单个前端格式的中国象棋棋谱
+ * @access  Public
+ */
+router.get('/frontend/:id', optionalAuthenticate, validateId(), chineseChessController.getGameForFrontend.bind(chineseChessController));
+
+/**
+ * @route   DELETE /api/games/chinese-chess/:id
+ * @desc    删除中国象棋棋谱
+ * @access  Private (仅作者或管理员)
+ */
+router.delete('/:id', authenticate, validateId(), chineseChessController.deleteGame.bind(chineseChessController));
 
 export default router;

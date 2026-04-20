@@ -36,6 +36,7 @@ model Game {
   playerBlack String?
   playerWhite String?
   isPublic    Boolean  @default(true)
+  gameType    String   @default("gomoku")
   tags        String
   metadata    String?
 

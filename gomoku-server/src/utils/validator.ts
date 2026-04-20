@@ -62,7 +62,8 @@ export const gameCreateSchema = z.object({
   result: z.enum(['black_win', 'white_win', 'draw']).optional(),
   playerBlack: z.string().max(100).optional(),
   playerWhite: z.string().max(100).optional(),
-  isPublic: z.boolean().default(true),
+  isPublic: z.boolean().default(false),
+  gameType: z.enum(['gomoku', 'chinese_chess']).default('gomoku'),
   tags: z.array(z.string().max(50)).default([]),
 });
 
@@ -107,6 +108,7 @@ export const paginationSchema = z.object({
 export const gameQuerySchema = paginationSchema.extend({
   authorId: z.string().cuid().optional(),
   isPublic: z.coerce.boolean().optional(),
+  gameType: z.enum(['gomoku', 'chinese_chess']).optional(),
   tags: z.string().transform(str => str.split(',')).optional(),
   search: z.string().optional(),
 });

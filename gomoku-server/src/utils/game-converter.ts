@@ -22,7 +22,8 @@ export interface FrontendGame {
   aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
   aiRole: 'first' | 'second';
   ruleMode: 'standard' | 'renju';
-  isPublic?: boolean; // 棋谱是否公开，默认false（私有），只有admin用户保存的棋谱默认为true
+  isPublic?: boolean;
+  gameType?: 'gomoku' | 'chinese_chess';
 }
 
 /**
@@ -88,8 +89,9 @@ export function frontendGameToBackendData(
   playerBlack?: string;
   playerWhite?: string;
   isPublic: boolean;
+  gameType: 'gomoku' | 'chinese_chess';
   tags: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 } {
   const moves = frontendGame.moveHistory.map((move, index) =>
     frontendMoveToBackendMove(move, index + 1)
@@ -117,12 +119,13 @@ export function frontendGameToBackendData(
   return {
     title: frontendGame.name,
     description: `Game created at ${new Date(frontendGame.timestamp).toISOString()}`,
-    boardSize: 15, // 标准五子棋棋盘大小
+    boardSize: 15,
     moves,
     result,
-    playerBlack: frontendGame.mode === 'pve' && frontendGame.aiRole === 'first' ? 'AI' : '玩家1',
-    playerWhite: frontendGame.mode === 'pve' && frontendGame.aiRole === 'second' ? 'AI' : '玩家2',
-    isPublic: frontendGame.isPublic ?? false, // 默认私有棋谱，符合安全要求
+    playerBlack: frontendGame.mode === 'pve' && frontendGame.aiRole === 'first' ? 'AI' : 'Player1',
+    playerWhite: frontendGame.mode === 'pve' && frontendGame.aiRole === 'second' ? 'AI' : 'Player2',
+    isPublic: frontendGame.isPublic ?? false,
+    gameType: frontendGame.gameType || 'gomoku',
     tags,
     metadata: {
       frontendFormat: true,
@@ -131,7 +134,7 @@ export function frontendGameToBackendData(
       aiRole: frontendGame.aiRole,
       ruleMode: frontendGame.ruleMode,
       originalTimestamp: frontendGame.timestamp,
-      isPublic: frontendGame.isPublic ?? false, // 在metadata中也保存一份，便于前端读取
+      isPublic: frontendGame.isPublic ?? false,
     },
   };
 }
@@ -140,27 +143,28 @@ export function frontendGameToBackendData(
  * 将后端棋谱转换为前端棋谱格式
  */
 export function backendGameToFrontendGame(
-  backendGame: any,
+  backendGame: Record<string, unknown>,
   id: string
 ): FrontendGame {
-  const moves = Array.isArray(backendGame.moves)
-    ? backendGame.moves.map((move: any) => backendMoveToFrontendMove(move))
+  const rawMoves = Array.isArray(backendGame.moves)
+    ? backendGame.moves
     : [];
+  const moves = rawMoves.map((move: unknown) => backendMoveToFrontendMove(move as Move));
 
-  // 从metadata中提取前端特定字段
-  const metadata = backendGame.metadata || {};
+  const metadata = (backendGame.metadata as Record<string, unknown>) || {};
 
   return {
     id,
-    name: backendGame.title,
-    board: rebuildBoardFromMoves(moves, backendGame.boardSize),
+    name: backendGame.title as string,
+    board: rebuildBoardFromMoves(moves, backendGame.boardSize as number),
     moveHistory: moves,
-    timestamp: metadata.originalTimestamp || backendGame.createdAt?.getTime() || Date.now(),
-    mode: metadata.mode || 'pvp',
-    aiDifficulty: metadata.aiDifficulty || 'intermediate',
-    aiRole: metadata.aiRole || 'second',
-    ruleMode: metadata.ruleMode || 'standard',
-    isPublic: metadata.isPublic ?? backendGame.isPublic ?? false,
+    timestamp: (metadata.originalTimestamp as number) || (backendGame.createdAt as Date)?.getTime() || Date.now(),
+    mode: (metadata.mode as FrontendGame['mode']) || 'pvp',
+    aiDifficulty: (metadata.aiDifficulty as FrontendGame['aiDifficulty']) || 'intermediate',
+    aiRole: (metadata.aiRole as FrontendGame['aiRole']) || 'second',
+    ruleMode: (metadata.ruleMode as FrontendGame['ruleMode']) || 'standard',
+    isPublic: (metadata.isPublic as boolean) ?? (backendGame.isPublic as boolean) ?? false,
+    gameType: (backendGame.gameType as FrontendGame['gameType']) || 'gomoku',
   };
 }
 

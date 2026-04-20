@@ -60,6 +60,8 @@ export interface AuthResponse {
 }
 
 // 棋谱相关类型
+export type GameType = 'gomoku' | 'chinese_chess';
+
 export interface Move {
   x: number;
   y: number;
@@ -78,8 +80,9 @@ export interface Game {
   playerBlack?: string;
   playerWhite?: string;
   isPublic: boolean;
+  gameType: GameType;
   tags: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   authorId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -94,8 +97,9 @@ export interface GameCreateInput {
   playerBlack?: string;
   playerWhite?: string;
   isPublic?: boolean;
+  gameType?: GameType;
   tags?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface GameUpdateInput {
@@ -107,8 +111,9 @@ export interface GameUpdateInput {
   playerBlack?: string;
   playerWhite?: string;
   isPublic?: boolean;
+  gameType?: GameType;
   tags?: string[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 // 对局相关类型
@@ -181,6 +186,7 @@ export interface PaginationParams {
 export interface GameQueryParams extends PaginationParams {
   authorId?: string;
   isPublic?: boolean;
+  gameType?: GameType;
   tags?: string[];
   search?: string;
 }

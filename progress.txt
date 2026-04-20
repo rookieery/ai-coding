@@ -11,3 +11,5 @@ UI-Refactor-Board-Grid: Refactored board grid to use SVG background layer with s
 UI-SVG-Math-Blueprint: Injected precise SVG coordinate system (viewBox 0 0 900 1000) with 50px padding. Added outer border rect, 8 internal horizontal lines, 7 internal vertical lines broken at river, palace diagonals. All lines use stroke color from theme lineColor and stroke-width=2. Passed type check and build. - 2026年04月17日 19:00:00
 
 UI-Tweak-River-Text: 调整楚河汉界文字垂直居中，使用SVG text元素，字体放大加粗，颜色与线条色一致。通过类型检查和测试。 - 2026年04月17日 20:38:00
+
+Logic-Unified-Record-Service: 构建通用棋谱数据服务层。1. Prisma Game模型新增gameType字段(gomoku/chinese_chess)，运行migration。2. 后端types新增GameType类型，Game/GameCreateInput/GameUpdateInput/GameQueryParams均包含gameType。3. GameService.createGame强制Admin为isPublic:true，普通用户为isPublic:false；getGames/getUserGames支持gameType过滤。4. GomokuService/Controller自动注入gameType='gomoku'并按类型过滤。5. ChineseChessController实现完整CRUD(创建/列表/详情/删除)，自动注入gameType='chinese_chess'。6. 添加中国象棋路由(/api/games/chinese-chess/frontend)，使用optionalAuthenticate。7. 客户端API新增GameType/GameListItem类型，saveGame/getGames/getGame/deleteGame按gameType路由到对应后端端点。8. 游戏转换器更新支持gameType。Server typecheck通过，web lint通过。 - 2026年04月20日

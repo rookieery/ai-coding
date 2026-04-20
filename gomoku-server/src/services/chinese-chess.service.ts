@@ -6,10 +6,8 @@ export class ChineseChessService {
    * 创建中国象棋棋谱
    */
   async createGame(data: GameCreateInput, authorId?: string, userRole?: string): Promise<Game> {
-    // 可以添加中国象棋特定的验证或处理逻辑
-    // 例如，确保棋盘大小为9x10，验证移动规则等
-    // 暂时只委托给通用服务
-    return gameService.createGame(data, authorId, userRole);
+    const chessData = { ...data, gameType: 'chinese_chess' as const };
+    return gameService.createGame(chessData, authorId, userRole);
   }
 
   /**
@@ -25,9 +23,7 @@ export class ChineseChessService {
       search?: string;
     } = {}
   ): Promise<{ games: Game[]; total: number }> {
-    // 可以添加中国象棋特定的过滤逻辑
-    // 例如，通过metadata.gameType过滤
-    return gameService.getGames(page, pageSize, filters);
+    return gameService.getGames(page, pageSize, { ...filters, gameType: 'chinese_chess' });
   }
 
   /**
@@ -40,7 +36,7 @@ export class ChineseChessService {
   /**
    * 更新中国象棋棋谱
    */
-  async updateGame(id: string, data: any, userId: string, userRole?: string): Promise<Game> {
+  async updateGame(id: string, data: GameCreateInput, userId: string, userRole?: string): Promise<Game> {
     return gameService.updateGame(id, data, userId, userRole);
   }
 
@@ -55,7 +51,7 @@ export class ChineseChessService {
    * 获取用户的所有中国象棋棋谱
    */
   async getUserGames(userId: string, page: number = 1, pageSize: number = 20): Promise<{ games: Game[]; total: number }> {
-    return gameService.getUserGames(userId, page, pageSize);
+    return gameService.getUserGames(userId, page, pageSize, 'chinese_chess');
   }
 }
 

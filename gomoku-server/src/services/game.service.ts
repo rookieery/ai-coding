@@ -1,5 +1,5 @@
 import { prisma } from '../app';
-import { Game, GameCreateInput, GameUpdateInput } from '../types';
+import { Game, GameCreateInput, GameUpdateInput, GameType } from '../types';
 import { logger } from '../utils/logger';
 
 export class GameService {
@@ -8,11 +8,7 @@ export class GameService {
    */
   async createGame(data: GameCreateInput, authorId?: string, userRole?: string): Promise<Game> {
     try {
-      // 验证：只有管理员可以创建公开棋谱
-      const isPublic = data.isPublic ?? false;
-      if (isPublic && userRole !== 'ADMIN') {
-        throw new Error('Only administrators can create public games');
-      }
+      const isPublic = userRole === 'ADMIN' ? true : (data.isPublic ?? false);
 
       const game = await prisma.game.create({
         data: {
@@ -23,7 +19,8 @@ export class GameService {
           result: data.result,
           playerBlack: data.playerBlack,
           playerWhite: data.playerWhite,
-          isPublic: isPublic, // 默认私有棋谱，符合安全要求
+          isPublic,
+          gameType: data.gameType || 'gomoku',
           tags: JSON.stringify(data.tags || []),
           metadata: data.metadata ? JSON.stringify(data.metadata) : null,
           authorId: authorId || null,
@@ -57,13 +54,14 @@ export class GameService {
     filters: {
       authorId?: string;
       isPublic?: boolean;
+      gameType?: GameType;
       tags?: string[];
       search?: string;
     } = {}
   ): Promise<{ games: Game[]; total: number }> {
     try {
       const skip = (page - 1) * pageSize;
-      const where: any = {};
+      const where: Record<string, unknown> = {};
 
       if (filters.authorId) {
         where.authorId = filters.authorId;
@@ -71,6 +69,10 @@ export class GameService {
 
       if (filters.isPublic !== undefined) {
         where.isPublic = filters.isPublic;
+      }
+
+      if (filters.gameType) {
+        where.gameType = filters.gameType;
       }
 
       if (filters.tags && filters.tags.length > 0) {
@@ -189,6 +191,7 @@ export class GameService {
           ...(data.playerBlack !== undefined && { playerBlack: data.playerBlack }),
           ...(data.playerWhite !== undefined && { playerWhite: data.playerWhite }),
           ...(data.isPublic !== undefined && { isPublic: data.isPublic }),
+          ...(data.gameType !== undefined && { gameType: data.gameType }),
           ...(data.tags !== undefined && { tags: JSON.stringify(data.tags) }),
           ...(data.metadata !== undefined && { metadata: data.metadata ? JSON.stringify(data.metadata) : null }),
         },
@@ -251,13 +254,17 @@ export class GameService {
   /**
    * 获取用户的所有棋谱
    */
-  async getUserGames(userId: string, page: number = 1, pageSize: number = 20): Promise<{ games: Game[]; total: number }> {
+  async getUserGames(userId: string, page: number = 1, pageSize: number = 20, gameType?: GameType): Promise<{ games: Game[]; total: number }> {
     try {
       const skip = (page - 1) * pageSize;
+      const where: Record<string, unknown> = { authorId: userId };
+      if (gameType) {
+        where.gameType = gameType;
+      }
 
       const [games, total] = await Promise.all([
         prisma.game.findMany({
-          where: { authorId: userId },
+          where,
           skip,
           take: pageSize,
           orderBy: { createdAt: 'desc' },
@@ -272,7 +279,7 @@ export class GameService {
             },
           },
         }),
-        prisma.game.count({ where: { authorId: userId } }),
+        prisma.game.count({ where }),
       ]);
 
       return {
@@ -288,32 +295,32 @@ export class GameService {
   /**
    * 将Prisma模型转换为Game类型
    */
-  private mapToGame(game: any): Game {
-    // 安全解析JSON字段
-    const parseJson = (str: string | null | undefined, defaultValue: any = null) => {
+  private mapToGame(game: Record<string, unknown>): Game {
+    const parseJson = <T>(str: string | null | undefined, defaultValue: T): T => {
       if (!str) return defaultValue;
       try {
-        return JSON.parse(str);
+        return JSON.parse(str) as T;
       } catch {
         return defaultValue;
       }
     };
 
     return {
-      id: game.id,
-      title: game.title,
-      description: game.description ?? undefined,
-      boardSize: game.boardSize,
-      moves: parseJson(game.moves, []),
-      result: game.result as any,
-      playerBlack: game.playerBlack ?? undefined,
-      playerWhite: game.playerWhite ?? undefined,
-      isPublic: game.isPublic,
-      tags: parseJson(game.tags, []),
-      metadata: parseJson(game.metadata, undefined),
-      authorId: game.authorId,
-      createdAt: game.createdAt,
-      updatedAt: game.updatedAt,
+      id: game.id as string,
+      title: game.title as string,
+      description: (game.description as string) || undefined,
+      boardSize: game.boardSize as number,
+      moves: parseJson(game.moves as string, []),
+      result: game.result as Game['result'],
+      playerBlack: (game.playerBlack as string) || undefined,
+      playerWhite: (game.playerWhite as string) || undefined,
+      isPublic: game.isPublic as boolean,
+      gameType: (game.gameType as GameType) || 'gomoku',
+      tags: parseJson(game.tags as string, []),
+      metadata: parseJson(game.metadata as string, undefined),
+      authorId: (game.authorId as string) || undefined,
+      createdAt: game.createdAt as Date,
+      updatedAt: game.updatedAt as Date,
     };
   }
 }

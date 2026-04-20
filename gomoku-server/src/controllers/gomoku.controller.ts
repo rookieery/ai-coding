@@ -86,10 +86,13 @@ export class GomokuController {
         timestamp: game.createdAt.getTime(),
         moveCount: Array.isArray(game.moves) ? game.moves.length : 0,
         author: game.authorId ? 'User' : 'Anonymous',
-        mode: game.metadata?.mode || 'pvp',
-        aiDifficulty: game.metadata?.aiDifficulty || 'intermediate',
-        aiRole: game.metadata?.aiRole || 'second',
-        ruleMode: game.metadata?.ruleMode || 'standard',
+        mode: (game.metadata as Record<string, unknown>)?.mode || 'pvp',
+        aiDifficulty: (game.metadata as Record<string, unknown>)?.aiDifficulty || 'intermediate',
+        aiRole: (game.metadata as Record<string, unknown>)?.aiRole || 'second',
+        ruleMode: (game.metadata as Record<string, unknown>)?.ruleMode || 'standard',
+        isPublic: game.isPublic,
+        gameType: game.gameType,
+        authorId: game.authorId,
       }));
 
       const response: ApiResponse = {
@@ -150,7 +153,7 @@ export class GomokuController {
       }
 
       // 使用转换工具转换为前端格式
-      const frontendGame = backendGameToFrontendGame(game, id);
+      const frontendGame = backendGameToFrontendGame(game as unknown as Record<string, unknown>, id);
 
       const response: ApiResponse = {
         success: true,

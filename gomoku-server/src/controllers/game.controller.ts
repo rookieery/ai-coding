@@ -59,11 +59,12 @@ export class GameController {
       const pageSize = parseInt(req.query.pageSize as string) || 20;
       const authorId = req.query.authorId as string;
       const isPublic = req.query.isPublic as string;
+      const gameType = req.query.gameType as string;
       const tags = req.query.tags as string;
       const search = req.query.search as string;
       const currentUserId = req.user?.id;
 
-      const filters: any = {};
+      const filters: Record<string, unknown> = {};
 
       // 权限检查：如果指定了authorId，确保只有查看自己私有棋谱的权限
       if (authorId) {
@@ -91,6 +92,7 @@ export class GameController {
 
       if (tags) filters.tags = tags.split(',');
       if (search) filters.search = search;
+      if (gameType) filters.gameType = gameType;
 
       const { games, total } = await gameService.getGames(page, pageSize, filters);
 
@@ -346,8 +348,11 @@ export class GameController {
         timestamp: game.createdAt.getTime(),
         moveCount: Array.isArray(game.moves) ? game.moves.length : 0,
         author: game.authorId ? 'User' : 'Anonymous',
-        mode: game.metadata?.mode || 'pvp',
-        aiDifficulty: game.metadata?.aiDifficulty || 'intermediate',
+        mode: (game.metadata as Record<string, unknown>)?.mode || 'pvp',
+        aiDifficulty: (game.metadata as Record<string, unknown>)?.aiDifficulty || 'intermediate',
+        isPublic: game.isPublic,
+        gameType: game.gameType,
+        authorId: game.authorId,
       }));
 
       const response: ApiResponse = {
@@ -408,7 +413,7 @@ export class GameController {
       }
 
       // 使用转换工具转换为前端格式
-      const frontendGame = backendGameToFrontendGame(game, id);
+      const frontendGame = backendGameToFrontendGame(game as unknown as Record<string, unknown>, id);
 
       const response: ApiResponse = {
         success: true,

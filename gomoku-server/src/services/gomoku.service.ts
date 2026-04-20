@@ -6,12 +6,8 @@ export class GomokuService {
    * 创建五子棋棋谱
    */
   async createGame(data: GameCreateInput, authorId?: string, userRole?: string): Promise<Game> {
-    // 确保棋谱包含五子棋特定的metadata
-    // const metadata = data.metadata || {};
-    // 可以添加五子棋特定的验证或处理逻辑
-    // 例如，确保boardSize为15，ruleMode为standard或renju
-    // 暂时只委托给通用服务
-    return gameService.createGame(data, authorId, userRole);
+    const gomokuData = { ...data, gameType: 'gomoku' as const };
+    return gameService.createGame(gomokuData, authorId, userRole);
   }
 
   /**
@@ -27,9 +23,7 @@ export class GomokuService {
       search?: string;
     } = {}
   ): Promise<{ games: Game[]; total: number }> {
-    // 可以添加五子棋特定的过滤逻辑
-    // 例如，通过metadata.ruleMode过滤
-    return gameService.getGames(page, pageSize, filters);
+    return gameService.getGames(page, pageSize, { ...filters, gameType: 'gomoku' });
   }
 
   /**
@@ -57,7 +51,7 @@ export class GomokuService {
    * 获取用户的所有五子棋棋谱
    */
   async getUserGames(userId: string, page: number = 1, pageSize: number = 20): Promise<{ games: Game[]; total: number }> {
-    return gameService.getUserGames(userId, page, pageSize);
+    return gameService.getUserGames(userId, page, pageSize, 'gomoku');
   }
 }
 
