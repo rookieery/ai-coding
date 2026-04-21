@@ -190,9 +190,22 @@ const importGame = async (game: GameListItem) => {
         .filter((move): move is MoveHistory => move !== null);
     }
 
-    board.value = fullGame.board && Array.isArray(fullGame.board)
-      ? fullGame.board.map((row: unknown[]) => row ? [...row] : [])
-      : createInitialBoard();
+    // Initialize board to starting position, then replay all moves to reconstruct final state
+    const replayBoard = createInitialBoard();
+    for (const move of parsedMoveHistory) {
+      const piece = getPieceAt(replayBoard, move.from);
+      if (piece) {
+        // Execute the move on the replay board
+        replayBoard[move.from.row][move.from.col] = null;
+        replayBoard[move.to.row][move.to.col] = {
+          ...piece,
+          coord: { ...move.to },
+        };
+      }
+    }
+
+    // Assign the replayed board to the reactive state
+    board.value = replayBoard;
     moveHistory.value = parsedMoveHistory;
     mode.value = fullGame.mode || 'pvp';
     aiDifficulty.value = fullGame.aiDifficulty || 'intermediate';
