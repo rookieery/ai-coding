@@ -10,7 +10,6 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-Bugfix-Chess-Board-Replay: 修复象棋导入棋谱后棋盘状态未重建导致视图消失的问题。1. 问题根因：后端chinese-chess.controller.ts的getGameForFrontend方法返回board:[]空数组，前端importGame函数直接使用该空数组或仅初始化棋盘，未执行步骤推演(Replay)重建最终棋盘状态。2. 修复方案：在importGame中，先初始化棋盘为开局状态，然后遍历parsedMoveHistory执行每一步移动，重建最终棋盘状态后赋值给响应式变量board.value。3. 代码变更：ChineseChessView.vue的importGame函数，移除对fullGame.board的直接依赖，改用replayBoard本地变量推演后赋值。通过TypeScript编译、单元测试验证。 - 2026年04月21日
-Bugfix-Chess-Import-Crash: 修复中国象棋导入棋谱导致页面崩溃的问题。1. 后端chinese-chess.controller.ts：修复棋谱序列化逻辑，不再将五子棋的Move格式强加于象棋，改用类型断言处理ChineseChessMove[]结构。2. 新增ChineseChessMove类型定义，正确处理象棋的move对象（from, to, piece, side, timestamp, capturedPiece）。3. 前端game-api.ts：修复getGame返回类型，支持ChineseChessFrontendGame。4. 前端ChineseChessView.vue：增强importGame函数健壮性，优雅处理旧格式数据而非崩溃，添加空值检查和类型过滤。通过TypeScript类型检查、API端点测试验证。 - 2026年04月21日
+
 Bugfix-Record-Permission-Leak: 修复Admin越权查看他人私有棋谱的严重权限Bug。1. 问题根因：三个控制器(game.controller.ts, gomoku.controller.ts, chinese-chess.controller.ts)的getGamesForFrontend方法使用错误的权限逻辑，任何登录用户都能看到自己的私有棋谱，但该逻辑绕过了Admin的权限限制。2. 修复方案：重构权限过滤逻辑，严格遵循真值表：Admin只能看到公开棋谱(isPublic:true)；非Admin能看到公开棋谱+自己的私有棋谱；未登录只能看到公开棋谱。3. 代码变更：新增userRole检查，将条件从if(userId)改为if(userId && userRole !== 'ADMIN')，确保Admin不会意外获取他人私有记录。通过TypeScript编译、前后端构建验证。 - 2026年04月21日
 Bugfix-Chess-Board-Replay-Verification: 验证象棋棋盘重建修复。1. 创建独立测试脚本模拟importGame逻辑，验证后端返回空board数组时，前端能正确从moveHistory重建棋盘状态。2. 测试覆盖：初始棋盘32子(红黑各16)、移动后棋子位置正确、旧位置清空、吃子逻辑正确。3. 所有测试通过，确认修复有效。通过Node.js单元测试验证。 - 2026年04月21日

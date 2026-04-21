@@ -414,6 +414,42 @@
       "title": "注入精确的SVG坐标系与楚河汉界图纸",
       "description": "目前的 SVG 棋盘缺少线条颜色，且比例错误导致没有河道空间。请严格按照以下数学模型修改 Board.vue 的 SVG 背景：1. 设定 <svg viewBox='0 0 900 1000' width='100%' height='100%'>。这代表留出 50px 的内边距。2. 棋盘网格从 (50, 50) 画到 (850, 950)。3. 所有的 line 和 rect 必须加上 stroke 颜色（读取 lineColor）和 stroke-width='2'。4. 绘制外边框：<rect x='50' y='50' width='800' height='900' fill='none' />。5. 绘制 8 条内部横线：y坐标为 150, 250... 到 850，x 从 50 到 850。6. 绘制内部竖线：x坐标为 150, 250... 到 750。竖线必须断开楚河汉界，即上半段 y 从 50 到 450，下半段 y 从 550 到 950。7. 绘制九宫格斜线（上：350,50到550,250等；下：350,750到550,950等）。",
       "passes": true
+    },
+    {
+      "id": "Logic-Unified-Record-Service",
+      "title": "构建通用的棋谱数据服务层（支持多游戏类型）",
+      "description": "目前象棋缺少后端实现。请在数据层（Store 或 API Service）重构并统一棋谱获取逻辑：1. 引入 `game_type` 字段（'gomoku' | 'chinese_chess'）。2. 重写 `fetchRecords(gameType)` 接口调用，确保请求时携带 game_type。3. 强制执行统一权限：Admin 存为 `is_public: true`，普通用户存为 `is_public: false`。4. 过滤逻辑：后端/Store 必须根据 `(is_public == true) OR (owner_id == current_user.id)` 且匹配 `game_type` 来返回数据。如果后端暂无象棋接口，请在 API 层先通过 `game_type` 路由到对应的 Mock 或扩展现有接口。",
+      "passes": true
+    },
+    {
+      "id": "UI-Refactor-Gomoku-Records",
+      "title": "使用通用逻辑重构五子棋棋谱列表",
+      "description": "基于 Unified-Record-Service 改造五子棋。1. 移除组件内所有 filter 代码。2. 调用 `fetchRecords(‘gomoku’)`。3. 渲染 screenshots/image_969bb9.png 所示的列表，根据 `is_public` 标记’共有’或’私有’标签。",
+      "passes": true
+    },
+    {
+      "id": "UI-Implement-Chess-Records",
+      "title": "从零实现中国象棋棋谱列表功能",
+      "description": "中国象棋目前完全没有棋谱功能，请复刻五子棋的交互模式：1. 在象棋界面添加’棋谱列表’按钮与弹窗。2. 调用 `fetchRecords(‘chinese_chess’)`。3. 实现象棋棋谱的保存逻辑，确保保存时标记 `game_type: ‘chinese_chess’`。4. 确保权限逻辑（Admin 公有/个人私有）在象棋中同样生效。5. 使用 Puppeteer/dev-browser 截图验证象棋列表的保存与展示是否正确。",
+      "passes": true
+    },
+    {
+      "id": "Bugfix-Chess-Import-Crash",
+      "title": "修复中国象棋导入棋谱导致页面崩溃的问题",
+      "description": "严重Bug：在中国象棋界面点击导入棋谱时，控制台报错 `TypeError: Cannot read properties of undefined` 且页面白屏（主要发生在 HistoryPanel 或还原棋局历史的 moveToHistory 函数中）。请按以下步骤修复：1. 检查棋谱数据的反序列化（解析）逻辑，严禁将五子棋的 history 解析方式强加于象棋。2. 为 `game_type === ‘chinese_chess’` 编写专属的棋局还原逻辑，确保正确读取象棋的 move 对象（包含起点、终点、被吃掉的棋子等结构）。3. 增加健壮性校验，遇到无效步骤时拦截报错而不是让页面崩溃。4. 使用 puppeteer 模拟导入操作确保不再报错。",
+      "passes": true
+    },
+    {
+      "id": "Bugfix-Record-Permission-Leak",
+      "title": "修复 Admin 越权查看他人私有棋谱的 Bug",
+      "description": "严重权限Bug：当前 Admin 账号错误地看到了非 Admin 用户创建的’私有’棋谱（即 is_public 为 false 的记录）。请立即修复数据层（API 或 Store）的 `fetchRecords` 过滤逻辑。必须严格遵守以下真值表限制：\n- 当 `currentUser.role === ‘admin’` 时：查询条件必须【仅仅】是 `is_public === true`（即只能获取公有棋谱，绝对不能返回 is_public === false 的记录）。\n- 当 `currentUser.role !== ‘admin’` 时：查询条件是 `is_public === true OR owner_id === currentUser.id`。\n请仔细检查 if-else 分支或数据库查询语句，移除类似于 `if(isAdmin) return all` 的错误惯性逻辑。",
+      "passes": true
+    },
+    {
+      "id": "Bugfix-Chess-Board-Replay",
+      "title": "修复象棋导入棋谱后棋盘状态未重建导致视图消失的问题",
+      "description": "严重状态Bug：导入中国象棋棋谱后，右侧历史记录已成功渲染（如 image_ae8121.png），但左侧棋盘及棋子完全消失。这表明数据流正常，但游戏核心引擎的响应式状态未能正确重建。请排查对应的加载历史逻辑（如 `loadHistory`、`importRecord` 或引擎类中的状态恢复方法）：1. 在导入历史记录前，必须先调用初始化方法，将棋盘重置为标准的象棋开局状态。2. 确保遍历历史记录进行步骤推演（Replay）后，将最终的棋子分布数据（pieces）正确、安全地赋值给 Vue 的响应式变量（ref 或 reactive），绝对不要破坏对象的响应式代理。3. 检查 Board.vue 中是否有依赖棋子数量的异常 v-if 导致 SVG 背景层也被隐藏。4. 强制要求：修复完成后，使用 dev-browser/puppeteer 完整模拟一次“点击导入 -> 检查棋盘是否渲染 -> 检查棋子位置是否与历史记录对应”的流程。",
+      "passes": true
     }
   ]
 }

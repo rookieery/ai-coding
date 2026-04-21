@@ -1,11 +1,4 @@
 {
   "branchName": "feature/chinese-chess",
-  "stories": [
-    {
-      "id": "Bugfix-Chess-Board-Replay",
-      "title": "修复象棋导入棋谱后棋盘状态未重建导致视图消失的问题",
-      "description": "严重状态Bug：导入中国象棋棋谱后，右侧历史记录已成功渲染（如 image_ae8121.png），但左侧棋盘及棋子完全消失。这表明数据流正常，但游戏核心引擎的响应式状态未能正确重建。请排查对应的加载历史逻辑（如 `loadHistory`、`importRecord` 或引擎类中的状态恢复方法）：1. 在导入历史记录前，必须先调用初始化方法，将棋盘重置为标准的象棋开局状态。2. 确保遍历历史记录进行步骤推演（Replay）后，将最终的棋子分布数据（pieces）正确、安全地赋值给 Vue 的响应式变量（ref 或 reactive），绝对不要破坏对象的响应式代理。3. 检查 Board.vue 中是否有依赖棋子数量的异常 v-if 导致 SVG 背景层也被隐藏。4. 强制要求：修复完成后，使用 dev-browser/puppeteer 完整模拟一次“点击导入 -> 检查棋盘是否渲染 -> 检查棋子位置是否与历史记录对应”的流程。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
