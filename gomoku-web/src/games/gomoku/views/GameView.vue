@@ -6,9 +6,11 @@ import Board from '../components/Board.vue';
 import HistoryPanel from '../components/HistoryPanel.vue';
 import GameControls from '../components/GameControls.vue';
 import { t, currentTheme } from '../../../i18n';
-import { gameApi, type FrontendGame } from '../../../api/game-api';
+import { gameApi, type FrontendGame, type GameListItem, type GameType } from '../../../api/game-api';
 import { useGlobalAuth } from '../../../composables/useAuth';
 import { useGlobalSettings } from '../../../composables/useSettings';
+
+const GAME_TYPE: GameType = 'gomoku';
 
 defineOptions({
   name: 'GameView'
@@ -28,102 +30,25 @@ const thinkingPath = ref<{r: number, c: number, player: number}[]>([]);
 const currentRecordId = ref<string | null>(null);
 const isAiThinking = ref<boolean>(false);
 
-// 获取认证信息
 const auth = useGlobalAuth();
 const settings = useGlobalSettings();
-// 主题解包（因为 settings.gomokuTheme 是 ref，模板中需要自动解包）
 const theme = computed(() => settings.gomokuTheme.value);
-
-type SavedGame = FrontendGame & { moveCount?: number };
 
 const isSaveModalOpen = ref(false);
 const isRecordsModalOpen = ref(false);
 const saveName = ref('');
-const savedGames = ref<SavedGame[]>([]);
+const gameRecords = ref<GameListItem[]>([]);
 
-onMounted(async () => {
+const fetchRecords = async () => {
   try {
-    // 尝试从API加载游戏
-    const result = await gameApi.getGames();
-    savedGames.value = result.games.map(game => {
-      // 获取完整的游戏数据（如果需要）
-      // 目前使用简化的游戏信息
-      return {
-        id: game.id,
-        name: game.name,
-        board: Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)),
-        moveHistory: [], // 简化的游戏列表不包含移动历史
-        moveCount: game.moveCount, // 保存步数信息用于显示
-        timestamp: game.timestamp,
-        mode: game.mode === 'pve' ? 'pve' : 'pvp',
-        aiDifficulty: game.aiDifficulty as Difficulty,
-        aiRole: 'second' as const,
-        ruleMode: 'standard' as const,
-      };
-    });
-  } catch (error) {
-    console.error('Failed to load games from API, falling back to localStorage:', error);
-
-    // 回退到localStorage
-    const stored = localStorage.getItem('gomoku_saved_games');
-    if (stored) {
-      try {
-        savedGames.value = JSON.parse(stored);
-      } catch (e) {
-        console.error('Failed to parse saved games from localStorage', e);
-      }
-    }
+    const result = await gameApi.getGames(GAME_TYPE);
+    gameRecords.value = result.games;
+  } catch {
+    gameRecords.value = [];
   }
+};
 
-  // 可选：创建默认示例棋谱（只在第一次访问时）
-  // 如果需要，可以提供一个"创建示例棋谱"按钮而不是自动创建
-  const shouldCreateDefault = localStorage.getItem('gomoku_default_created') !== 'true';
-  const puyueName = "Puyue Winning Opening 1";
-
-  if (shouldCreateDefault) {
-    const puyueHistory = [
-      { r: 7, c: 7, player: BLACK },
-      { r: 6, c: 8, player: WHITE },
-      { r: 8, c: 8, player: BLACK },
-      { r: 6, c: 6, player: WHITE },
-      { r: 8, c: 6, player: BLACK } // g9
-    ];
-
-    const existingIndex = savedGames.value.findIndex(g => g.name === puyueName);
-    if (existingIndex === -1) {
-      const puyueGame: SavedGame = {
-        id: `puyue_${Date.now()}`, // 使用时间戳避免ID冲突
-        name: puyueName,
-        board: Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY)),
-        moveHistory: puyueHistory,
-        moveCount: puyueHistory.length,
-        timestamp: Date.now(),
-        mode: 'pve',
-        aiDifficulty: 'expert',
-        aiRole: 'second',
-        ruleMode: 'renju'
-      };
-      // Fill the board for the saved game
-      puyueHistory.forEach(m => {
-        puyueGame.board[m.r][m.c] = m.player;
-      });
-      savedGames.value.unshift(puyueGame);
-
-      // 尝试保存到API
-      try {
-        await gameApi.saveGame(puyueGame);
-        localStorage.setItem('gomoku_default_created', 'true');
-      } catch (error) {
-        console.error('Failed to save puyue opening to API, saving to localStorage:', error);
-        localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-        localStorage.setItem('gomoku_default_created', 'true');
-      }
-    } else {
-      // 如果已经存在同名棋谱，也标记为已创建
-      localStorage.setItem('gomoku_default_created', 'true');
-    }
-  }
-});
+onMounted(fetchRecords);
 
 const saveNameError = ref('');
 
@@ -137,67 +62,50 @@ const closeSaveModal = () => {
   isSaveModalOpen.value = false;
 };
 
-// 检查用户是否有权限编辑/删除棋谱
-const canEditGame = (game: SavedGame) => {
+const canEditGame = (game: GameListItem) => {
   const isAdmin = auth.user.value?.role === 'ADMIN';
-  // admin用户可以编辑所有棋谱，非admin用户只能编辑私有棋谱
   return isAdmin || !game.isPublic;
 };
 
 const saveCurrentGame = async () => {
   if (!saveName.value.trim()) return;
 
-  if (savedGames.value.some(g => g.name === saveName.value.trim())) {
+  if (gameRecords.value.some(g => g.name === saveName.value.trim())) {
     saveNameError.value = t('nameExists');
     return;
   }
 
   saveNameError.value = '';
 
-  // 根据用户权限设置棋谱公开性：只有admin用户保存公开棋谱，其他用户默认私有
   const isUserAdmin = auth.user.value?.role === 'ADMIN';
 
-  const newGame: SavedGame = {
-    id: Date.now().toString(), // 临时ID，会被API返回的ID覆盖
+  const newGame: FrontendGame = {
+    id: Date.now().toString(),
     name: saveName.value.trim(),
     board: board.value.map(row => [...row]),
     moveHistory: [...moveHistory.value],
-    moveCount: moveHistory.value.length,
     timestamp: Date.now(),
     mode: mode.value,
     aiDifficulty: aiDifficulty.value,
     aiRole: aiRole.value,
     ruleMode: ruleMode.value,
-    isPublic: isUserAdmin // admin用户保存公开棋谱，其他用户保存私有棋谱
+    isPublic: isUserAdmin,
+    gameType: GAME_TYPE,
   };
 
   try {
-    // 保存到API
     const savedGame = await gameApi.saveGame(newGame);
-
-    // 使用API返回的ID更新游戏
-    newGame.id = savedGame.id;
-    newGame.timestamp = savedGame.timestamp;
-
-    savedGames.value.push(newGame);
-    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-    currentRecordId.value = newGame.id;
-
+    currentRecordId.value = savedGame.id;
     closeSaveModal();
+    await fetchRecords();
     notify(t('saveSuccess'));
-  } catch (error) {
-    console.error('Failed to save game to API:', error);
-    // 回退到localStorage
-    savedGames.value.push(newGame);
-    localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-    currentRecordId.value = newGame.id;
-
-    closeSaveModal();
-    notify(`${t('saveSuccess')} (local storage)`);
+  } catch {
+    notify(t('saveFailed'));
   }
 };
 
 const openRecordsModal = () => {
+  fetchRecords();
   isRecordsModalOpen.value = true;
 };
 
@@ -205,57 +113,48 @@ const closeRecordsModal = () => {
   isRecordsModalOpen.value = false;
 };
 
-const importGame = async (game: SavedGame) => {
+const importGame = async (game: GameListItem) => {
   terminateWorker();
 
-  let fullGame = game;
+  try {
+    const fullGame = await gameApi.getGame(game.id, GAME_TYPE);
 
-  // 如果游戏没有移动历史或棋盘为空，尝试从API获取完整数据
-  // 注意：列表中的游戏可能只有moveCount而没有完整的moveHistory
-  if ((game.moveCount && game.moveCount > 0 && game.moveHistory.length === 0) ||
-      game.board.every(row => row.every(cell => cell === EMPTY))) {
-    try {
-      fullGame = await gameApi.getGame(game.id);
-    } catch (error) {
-      console.error('Failed to fetch full game data from API:', error);
-      // 继续使用现有的游戏数据
+    board.value = fullGame.board.map(row => [...row]);
+    moveHistory.value = [...fullGame.moveHistory];
+    mode.value = 'pve';
+    aiDifficulty.value = fullGame.aiDifficulty;
+    aiRole.value = fullGame.aiRole;
+    ruleMode.value = fullGame.ruleMode;
+    currentRecordId.value = fullGame.id;
+
+    currentPlayer.value = fullGame.moveHistory.length % 2 === 0 ? BLACK : WHITE;
+
+    winner.value = EMPTY;
+    winningLine.value = [];
+    if (fullGame.moveHistory.length > 0) {
+      const lastMove = fullGame.moveHistory[fullGame.moveHistory.length - 1];
+      const winLine = checkWin(board.value, lastMove.r, lastMove.c, lastMove.player, ruleMode.value);
+      if (winLine) {
+        winner.value = lastMove.player;
+        winningLine.value = winLine;
+      } else if (checkDraw(board.value)) {
+        winner.value = 3;
+      }
     }
+
+    isAnalysisMode.value = true;
+    closeRecordsModal();
+    notify(t('importSuccess'));
+  } catch {
+    notify(t('importFailed'));
   }
-
-  board.value = fullGame.board.map(row => [...row]);
-  moveHistory.value = [...fullGame.moveHistory];
-  mode.value = 'pve';
-  aiDifficulty.value = fullGame.aiDifficulty;
-  aiRole.value = fullGame.aiRole;
-  ruleMode.value = fullGame.ruleMode;
-  currentRecordId.value = fullGame.id;
-
-  currentPlayer.value = fullGame.moveHistory.length % 2 === 0 ? BLACK : WHITE;
-
-  winner.value = EMPTY;
-  winningLine.value = [];
-  if (fullGame.moveHistory.length > 0) {
-    const lastMove = fullGame.moveHistory[fullGame.moveHistory.length - 1];
-    const winLine = checkWin(board.value, lastMove.r, lastMove.c, lastMove.player, ruleMode.value);
-    if (winLine) {
-      winner.value = lastMove.player;
-      winningLine.value = winLine;
-    } else if (checkDraw(board.value)) {
-      winner.value = 3;
-    }
-  }
-
-  isAnalysisMode.value = true;
-
-  closeRecordsModal();
-  notify(t('importSuccess'));
 };
 
 const gameToDelete = ref<string | null>(null);
 const editingGameId = ref<string | null>(null);
 const editingName = ref('');
 
-const startEditing = (game: SavedGame) => {
+const startEditing = (game: GameListItem) => {
   if (!canEditGame(game)) {
     notify(game.isPublic ? t('noPermissionEditPublic') : t('noPermissionEdit'));
     return;
@@ -272,29 +171,23 @@ const saveEdit = async () => {
     return;
   }
 
-  const index = savedGames.value.findIndex(g => g.id === editingGameId.value);
+  const index = gameRecords.value.findIndex(g => g.id === editingGameId.value);
   if (index !== -1) {
-    const game = savedGames.value[index];
-    // 再次检查权限
+    const game = gameRecords.value[index];
     if (!canEditGame(game)) {
       notify(game.isPublic ? t('noPermissionEditPublic') : t('noPermissionEdit'));
       editingGameId.value = null;
       return;
     }
 
-    const updatedGame = { ...game, name };
-
     try {
-      // 尝试更新到API
+      const fullGame = await gameApi.getGame(game.id, GAME_TYPE);
+      const updatedGame: FrontendGame = { ...fullGame, name };
       await gameApi.updateGame(game.id, updatedGame);
-      savedGames.value[index] = updatedGame;
+      await fetchRecords();
       notify(t('updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update game name in API:', error);
-      // 回退到localStorage
-      savedGames.value[index].name = name;
-      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-      notify(`${t('updateSuccess')} (local storage)`);
+    } catch {
+      notify(t('updateFailed'));
     }
   }
   editingGameId.value = null;
@@ -305,44 +198,34 @@ const cancelEditing = () => {
 };
 
 const updateGame = async (id: string) => {
-  const index = savedGames.value.findIndex(g => g.id === id);
+  const index = gameRecords.value.findIndex(g => g.id === id);
   if (index !== -1) {
-    const game = savedGames.value[index];
-    // 检查权限
+    const game = gameRecords.value[index];
     if (!canEditGame(game)) {
       notify(game.isPublic ? t('noPermissionUpdatePublic') : t('noPermissionUpdate'));
       return;
     }
 
-    const updatedGame = {
-      ...savedGames.value[index],
-      board: board.value.map(row => [...row]),
-      moveHistory: [...moveHistory.value],
-      moveCount: moveHistory.value.length,
-      timestamp: Date.now()
-    };
-
     try {
-      // 尝试更新到API
+      const fullGame = await gameApi.getGame(id, GAME_TYPE);
+      const updatedGame: FrontendGame = {
+        ...fullGame,
+        board: board.value.map(row => [...row]),
+        moveHistory: [...moveHistory.value],
+      };
       await gameApi.updateGame(id, updatedGame);
-      savedGames.value[index] = updatedGame;
-      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+      await fetchRecords();
       notify(t('updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update game in API:', error);
-      // 回退到localStorage
-      savedGames.value[index] = updatedGame;
-      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-      notify(`${t('updateSuccess')} (local storage)`);
+    } catch {
+      notify(t('updateFailed'));
     }
   }
 };
 
 const deleteGame = (id: string) => {
-  const game = savedGames.value.find(g => g.id === id);
+  const game = gameRecords.value.find(g => g.id === id);
   if (!game) return;
 
-  // 检查权限
   if (!canEditGame(game)) {
     notify(game.isPublic ? t('noPermissionDeletePublic') : t('noPermissionDelete'));
     return;
@@ -354,9 +237,8 @@ const deleteGame = (id: string) => {
 const confirmDeleteGame = async () => {
   if (gameToDelete.value) {
     const gameId = gameToDelete.value;
-    const game = savedGames.value.find(g => g.id === gameId);
+    const game = gameRecords.value.find(g => g.id === gameId);
 
-    // 再次检查权限（安全冗余）
     if (game && !canEditGame(game)) {
       notify(game.isPublic ? t('noPermissionDeletePublic') : t('noPermissionDelete'));
       gameToDelete.value = null;
@@ -364,25 +246,15 @@ const confirmDeleteGame = async () => {
     }
 
     try {
-      // 尝试从API删除
-      await gameApi.deleteGame(gameId);
+      await gameApi.deleteGame(gameId, GAME_TYPE);
 
-      // 从本地列表删除
       if (currentRecordId.value === gameId) {
         currentRecordId.value = null;
       }
-      savedGames.value = savedGames.value.filter(g => g.id !== gameId);
-      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
+      await fetchRecords();
       notify(t('deleteSuccess'));
-    } catch (error) {
-      console.error('Failed to delete game from API:', error);
-      // 回退到localStorage
-      if (currentRecordId.value === gameId) {
-        currentRecordId.value = null;
-      }
-      savedGames.value = savedGames.value.filter(g => g.id !== gameId);
-      localStorage.setItem('gomoku_saved_games', JSON.stringify(savedGames.value));
-      notify(`${t('deleteSuccess')} (local storage)`);
+    } catch {
+      notify(t('deleteFailed'));
     }
 
     gameToDelete.value = null;
@@ -415,8 +287,7 @@ onDeactivated(() => {
 });
 
 onActivated(() => {
-  // 组件重新激活时，可以重新启动AI思考（如果需要）
-  // 暂时不处理，由用户手动触发
+  // No-op: AI restart handled by user interaction
 });
 const winningLine = ref<{r: number, c: number}[]>([]);
 const hintMove = ref<{r: number, c: number} | null>(null);
@@ -483,7 +354,7 @@ const aiDifficultyText = computed(() => {
 
 const playSound = () => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
@@ -833,14 +704,14 @@ const showHint = () => {
           </button>
         </div>
         <div class="flex-1 overflow-y-auto min-h-0 pr-2 custom-scrollbar">
-          <div v-if="savedGames.length === 0" class="text-center py-8 opacity-50">
+          <div v-if="gameRecords.length === 0" class="text-center py-8 opacity-50">
             {{ t('noRecords') }}
           </div>
           <div v-else class="flex flex-col gap-3">
-            <div v-for="game in savedGames" :key="game.id" class="flex items-center justify-between p-3 rounded-xl border transition-colors" :class="currentTheme === 'dark' ? 'bg-stone-900/50 border-stone-700' : 'bg-stone-50 border-stone-200'">
+            <div v-for="game in gameRecords" :key="game.id" class="flex items-center justify-between p-3 rounded-xl border transition-colors" :class="currentTheme === 'dark' ? 'bg-stone-900/50 border-stone-700' : 'bg-stone-50 border-stone-200'">
               <div class="flex flex-col overflow-hidden pr-4 flex-1">
                 <div v-if="editingGameId === game.id" class="flex items-center gap-2">
-                  <input 
+                  <input
                     v-model="editingName"
                     type="text"
                     class="w-full px-2 py-1 text-sm border rounded outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
@@ -851,11 +722,13 @@ const showHint = () => {
                     v-focus
                   />
                 </div>
-                <span v-else @click="canEditGame(game) ? startEditing(game) : null" class="font-semibold truncate transition-colors" :class="canEditGame(game) ? 'cursor-pointer hover:text-indigo-500' : 'cursor-default text-stone-500 dark:text-stone-400'" :title="canEditGame(game) ? t('edit') : ''">{{ game.name }}</span>
-                <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveCount || game.moveHistory.length) }}</span>
-                <span class="text-xs mt-0.5" :class="game.isPublic ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400'">
-                  {{ game.isPublic ? t('publicGame') : t('privateGame') }}
-                </span>
+                <div v-else class="flex items-center gap-2">
+                  <span @click="canEditGame(game) ? startEditing(game) : null" class="font-semibold truncate transition-colors" :class="canEditGame(game) ? 'cursor-pointer hover:text-indigo-500' : 'cursor-default text-stone-500 dark:text-stone-400'" :title="canEditGame(game) ? t('edit') : ''">{{ game.name }}</span>
+                  <span class="shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded" :class="game.isPublic ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-stone-200 text-stone-600 dark:bg-stone-700 dark:text-stone-400'">
+                    {{ game.isPublic ? t('publicGame') : t('privateGame') }}
+                  </span>
+                </div>
+                <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveCount) }} - {{ t('recordAuthor', game.author) }}</span>
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 <button v-if="currentRecordId === game.id && canEditGame(game)" @click="updateGame(game.id)" class="p-2 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-900/80 transition-colors" :title="t('update')">

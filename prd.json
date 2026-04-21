@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess",
   "stories": [
     {
-      "id": "Logic-Unified-Record-Service",
-      "title": "构建通用的棋谱数据服务层（支持多游戏类型）",
-      "description": "目前象棋缺少后端实现。请在数据层（Store 或 API Service）重构并统一棋谱获取逻辑：1. 引入 `game_type` 字段（'gomoku' | 'chinese_chess'）。2. 重写 `fetchRecords(gameType)` 接口调用，确保请求时携带 game_type。3. 强制执行统一权限：Admin 存为 `is_public: true`，普通用户存为 `is_public: false`。4. 过滤逻辑：后端/Store 必须根据 `(is_public == true) OR (owner_id == current_user.id)` 且匹配 `game_type` 来返回数据。如果后端暂无象棋接口，请在 API 层先通过 `game_type` 路由到对应的 Mock 或扩展现有接口。",
-      "passes": true
-    },
-    {
       "id": "UI-Refactor-Gomoku-Records",
       "title": "使用通用逻辑重构五子棋棋谱列表",
-      "description": "基于 Unified-Record-Service 改造五子棋。1. 移除组件内所有 filter 代码。2. 调用 `fetchRecords('gomoku')`。3. 渲染 image_969bb9.png 所示的列表，根据 `is_public` 标记‘共有’或‘私有’标签。",
-      "passes": false
+      "description": "基于 Unified-Record-Service 改造五子棋。1. 移除组件内所有 filter 代码。2. 调用 `fetchRecords(‘gomoku’)`。3. 渲染 screenshots/image_969bb9.png 所示的列表，根据 `is_public` 标记’共有’或’私有’标签。",
+      "passes": true
     },
     {
       "id": "UI-Implement-Chess-Records",
