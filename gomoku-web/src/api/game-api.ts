@@ -27,13 +27,25 @@ export interface ChineseChessFrontendGame {
   id: string;
   name: string;
   board: unknown[][];
-  moveHistory: unknown[];
+  moveHistory: ChineseChessMoveHistory[];
   timestamp: number;
   mode: 'pvp' | 'pve';
   aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   aiRole: 'red' | 'black';
   isPublic?: boolean;
   gameType?: GameType;
+}
+
+/**
+ * 中国象棋移动历史记录
+ */
+export interface ChineseChessMoveHistory {
+  from: { col: number; row: number };
+  to: { col: number; row: number };
+  piece: string;
+  side: 'red' | 'black';
+  timestamp: number;
+  capturedPiece?: { type: string; side: 'red' | 'black' };
 }
 
 export interface GameListItem {
@@ -191,7 +203,7 @@ export class GameApiService {
   /**
    * 获取单个棋谱
    */
-  async getGame(id: string, gameType: GameType = 'gomoku'): Promise<FrontendGame> {
+  async getGame(id: string, gameType: GameType = 'gomoku'): Promise<FrontendGame | ChineseChessFrontendGame> {
     try {
       const apiPath = gameType === 'chinese_chess' ? 'chinese-chess' : 'gomoku';
       const response = await fetch(`${this.baseUrl}/games/${apiPath}/frontend/${id}`, {
@@ -199,7 +211,7 @@ export class GameApiService {
         credentials: 'include',
       });
 
-      const result: ApiResponse<FrontendGame> = await response.json();
+      const result: ApiResponse<FrontendGame | ChineseChessFrontendGame> = await response.json();
 
       if (!result.success) {
         throw new Error(result.message || result.error || 'Failed to fetch game');

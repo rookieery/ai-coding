@@ -156,17 +156,53 @@ const importGame = async (game: GameListItem) => {
   try {
     const fullGame = await gameApi.getGame(game.id, GAME_TYPE);
 
-    board.value = fullGame.board.map(row => [...row]);
-    moveHistory.value = [...fullGame.moveHistory];
-    mode.value = 'pve';
-    aiDifficulty.value = fullGame.aiDifficulty;
-    aiRole.value = fullGame.aiRole;
+    // Validate and parse move history for Chinese chess
+    // Handle both old format (Gomoku-style: {color, step, timestamp}) and new format
+    let parsedMoveHistory: MoveHistory[] = [];
+    if (fullGame.moveHistory && Array.isArray(fullGame.moveHistory)) {
+      parsedMoveHistory = fullGame.moveHistory
+        .filter((move): move is {
+          from?: { col: number; row: number };
+          to?: { col: number; row: number };
+          piece?: string;
+          side?: string;
+          timestamp?: number;
+          capturedPiece?: { type: string; side: string };
+        } => move && typeof move === 'object')
+        .map((move, index) => {
+          // Check if it's the new Chinese chess format
+          if (move.from && move.to && move.piece && move.side) {
+            return {
+              from: { col: move.from.col, row: move.from.row },
+              to: { col: move.to.col, row: move.to.row },
+              piece: move.piece as PieceType,
+              side: move.side as PlayerSide,
+              timestamp: move.timestamp || Date.now(),
+              capturedPiece: move.capturedPiece ? {
+                type: move.capturedPiece.type as PieceType,
+                side: move.capturedPiece.side as PlayerSide,
+              } : undefined,
+            };
+          }
+          // Skip old format moves - they can't be properly converted
+          return null;
+        })
+        .filter((move): move is MoveHistory => move !== null);
+    }
+
+    board.value = fullGame.board && Array.isArray(fullGame.board)
+      ? fullGame.board.map((row: unknown[]) => row ? [...row] : [])
+      : createInitialBoard();
+    moveHistory.value = parsedMoveHistory;
+    mode.value = fullGame.mode || 'pvp';
+    aiDifficulty.value = fullGame.aiDifficulty || 'intermediate';
+    aiRole.value = fullGame.aiRole || 'black';
     currentRecordId.value = fullGame.id;
 
-    currentPlayer.value = fullGame.moveHistory.length % 2 === 0 ? PlayerSide.RED : PlayerSide.BLACK;
+    currentPlayer.value = parsedMoveHistory.length % 2 === 0 ? PlayerSide.RED : PlayerSide.BLACK;
     winner.value = undefined;
     gameStatus.value = GameStatus.NOT_STARTED;
-    if (fullGame.moveHistory.length > 0) {
+    if (parsedMoveHistory.length > 0) {
       const gameState: GameState = {
         board: board.value,
         currentPlayer: currentPlayer.value,
@@ -182,8 +218,9 @@ const importGame = async (game: GameListItem) => {
     isAnalysisMode.value = true;
     closeRecordsModal();
     notify(t('importSuccess'));
-  } catch {
-    notify(t('importFailed'));
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    notify(`${t('importFailed')}: ${errorMsg}`);
   }
 };
 

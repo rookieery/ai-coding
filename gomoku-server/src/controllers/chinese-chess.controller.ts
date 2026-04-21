@@ -1,7 +1,19 @@
 import { Request, Response } from 'express';
 import { chineseChessService } from '../services/chinese-chess.service';
 import { logger } from '../utils/logger';
-import { ApiResponse } from '../types';
+import { ApiResponse, Move } from '../types';
+
+/**
+ * 中国象棋移动历史记录类型
+ */
+interface ChineseChessMove {
+  from: { col: number; row: number };
+  to: { col: number; row: number };
+  piece: string;
+  side: 'red' | 'black';
+  timestamp: number;
+  capturedPiece?: { type: string; side: 'red' | 'black' };
+}
 
 export class ChineseChessController {
   /**
@@ -41,19 +53,15 @@ export class ChineseChessController {
         frontendFormat: true,
         mode: frontendGame.mode || 'pvp',
         aiDifficulty: frontendGame.aiDifficulty || 'intermediate',
+        aiRole: frontendGame.aiRole || 'black',
         originalTimestamp: frontendGame.timestamp,
         isPublic,
       };
 
-      const moves = (frontendGame.moveHistory as Array<{ r: number; c: number; player: number }>).map(
-        (move, index) => ({
-          x: move.c,
-          y: move.r,
-          color: (move.player === 1 ? 'black' : 'white') as 'black' | 'white',
-          step: index + 1,
-          timestamp: Date.now(),
-        })
-      );
+      // Chinese chess moves are stored as JSON string directly
+      // Each move has: from, to, piece, side, timestamp, capturedPiece?
+      // Use type assertion since Chinese chess moves have different structure from Gomoku
+      const moves = frontendGame.moveHistory as unknown as Move[];
 
       const tags: string[] = [];
       if (frontendGame.mode === 'pve') {
@@ -193,13 +201,9 @@ export class ChineseChessController {
         return res.status(403).json(response);
       }
 
-      const moves = Array.isArray(game.moves)
-        ? game.moves.map((move: { x: number; y: number; color: string; step: number }) => ({
-            r: move.y,
-            c: move.x,
-            player: move.color === 'black' ? 1 : 2,
-          }))
-        : [];
+      // Chinese chess moves have different structure from Gomoku moves
+      // Cast to ChineseChessMove[] since game.moves is typed as Move[] but contains ChineseChessMove[]
+      const moveHistory = (game.moves as unknown as ChineseChessMove[]) || [];
 
       const metadata = (game.metadata as Record<string, unknown>) || {};
 
@@ -207,10 +211,11 @@ export class ChineseChessController {
         id: game.id,
         name: game.title,
         board: [],
-        moveHistory: moves,
+        moveHistory,
         timestamp: metadata.originalTimestamp as number || game.createdAt.getTime(),
         mode: (metadata.mode as string) || 'pvp',
         aiDifficulty: (metadata.aiDifficulty as string) || 'intermediate',
+        aiRole: (metadata.aiRole as string) || 'black',
         isPublic: game.isPublic,
         gameType: game.gameType,
       };
