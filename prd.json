@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess",
   "stories": [
     {
-      "id": "UI-Refactor-Gomoku-Records",
-      "title": "使用通用逻辑重构五子棋棋谱列表",
-      "description": "基于 Unified-Record-Service 改造五子棋。1. 移除组件内所有 filter 代码。2. 调用 `fetchRecords(‘gomoku’)`。3. 渲染 screenshots/image_969bb9.png 所示的列表，根据 `is_public` 标记’共有’或’私有’标签。",
-      "passes": true
-    },
-    {
       "id": "UI-Implement-Chess-Records",
       "title": "从零实现中国象棋棋谱列表功能",
-      "description": "中国象棋目前完全没有棋谱功能，请复刻五子棋的交互模式：1. 在象棋界面添加‘棋谱列表’按钮与弹窗。2. 调用 `fetchRecords('chinese_chess')`。3. 实现象棋棋谱的保存逻辑，确保保存时标记 `game_type: 'chinese_chess'`。4. 确保权限逻辑（Admin 公有/个人私有）在象棋中同样生效。5. 使用 Puppeteer/dev-browser 截图验证象棋列表的保存与展示是否正确。",
-      "passes": false
+      "description": "中国象棋目前完全没有棋谱功能，请复刻五子棋的交互模式：1. 在象棋界面添加’棋谱列表’按钮与弹窗。2. 调用 `fetchRecords(‘chinese_chess’)`。3. 实现象棋棋谱的保存逻辑，确保保存时标记 `game_type: ‘chinese_chess’`。4. 确保权限逻辑（Admin 公有/个人私有）在象棋中同样生效。5. 使用 Puppeteer/dev-browser 截图验证象棋列表的保存与展示是否正确。",
+      "passes": true
     }
   ]
 }

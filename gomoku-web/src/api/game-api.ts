@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../config';
 export type GameType = 'gomoku' | 'chinese_chess';
 
 /**
- * 前端棋谱数据结构
+ * 五子棋棋谱数据结构
  */
 export interface FrontendGame {
   id: string;
@@ -16,6 +16,22 @@ export interface FrontendGame {
   aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
   aiRole: 'first' | 'second';
   ruleMode: 'standard' | 'renju';
+  isPublic?: boolean;
+  gameType?: GameType;
+}
+
+/**
+ * 中国象棋棋谱数据结构
+ */
+export interface ChineseChessFrontendGame {
+  id: string;
+  name: string;
+  board: unknown[][];
+  moveHistory: unknown[];
+  timestamp: number;
+  mode: 'pvp' | 'pve';
+  aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  aiRole: 'red' | 'black';
   isPublic?: boolean;
   gameType?: GameType;
 }

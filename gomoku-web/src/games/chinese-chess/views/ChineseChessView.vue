@@ -30,9 +30,11 @@ import Board from '../components/Board.vue';
 import GameControls from '../components/GameControls.vue';
 import ChineseChessHistoryPanel from '../components/HistoryPanel.vue';
 import { t, currentTheme } from '../../../i18n';
-import { gameApi, type FrontendGame } from '../../../api/game-api';
+import { gameApi, type FrontendGame, type GameListItem, type GameType } from '../../../api/game-api';
 import { useGlobalAuth } from '../../../composables/useAuth';
 import { useGlobalSettings } from '../../../composables/useSettings';
+
+const GAME_TYPE: GameType = 'chinese_chess';
 
 defineOptions({
   name: 'ChineseChessView'
@@ -68,41 +70,21 @@ const settings = useGlobalSettings();
 // 主题解包（因为 settings.chessTheme 是 ref，模板中需要自动解包）
 const theme = computed(() => settings.chessTheme.value);
 
-type SavedGame = FrontendGame & { moveCount?: number };
-
 const isSaveModalOpen = ref(false);
 const isRecordsModalOpen = ref(false);
 const saveName = ref('');
-const savedGames = ref<SavedGame[]>([]);
+const gameRecords = ref<GameListItem[]>([]);
 
-onMounted(async () => {
+const fetchRecords = async () => {
   try {
-    // 尝试从API加载游戏
-    const result = await gameApi.getGames();
-    savedGames.value = result.games.map(game => ({
-      id: game.id,
-      name: game.name,
-      board: createInitialBoard(), // 简化，实际应从游戏数据加载
-      moveHistory: [],
-      moveCount: game.moveCount,
-      timestamp: game.timestamp,
-      mode: game.mode === 'pve' ? 'pve' : 'pvp',
-      aiDifficulty: game.aiDifficulty as Difficulty,
-      aiRole: 'black' as const,
-    }));
-  } catch (error) {
-    console.error('Failed to load games from API, falling back to localStorage:', error);
-    // 回退到localStorage
-    const stored = localStorage.getItem('chinese_chess_saved_games');
-    if (stored) {
-      try {
-        savedGames.value = JSON.parse(stored);
-      } catch (e) {
-        console.error('Failed to parse saved games from localStorage', e);
-      }
-    }
+    const result = await gameApi.getGames(GAME_TYPE);
+    gameRecords.value = result.games;
+  } catch {
+    gameRecords.value = [];
   }
-});
+};
+
+onMounted(fetchRecords);
 
 const saveNameError = ref('');
 
@@ -117,7 +99,7 @@ const closeSaveModal = () => {
 };
 
 // 检查用户是否有权限编辑/删除棋谱
-const canEditGame = (game: SavedGame) => {
+const canEditGame = (game: GameListItem) => {
   const isAdmin = auth.user.value?.role === 'ADMIN';
   return isAdmin || !game.isPublic;
 };
@@ -125,51 +107,42 @@ const canEditGame = (game: SavedGame) => {
 const saveCurrentGame = async () => {
   if (!saveName.value.trim()) return;
 
-  if (savedGames.value?.some(g => g.name === saveName.value.trim())) {
+  if (gameRecords.value.some(g => g.name === saveName.value.trim())) {
     saveNameError.value = t('nameExists');
     return;
   }
 
   saveNameError.value = '';
 
-  // 根据用户权限设置棋谱公开性：只有admin用户保存公开棋谱，其他用户默认私有
   const isUserAdmin = auth.user.value?.role === 'ADMIN';
 
-  const newGame: SavedGame = {
+  const newGame: FrontendGame = {
     id: Date.now().toString(),
     name: saveName.value.trim(),
     board: board.value.map(row => [...row]),
     moveHistory: [...moveHistory.value],
-    moveCount: moveHistory.value.length,
     timestamp: Date.now(),
     mode: mode.value,
     aiDifficulty: aiDifficulty.value,
     aiRole: aiRole.value,
-    isPublic: isUserAdmin
+    ruleMode: 'standard',
+    isPublic: isUserAdmin,
+    gameType: GAME_TYPE,
   };
 
   try {
-    // 保存到API
     const savedGame = await gameApi.saveGame(newGame);
-    newGame.id = savedGame.id;
-    newGame.timestamp = savedGame.timestamp;
-    savedGames.value.push(newGame);
-    localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
-    currentRecordId.value = newGame.id;
+    currentRecordId.value = savedGame.id;
     closeSaveModal();
+    await fetchRecords();
     notify(t('saveSuccess'));
-  } catch (error) {
-    console.error('Failed to save game to API:', error);
-    // 回退到localStorage
-    savedGames.value.push(newGame);
-    localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
-    currentRecordId.value = newGame.id;
-    closeSaveModal();
-    notify(`${t('saveSuccess')} (local storage)`);
+  } catch {
+    notify(t('saveFailed'));
   }
 };
 
 const openRecordsModal = () => {
+  fetchRecords();
   isRecordsModalOpen.value = true;
 };
 
@@ -177,53 +150,48 @@ const closeRecordsModal = () => {
   isRecordsModalOpen.value = false;
 };
 
-const importGame = async (game: SavedGame) => {
+const importGame = async (game: GameListItem) => {
   terminateWorker();
 
-  let fullGame = game;
-  if ((game.moveCount && game.moveCount > 0 && game.moveHistory.length === 0) ||
-      game.board.every(row => row.every(cell => cell === null))) {
-    try {
-      fullGame = await gameApi.getGame(game.id);
-    } catch (error) {
-      console.error('Failed to fetch full game data from API:', error);
+  try {
+    const fullGame = await gameApi.getGame(game.id, GAME_TYPE);
+
+    board.value = fullGame.board.map(row => [...row]);
+    moveHistory.value = [...fullGame.moveHistory];
+    mode.value = 'pve';
+    aiDifficulty.value = fullGame.aiDifficulty;
+    aiRole.value = fullGame.aiRole;
+    currentRecordId.value = fullGame.id;
+
+    currentPlayer.value = fullGame.moveHistory.length % 2 === 0 ? PlayerSide.RED : PlayerSide.BLACK;
+    winner.value = undefined;
+    gameStatus.value = GameStatus.NOT_STARTED;
+    if (fullGame.moveHistory.length > 0) {
+      const gameState: GameState = {
+        board: board.value,
+        currentPlayer: currentPlayer.value,
+        status: gameStatus.value,
+        moveHistory: moveHistory.value,
+        config: { mode: mode.value, difficulty: aiDifficulty.value }
+      };
+      const evaluated = evaluateGameResult(gameState);
+      gameStatus.value = evaluated.status;
+      winner.value = evaluated.winner;
     }
+
+    isAnalysisMode.value = true;
+    closeRecordsModal();
+    notify(t('importSuccess'));
+  } catch {
+    notify(t('importFailed'));
   }
-
-  board.value = fullGame.board.map(row => [...row]);
-  moveHistory.value = [...fullGame.moveHistory];
-  mode.value = 'pve';
-  aiDifficulty.value = fullGame.aiDifficulty;
-  aiRole.value = fullGame.aiRole;
-  currentRecordId.value = fullGame.id;
-
-  currentPlayer.value = fullGame.moveHistory.length % 2 === 0 ? PlayerSide.RED : PlayerSide.BLACK;
-  winner.value = undefined;
-  gameStatus.value = GameStatus.NOT_STARTED;
-  if (fullGame.moveHistory.length > 0) {
-    // 评估游戏状态
-    const gameState: GameState = {
-      board: board.value,
-      currentPlayer: currentPlayer.value,
-      status: gameStatus.value,
-      moveHistory: moveHistory.value,
-      config: { mode: mode.value, difficulty: aiDifficulty.value }
-    };
-    const evaluated = evaluateGameResult(gameState);
-    gameStatus.value = evaluated.status;
-    winner.value = evaluated.winner;
-  }
-
-  isAnalysisMode.value = true;
-  closeRecordsModal();
-  notify(t('importSuccess'));
 };
 
 const gameToDelete = ref<string | null>(null);
 const editingGameId = ref<string | null>(null);
 const editingName = ref('');
 
-const startEditing = (game: SavedGame) => {
+const startEditing = (game: GameListItem) => {
   if (!canEditGame(game)) {
     notify(game.isPublic ? t('noPermissionEditPublic') : t('noPermissionEdit'));
     return;
@@ -240,25 +208,23 @@ const saveEdit = async () => {
     return;
   }
 
-  const index = savedGames.value.findIndex(g => g.id === editingGameId.value);
+  const index = gameRecords.value.findIndex(g => g.id === editingGameId.value);
   if (index !== -1) {
-    const game = savedGames.value[index];
+    const game = gameRecords.value[index];
     if (!canEditGame(game)) {
       notify(game.isPublic ? t('noPermissionEditPublic') : t('noPermissionEdit'));
       editingGameId.value = null;
       return;
     }
 
-    const updatedGame = { ...game, name };
     try {
+      const fullGame = await gameApi.getGame(game.id, GAME_TYPE);
+      const updatedGame: FrontendGame = { ...fullGame, name };
       await gameApi.updateGame(game.id, updatedGame);
-      savedGames.value[index] = updatedGame;
+      await fetchRecords();
       notify(t('updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update game name in API:', error);
-      savedGames.value[index].name = name;
-      localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
-      notify(`${t('updateSuccess')} (local storage)`);
+    } catch {
+      notify(t('updateFailed'));
     }
   }
   editingGameId.value = null;
@@ -269,50 +235,47 @@ const cancelEditing = () => {
 };
 
 const updateGame = async (id: string) => {
-  const index = savedGames.value.findIndex(g => g.id === id);
+  const index = gameRecords.value.findIndex(g => g.id === id);
   if (index !== -1) {
-    const game = savedGames.value[index];
+    const game = gameRecords.value[index];
     if (!canEditGame(game)) {
       notify(game.isPublic ? t('noPermissionUpdatePublic') : t('noPermissionUpdate'));
       return;
     }
 
-    const updatedGame = {
-      ...savedGames.value[index],
-      board: board.value.map(row => [...row]),
-      moveHistory: [...moveHistory.value],
-      moveCount: moveHistory.value.length,
-      timestamp: Date.now()
-    };
-
     try {
+      const fullGame = await gameApi.getGame(id, GAME_TYPE);
+      const updatedGame: FrontendGame = {
+        ...fullGame,
+        board: board.value.map(row => [...row]),
+        moveHistory: [...moveHistory.value],
+      };
       await gameApi.updateGame(id, updatedGame);
-      savedGames.value[index] = updatedGame;
-      localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
+      await fetchRecords();
       notify(t('updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update game in API:', error);
-      savedGames.value[index] = updatedGame;
-      localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
-      notify(`${t('updateSuccess')} (local storage)`);
+    } catch {
+      notify(t('updateFailed'));
     }
   }
 };
 
 const deleteGame = (id: string) => {
-  const game = savedGames.value.find(g => g.id === id);
+  const game = gameRecords.value.find(g => g.id === id);
   if (!game) return;
+
   if (!canEditGame(game)) {
     notify(game.isPublic ? t('noPermissionDeletePublic') : t('noPermissionDelete'));
     return;
   }
+
   gameToDelete.value = id;
 };
 
 const confirmDeleteGame = async () => {
   if (gameToDelete.value) {
     const gameId = gameToDelete.value;
-    const game = savedGames.value.find(g => g.id === gameId);
+    const game = gameRecords.value.find(g => g.id === gameId);
+
     if (game && !canEditGame(game)) {
       notify(game.isPublic ? t('noPermissionDeletePublic') : t('noPermissionDelete'));
       gameToDelete.value = null;
@@ -320,22 +283,17 @@ const confirmDeleteGame = async () => {
     }
 
     try {
-      await gameApi.deleteGame(gameId);
+      await gameApi.deleteGame(gameId, GAME_TYPE);
+
       if (currentRecordId.value === gameId) {
         currentRecordId.value = null;
       }
-      savedGames.value = savedGames.value.filter(g => g.id !== gameId);
-      localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
+      await fetchRecords();
       notify(t('deleteSuccess'));
-    } catch (error) {
-      console.error('Failed to delete game from API:', error);
-      if (currentRecordId.value === gameId) {
-        currentRecordId.value = null;
-      }
-      savedGames.value = savedGames.value.filter(g => g.id !== gameId);
-      localStorage.setItem('chinese_chess_saved_games', JSON.stringify(savedGames.value));
-      notify(`${t('deleteSuccess')} (local storage)`);
+    } catch {
+      notify(t('deleteFailed'));
     }
+
     gameToDelete.value = null;
   }
 };
@@ -831,11 +789,11 @@ const showHint = () => {
           </button>
         </div>
         <div class="flex-1 overflow-y-auto min-h-0 pr-2 custom-scrollbar">
-          <div v-if="savedGames.length === 0" class="text-center py-8 opacity-50">
+          <div v-if="gameRecords.length === 0" class="text-center py-8 opacity-50">
             {{ t('noRecords') }}
           </div>
           <div v-else class="flex flex-col gap-3">
-            <div v-for="game in savedGames" :key="game.id" class="flex items-center justify-between p-3 rounded-xl border transition-colors" :class="currentTheme === 'dark' ? 'bg-stone-900/50 border-stone-700' : 'bg-stone-50 border-stone-200'">
+            <div v-for="game in gameRecords" :key="game.id" class="flex items-center justify-between p-3 rounded-xl border transition-colors" :class="currentTheme === 'dark' ? 'bg-stone-900/50 border-stone-700' : 'bg-stone-50 border-stone-200'">
               <div class="flex flex-col overflow-hidden pr-4 flex-1">
                 <div v-if="editingGameId === game.id" class="flex items-center gap-2">
                   <input
@@ -849,11 +807,13 @@ const showHint = () => {
                     v-focus
                   />
                 </div>
-                <span v-else @click="canEditGame(game) ? startEditing(game) : null" class="font-semibold truncate transition-colors" :class="canEditGame(game) ? 'cursor-pointer hover:text-indigo-500' : 'cursor-default text-stone-500 dark:text-stone-400'" :title="canEditGame(game) ? t('edit') : ''">{{ game.name }}</span>
-                <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveCount || game.moveHistory.length) }}</span>
-                <span class="text-xs mt-0.5" :class="game.isPublic ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-stone-400'">
-                  {{ game.isPublic ? t('publicGame') : t('privateGame') }}
-                </span>
+                <div v-else class="flex items-center gap-2">
+                  <span @click="canEditGame(game) ? startEditing(game) : null" class="font-semibold truncate transition-colors" :class="canEditGame(game) ? 'cursor-pointer hover:text-indigo-500' : 'cursor-default text-stone-500 dark:text-stone-400'" :title="canEditGame(game) ? t('edit') : ''">{{ game.name }}</span>
+                  <span class="shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded" :class="game.isPublic ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-stone-200 text-stone-600 dark:bg-stone-700 dark:text-stone-400'">
+                    {{ game.isPublic ? t('publicGame') : t('privateGame') }}
+                  </span>
+                </div>
+                <span class="text-xs opacity-60">{{ new Date(game.timestamp).toLocaleString() }} - {{ t('totalMoves', game.moveCount) }} - {{ t('recordAuthor', game.author) }}</span>
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 <button v-if="currentRecordId === game.id && canEditGame(game)" @click="updateGame(game.id)" class="p-2 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-900/80 transition-colors" :title="t('update')">
