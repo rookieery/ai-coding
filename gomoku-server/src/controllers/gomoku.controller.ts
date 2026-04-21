@@ -63,17 +63,20 @@ export class GomokuController {
       const page = parseInt(req.query.page as string) || 1;
       const pageSize = parseInt(req.query.pageSize as string) || 20;
       const userId = req.user?.id;
+      const userRole = req.user?.role;
 
-      // 构建过滤条件：如果用户已认证，显示所有公开棋谱 + 用户自己的私有棋谱
-      // 如果用户未认证，只显示公开棋谱
-      const filters: any = {};
-      if (userId) {
+      // 权限过滤逻辑：
+      // - Admin: 只能看到公开棋谱 (isPublic: true)
+      // - 非Admin: 能看到公开棋谱 + 自己的私有棋谱 (isPublic: true OR authorId: userId)
+      // - 未登录: 只能看到公开棋谱 (isPublic: true)
+      const filters: Record<string, unknown> = {};
+      if (userId && userRole !== 'ADMIN') {
         filters.OR = [
-          { isPublic: true },           // 所有公开棋谱
-          { authorId: userId }          // 用户自己的棋谱（包括私有）
+          { isPublic: true },
+          { authorId: userId },
         ];
       } else {
-        filters.isPublic = true;        // 未登录用户只能看到公开棋谱
+        filters.isPublic = true;
       }
 
       // 获取棋谱列表

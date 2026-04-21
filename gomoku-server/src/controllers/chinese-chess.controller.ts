@@ -119,9 +119,14 @@ export class ChineseChessController {
       const page = parseInt(req.query.page as string) || 1;
       const pageSize = parseInt(req.query.pageSize as string) || 20;
       const userId = req.user?.id;
+      const userRole = req.user?.role;
 
+      // 权限过滤逻辑：
+      // - Admin: 只能看到公开棋谱 (isPublic: true)
+      // - 非Admin: 能看到公开棋谱 + 自己的私有棋谱 (isPublic: true OR authorId: userId)
+      // - 未登录: 只能看到公开棋谱 (isPublic: true)
       const filters: Record<string, unknown> = {};
-      if (userId) {
+      if (userId && userRole !== 'ADMIN') {
         filters.OR = [
           { isPublic: true },
           { authorId: userId },
