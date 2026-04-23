@@ -24,6 +24,12 @@ const passwordError = ref('');
 const confirmPasswordError = ref('');
 const usernameError = ref('');
 
+// 字段触碰状态 - 只有触碰后才显示校验错误
+const phoneTouched = ref(false);
+const passwordTouched = ref(false);
+const usernameTouched = ref(false);
+const confirmPasswordTouched = ref(false);
+
 // 状态
 const isLoading = ref(false);
 const errorMessage = ref('');
@@ -33,9 +39,28 @@ const successMessage = ref('');
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
+// 标记字段已触碰（用户开始输入或离开字段）
+const touchField = (field: 'phone' | 'password' | 'username' | 'confirmPassword') => {
+  switch (field) {
+    case 'phone': phoneTouched.value = true; break;
+    case 'password': passwordTouched.value = true; break;
+    case 'username': usernameTouched.value = true; break;
+    case 'confirmPassword': confirmPasswordTouched.value = true; break;
+  }
+};
+
+// 标记所有字段为已触碰（提交时触发全部校验）
+const touchAllFields = () => {
+  phoneTouched.value = true;
+  passwordTouched.value = true;
+  usernameTouched.value = true;
+  confirmPasswordTouched.value = true;
+};
+
 // 表单验证（使用实时验证结果）
 const validateForm = () => {
   errorMessage.value = '';
+  touchAllFields();
 
   // 使用实时验证结果
   if (!phoneValidation.value.isValid) {
@@ -111,6 +136,11 @@ const toggleMode = () => {
   isLoginMode.value = !isLoginMode.value;
   errorMessage.value = '';
   successMessage.value = '';
+  // 重置触碰状态，避免切换后显示旧校验错误
+  phoneTouched.value = false;
+  passwordTouched.value = false;
+  usernameTouched.value = false;
+  confirmPasswordTouched.value = false;
 };
 
 // 字段验证
@@ -122,7 +152,7 @@ const phoneValidation = computed(() => {
 });
 
 const passwordValidation = computed(() => {
-  if (!password.value) return { isValid: false, error: t('errorPhoneRequired') };
+  if (!password.value) return { isValid: false, error: t('errorPasswordLength') };
   const result = validatePassword(password.value);
   if (!result.isValid) return { isValid: false, error: t('errorPasswordComplexity') };
   return { isValid: true };
@@ -204,13 +234,14 @@ const isFormValid = computed(() => {
                   v-model="phone"
                   type="tel"
                   :placeholder="t('phonePlaceholder')"
+                  @input="touchField('phone')"
                   class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   :class="currentTheme === 'dark'
                     ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
                     : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400'"
                 />
               </div>
-              <p v-if="phoneValidation.error" class="mt-2 text-sm text-red-500">
+              <p v-if="phoneTouched && phoneValidation.error" class="mt-2 text-sm text-red-500">
                 {{ phoneValidation.error }}
               </p>
             </div>
@@ -228,6 +259,7 @@ const isFormValid = computed(() => {
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   :placeholder="isLoginMode ? t('passwordPlaceholderLogin') : t('passwordPlaceholderRegister')"
+                  @input="touchField('password')"
                   class="w-full pl-12 pr-12 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   :class="currentTheme === 'dark'
                     ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -244,7 +276,7 @@ const isFormValid = computed(() => {
                   <Eye v-else class="w-5 h-5" />
                 </button>
               </div>
-              <p v-if="passwordValidation.error" class="mt-2 text-sm text-red-500">
+              <p v-if="passwordTouched && passwordValidation.error" class="mt-2 text-sm text-red-500">
                 {{ passwordValidation.error }}
               </p>
             </div>
@@ -264,13 +296,14 @@ const isFormValid = computed(() => {
                     v-model="username"
                     type="text"
                     :placeholder="t('usernamePlaceholder')"
+                    @input="touchField('username')"
                     class="w-full pl-12 pr-4 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     :class="currentTheme === 'dark'
                       ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
                       : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400'"
                   />
                 </div>
-                <p v-if="usernameValidation.error" class="mt-2 text-sm text-red-500">
+                <p v-if="usernameTouched && usernameValidation.error" class="mt-2 text-sm text-red-500">
                   {{ usernameValidation.error }}
                 </p>
               </div>
@@ -288,6 +321,7 @@ const isFormValid = computed(() => {
                     v-model="confirmPassword"
                     :type="showConfirmPassword ? 'text' : 'password'"
                     :placeholder="t('confirmPasswordPlaceholder')"
+                    @input="touchField('confirmPassword')"
                     class="w-full pl-12 pr-12 py-3 rounded-lg border transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     :class="currentTheme === 'dark'
                       ? 'bg-stone-800 border-stone-700 text-stone-100 placeholder-stone-500'
@@ -304,7 +338,7 @@ const isFormValid = computed(() => {
                     <Eye v-else class="w-5 h-5" />
                   </button>
                 </div>
-                <p v-if="confirmPasswordValidation.error" class="mt-2 text-sm text-red-500">
+                <p v-if="confirmPasswordTouched && confirmPasswordValidation.error" class="mt-2 text-sm text-red-500">
                   {{ confirmPasswordValidation.error }}
                 </p>
               </div>
@@ -336,7 +370,7 @@ const isFormValid = computed(() => {
               type="submit"
               :disabled="isLoading || !isFormValid"
               class="w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-              :class="isLoading
+              :class="isLoading || !isFormValid
                 ? 'bg-indigo-400 cursor-not-allowed text-white'
                 : 'bg-indigo-600 hover:bg-indigo-700 text-white'"
             >
