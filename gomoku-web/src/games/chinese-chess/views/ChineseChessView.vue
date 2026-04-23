@@ -207,7 +207,7 @@ const importGame = async (game: GameListItem) => {
     // Assign the replayed board to the reactive state
     board.value = replayBoard;
     moveHistory.value = parsedMoveHistory;
-    mode.value = fullGame.mode || 'pvp';
+    mode.value = 'pve';
     aiDifficulty.value = fullGame.aiDifficulty || 'intermediate';
     aiRole.value = fullGame.aiRole || 'black';
     currentRecordId.value = fullGame.id;
