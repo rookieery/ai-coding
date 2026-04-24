@@ -6,6 +6,7 @@
       "title": "后端LLM AI服务基础架构",
       "description": "构建后端LLM AI服务的基础架构，包括API端点、服务层和错误处理机制",
       "priority": "P0",
+      "passes": false,
       "tasks": [
         {
           "id": "TASK-001-01",
@@ -102,6 +103,7 @@
       "title": "LLM与传统AI混合策略",
       "description": "实现LLM AI与传统算法AI的混合策略，确保稳定性和棋力平衡",
       "priority": "P0",
+      "passes": false,
       "tasks": [
         {
           "id": "TASK-002-01",
@@ -174,6 +176,7 @@
       "title": "前端LLM AI模式集成",
       "description": "在前端集成LLM AI模式，包括API调用、状态管理和UI展示",
       "priority": "P0",
+      "passes": false,
       "tasks": [
         {
           "id": "TASK-003-01",
@@ -264,6 +267,7 @@
       "title": "用户体验优化",
       "description": "优化用户与LLM AI对战的交互体验，包括加载状态、错误处理和反馈机制",
       "priority": "P1",
+      "passes": false,
       "tasks": [
         {
           "id": "TASK-004-01",
@@ -352,6 +356,7 @@
       "title": "测试和质量保证",
       "description": "编写完整的测试用例，确保LLM AI功能的稳定性和正确性",
       "priority": "P1",
+      "passes": false,
       "tasks": [
         {
           "id": "TASK-005-01",
@@ -441,6 +446,7 @@
       "title": "文档和部署",
       "description": "编写技术文档，准备生产环境部署",
       "priority": "P2",
+      "passes": false,
       "tasks": [
         {
           "id": "TASK-006-01",
