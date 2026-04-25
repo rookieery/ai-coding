@@ -41,10 +41,10 @@ const {
 const { leftPanelWidth, isDragging, startDrag } = useSplitDrag();
 
 const handleEnterGomokuMode = () => {
-  enterGomokuMode();
   messages.value.push({
     role: 'agent',
-    text: t('agentGomokuModeEntered')
+    text: t('agentGameSelectorPrompt'),
+    isGameSelector: true
   });
 };
 

@@ -3,4 +3,5 @@ export interface AgentMessage {
   text: string;
   reasoningContent?: string;
   relatedUserQuery?: string;
+  isGameSelector?: boolean;
 }

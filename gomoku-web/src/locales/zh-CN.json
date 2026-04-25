@@ -210,5 +210,8 @@
   "agentBackToChat": "返回对话",
   "agentUserMoveNotification": "[系统] 玩家落子于 {0}",
   "agentSurrenderNotification": "[系统] 玩家认输，AI获胜！",
-  "agentAiThinkingMove": "AI正在思考下一步..."
+  "agentAiThinkingMove": "AI正在思考下一步...",
+  "agentGameSelectorPrompt": "你想切磋哪种棋艺？",
+  "agentGameGomoku": "五子棋",
+  "agentGameChineseChess": "中国象棋 (即将推出)"
 }

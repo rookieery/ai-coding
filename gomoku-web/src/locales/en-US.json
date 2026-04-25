@@ -210,5 +210,8 @@
   "agentBackToChat": "Back to Chat",
   "agentUserMoveNotification": "[System] Player moved to {0}",
   "agentSurrenderNotification": "[System] Player surrendered. AI wins!",
-  "agentAiThinkingMove": "AI is thinking about its move..."
+  "agentAiThinkingMove": "AI is thinking about its move...",
+  "agentGameSelectorPrompt": "Which game would you like to play?",
+  "agentGameGomoku": "Gomoku",
+  "agentGameChineseChess": "Chinese Chess (Coming Soon)"
 }
