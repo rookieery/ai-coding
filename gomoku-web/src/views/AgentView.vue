@@ -33,6 +33,38 @@ const { renderMarkdown } = useMarkdown();
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
 const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
 
+// 分屏拖拽状态
+const leftPanelWidth = ref(35);
+const isDragging = ref(false);
+const startX = ref(0);
+const startWidth = ref(0);
+
+const startDrag = (event: MouseEvent) => {
+  isDragging.value = true;
+  startX.value = event.clientX;
+  startWidth.value = leftPanelWidth.value;
+
+  window.addEventListener('mousemove', onDrag);
+  window.addEventListener('mouseup', stopDrag);
+};
+
+const onDrag = (event: MouseEvent) => {
+  if (!isDragging.value) return;
+
+  const containerWidth = window.innerWidth;
+  const deltaX = event.clientX - startX.value;
+  const deltaPercent = (deltaX / containerWidth) * 100;
+  const newWidth = startWidth.value + deltaPercent;
+
+  leftPanelWidth.value = Math.max(25, Math.min(50, newWidth));
+};
+
+const stopDrag = () => {
+  isDragging.value = false;
+  window.removeEventListener('mousemove', onDrag);
+  window.removeEventListener('mouseup', stopDrag);
+};
+
 const handleEnterGomokuMode = () => {
   enterGomokuMode();
   messages.value.push({

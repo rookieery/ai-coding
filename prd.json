@@ -2,16 +2,10 @@
   "branchName": "feature/agent-split-screen",
   "stories": [
     {
-      "id": "UI-REFINE-01-Relocate-Action-Chips",
-      "title": "重构首页快捷指令入口位置",
-      "description": "视图层微调任务。请先仔细阅读 `AgentView.vue` 的模板结构。逻辑：1. 删除目前存在于欢迎语下方的 '💬 棋林对话' 按钮。2. 将 '⚔️ 棋林对弈' 按钮（以及它所在的包裹容器）移动到**底部聊天输入框的正上方**，靠左或居中对齐（参考常规大模型产品的提示词建议位置）。3. 确保该按钮点击后调用 `enterGomokuMode` 的功能依然正常运作。4. 预留好横向排列的 Flex 空间，为以后增加其他快捷按钮做准备。",
-      "passes": true
-    },
-    {
       "id": "UI-REFINE-02-Draggable-Divider-State",
       "title": "实现分屏拖拽的响应式状态与逻辑",
       "description": "交互逻辑任务。请先阅读 `AgentView.vue` 的 `<script setup>` 部分。要求使用原生 Vue 实现拖拽，严禁引入第三方库。1. 声明响应式变量 `leftPanelWidth`，默认值为 35（代表 35%）。2. 编写拖拽相关状态：`isDragging` (布尔值)、`startX` (数字)、`startWidth` (数字)。3. 编写 `startDrag(event)` 方法记录初始鼠标 X 坐标和初始宽度，并绑定 `mousemove` 和 `mouseup` 到 `window`（或 `document`）。4. 在 `onDrag(event)` 中计算移动差值，动态更新 `leftPanelWidth`。5. 核心约束：在计算时，使用 `Math.max(25, Math.min(50, newWidth))` 强制将宽度百分比限制在 25% 到 50% 之间。拖拽结束时移除全局事件监听。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "UI-REFINE-03-Draggable-Divider-Render",
