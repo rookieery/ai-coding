@@ -522,25 +522,9 @@ const regenerateAnswer = async (index: number) => {
           <span class="text-4xl text-white font-bold">五</span>
         </div>
         <h2 class="text-4xl font-bold mb-4 tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">{{ t('agentTitle') }}</h2>
-        <p class="text-lg text-center max-w-2xl mb-8" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+        <p class="text-lg text-center max-w-2xl" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
           {{ t('agentGreeting') }}
         </p>
-        <div class="flex gap-3">
-          <button
-            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-            :class="currentTheme === 'dark'
-              ? 'bg-stone-700 text-stone-200 hover:bg-stone-600 border border-stone-600'
-              : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200'"
-          >
-            {{ t('agentActionChat') }}
-          </button>
-          <button
-            @click="handleEnterGomokuMode"
-            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700"
-          >
-            {{ t('agentActionGomoku') }}
-          </button>
-        </div>
       </div>
 
       <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4"
@@ -607,6 +591,15 @@ const regenerateAnswer = async (index: number) => {
 
       <div class="w-full relative mt-auto mb-8"
            :class="playMode === 'gomoku' ? 'px-4 max-w-full' : 'max-w-3xl'">
+        <!-- 快捷操作按钮区域 -->
+        <div v-if="messages.length === 0" class="flex flex-wrap gap-3 mb-4">
+          <button
+            @click="handleEnterGomokuMode"
+            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700"
+          >
+            {{ t('agentActionGomoku') }}
+          </button>
+        </div>
         <div class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
              :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'">
           <textarea
