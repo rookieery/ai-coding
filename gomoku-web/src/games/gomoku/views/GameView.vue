@@ -7,6 +7,7 @@ import HistoryPanel from '../components/HistoryPanel.vue';
 import GameControls from '../components/GameControls.vue';
 import { t, currentTheme } from '../../../i18n';
 import { gameApi, type FrontendGame, type GameListItem, type GameType } from '../../../api/game-api';
+import { llmApi, type LLMPlayerColor } from '../api/llmApi';
 import { useGlobalAuth } from '../../../composables/useAuth';
 import { useGlobalSettings } from '../../../composables/useSettings';
 
@@ -376,9 +377,41 @@ const playSound = () => {
   }
 };
 
+const llmMove = async () => {
+  if (winner.value !== EMPTY || mode.value !== 'pve' || isAnalysisMode.value) return;
+  if (currentPlayer.value !== aiPlayer.value) return;
+
+  terminateWorker();
+  isAiThinking.value = true;
+
+  try {
+    const llmPlayer: LLMPlayerColor = aiPlayer.value === BLACK ? 'black' : 'white';
+
+    const response = await llmApi.generateMove({
+      board: board.value.map(row => [...row]),
+      currentPlayer: llmPlayer,
+      moveHistory: [...moveHistory.value],
+    });
+
+    isAiThinking.value = false;
+
+    if (currentPlayer.value === aiPlayer.value && winner.value === EMPTY && mode.value === 'pve' && !isAnalysisMode.value) {
+      executeMove(response.y, response.x, aiPlayer.value);
+    }
+  } catch {
+    isAiThinking.value = false;
+    notify(t('llmMoveFailed'));
+  }
+};
+
 const aiMove = () => {
   if (winner.value !== EMPTY || mode.value !== 'pve' || isAnalysisMode.value) return;
   if (currentPlayer.value !== aiPlayer.value) return;
+
+  if (aiDifficulty.value === 'neural') {
+    llmMove();
+    return;
+  }
 
   terminateWorker();
   isAiThinking.value = true;

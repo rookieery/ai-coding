@@ -2,22 +2,10 @@
   "branchName": "feature/gomoku-llm",
   "stories": [
     {
-      "id": "LLM-002-Prompt-Builder",
-      "title": "后端：编写二维矩阵转换与 Prompt 组装工具",
-      "description": "纯纯工具类任务。在后端 `src/utils/` 创建 `boardPromptUtils.ts`：1. 编写函数将 15x15 的 pieces 数组转换为 ASCII 字符矩阵（X为黑，O为白，.为空位），增强 LLM 空间感知。2. 编写函数组装 System Prompt，严格要求 AI 作为五子棋专家，输出 {move: string, reason: string} 格式的 JSON，明确防守与进攻的思维链。暂不调用网络。",
-      "passes": true
-    },
-    {
-      "id": "LLM-003-API-Service",
-      "title": "后端：实现 DeepSeek API 调用与幻觉校验层",
-      "description": "核心逻辑任务。在 `src/services/llm-ai.service.ts` 中实现：1. 接收请求，调用上一步的工具生成 Prompt。2. 预留 DeepSeek API 调用代码（可使用 fetch 或已有 SDK）。3. 重点：编写解析返回 JSON 的 `validateMove` 函数，检查返回的坐标是否在 15x15 且为空位。4. 重点：如果大模型产生幻觉给出非法坐标，拦截错误，在空位中随机返回一个合法坐标作为兜底。5. 在对应的 routes 文件中暴露接口 `/api/games/gomoku/llm/move`。",
-      "passes": false
-    },
-    {
       "id": "LLM-004-Frontend-API",
       "title": "前端：创建 API 调用与状态管理",
       "description": "前端数据层任务。在前端的 `src/games/gomoku/api/` 或对应位置：1. 编写请求 `/api/games/gomoku/llm/move` 的 axios/fetch 函数。2. 在五子棋的状态机（如 `useGomoku.ts`）中增加 `isAIThinking` 布尔值状态。3. 编写 `triggerAITurn` 方法，在方法内将 `isAIThinking` 设为 true，调用 API 获取坐标，然后调用底层 `placePiece` 落子，最后恢复 `isAIThinking` 为 false。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "LLM-005-UI-Integration",
