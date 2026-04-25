@@ -16,7 +16,9 @@ import {
   buildUserPrompt,
   notationToCoordinates,
   getRandomEmptyPosition,
+  coordinatesToNotation,
 } from '../utils/boardPromptUtils';
+import { findCriticalMove } from '../utils/threatDetector';
 import { logger } from '../utils/logger';
 
 /**
@@ -179,6 +181,8 @@ export class LLMAIService {
 
   /**
    * Generate a move using LLM AI
+   * First checks for critical moves (immediate wins or must-block threats)
+   * Only calls LLM API if no critical move is found
    * @param request - LLM move request with board state
    * @returns Validated move with coordinates
    */
@@ -187,7 +191,31 @@ export class LLMAIService {
     reason: string;
     isFallback: boolean;
   }> {
-    const { board } = request;
+    const { board, currentPlayer } = request;
+
+    const criticalMove = findCriticalMove(board, currentPlayer);
+
+    if (criticalMove) {
+      const moveNotation = coordinatesToNotation(criticalMove.x, criticalMove.y);
+      const reasonMap: Record<string, string> = {
+        win: 'AI本能反应：这么明显的必杀点，我当然要走这里！',
+        'block-rush-four': 'AI本能反应：对手冲四威胁，必须立即堵截！',
+        'block-live-three': 'AI本能反应：对手活三威胁，必须立即堵截！',
+      };
+
+      logger.info(`Critical move detected: ${moveNotation} (${criticalMove.type})`);
+
+      return {
+        move: {
+          x: criticalMove.x,
+          y: criticalMove.y,
+          isValid: true,
+          reason: `Critical move: ${criticalMove.type}`,
+        },
+        reason: reasonMap[criticalMove.type] || 'AI本能反应：关键威胁点',
+        isFallback: true,
+      };
+    }
 
     try {
       const systemPrompt = buildSystemPrompt(request);
