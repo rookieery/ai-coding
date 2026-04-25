@@ -2,16 +2,10 @@
   "branchName": "feature/gomoku-llm",
   "stories": [
     {
-      "id": "LLM-OPT-02-Candidate-Generator",
-      "title": "实现启发式候选落子生成器",
-      "description": "逻辑层任务。在 `src/utils/` 下新建 `candidateGenerator.ts`。实现一个评估算法：遍历棋盘所有空位，根据其周围形成的棋型（活二、眠三等）计算攻防分值，返回 Top 10 的候选点数组（包含坐标、分值和简短的落子理由，如 ‘构成活三’）。这将作为大模型的’选题目’。",
-      "passes": true
-    },
-    {
       "id": "LLM-OPT-03-Advanced-Prompt-Engineering",
       "title": "重构 System Prompt：注入专业五子棋知识体系",
       "description": "Prompt 优化任务。修改 `src/utils/boardPromptUtils.ts` 中的 Prompt 模板。要求：1. 注入专业术语定义（如：连五 > 活四 > 冲四 > 活三）。2. 设定策略优先级：优先堵截对手连四/活三，其次寻找己方四三/双三杀招。3. 强制 CoT 思维链：要求 AI 在返回坐标前，先在 JSON 中输出 situation_analysis（局势分析）。4. 动态接入 Phase 2 生成的 Top 10 候选名单，要求 AI 必须从名单中挑选并给出选择理由。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "LLM-OPT-04-Integration-Smart-Fallback",

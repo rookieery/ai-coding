@@ -46,10 +46,21 @@ export interface LLMMoveRequest {
 export type MoveCoordinate = string;
 
 /**
+ * Situation analysis from LLM CoT reasoning
+ */
+export interface SituationAnalysis {
+  my_threats: string[];
+  opponent_threats: string[];
+  strategy: string;
+}
+
+/**
  * Response from LLM AI move generation
  */
 export interface LLMMoveResponse {
+  situation_analysis?: SituationAnalysis;
   move: MoveCoordinate;
+  candidate_index?: number;
   reason: string;
 }
 

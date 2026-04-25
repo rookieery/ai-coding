@@ -10,6 +10,7 @@ import {
   LLMMoveResponse,
   ValidatedMove,
   LLMConfig,
+  SituationAnalysis,
 } from '../types/llm.types';
 import {
   buildSystemPrompt,
@@ -19,6 +20,7 @@ import {
   coordinatesToNotation,
 } from '../utils/boardPromptUtils';
 import { findCriticalMove } from '../utils/threatDetector';
+import { generateCandidateMoves } from '../utils/candidateGenerator';
 import { logger } from '../utils/logger';
 
 /**
@@ -92,13 +94,39 @@ function parseLLMResponse(responseText: string): LLMMoveResponse | null {
       return null;
     }
     const parsed = JSON.parse(jsonMatch[0]);
-    if (typeof parsed.move === 'string' && typeof parsed.reason === 'string') {
-      return {
-        move: parsed.move.toUpperCase(),
-        reason: parsed.reason,
-      };
+
+    // Validate required fields
+    if (typeof parsed.move !== 'string' || typeof parsed.reason !== 'string') {
+      return null;
     }
-    return null;
+
+    const response: LLMMoveResponse = {
+      move: parsed.move.toUpperCase(),
+      reason: parsed.reason,
+    };
+
+    // Extract optional situation_analysis
+    if (parsed.situation_analysis) {
+      const sa = parsed.situation_analysis;
+      if (
+        Array.isArray(sa.my_threats) &&
+        Array.isArray(sa.opponent_threats) &&
+        typeof sa.strategy === 'string'
+      ) {
+        response.situation_analysis = {
+          my_threats: sa.my_threats,
+          opponent_threats: sa.opponent_threats,
+          strategy: sa.strategy,
+        };
+      }
+    }
+
+    // Extract optional candidate_index
+    if (typeof parsed.candidate_index === 'number') {
+      response.candidate_index = parsed.candidate_index;
+    }
+
+    return response;
   } catch {
     return null;
   }
@@ -190,9 +218,11 @@ export class LLMAIService {
     move: ValidatedMove;
     reason: string;
     isFallback: boolean;
+    situation_analysis?: SituationAnalysis;
   }> {
     const { board, currentPlayer } = request;
 
+    // Step 1: Check for critical moves (immediate wins or must-block threats)
     const criticalMove = findCriticalMove(board, currentPlayer);
 
     if (criticalMove) {
@@ -217,48 +247,101 @@ export class LLMAIService {
       };
     }
 
+    // Step 2: Generate top 10 candidate moves using heuristic analysis
+    const candidates = generateCandidateMoves(board, currentPlayer, 10);
+
+    if (candidates.length === 0) {
+      logger.warn('No candidate moves available, using random fallback');
+      const fallbackMove = getFallbackMove(board);
+      return {
+        move: fallbackMove,
+        reason: 'No strategic positions available',
+        isFallback: true,
+      };
+    }
+
     try {
-      const systemPrompt = buildSystemPrompt(request);
+      // Step 3: Build prompts with candidate list injected
+      const systemPrompt = buildSystemPrompt(request, candidates);
       const userPrompt = buildUserPrompt(request);
 
-      logger.info('Calling DeepSeek API for move generation');
+      logger.info('Calling DeepSeek API for move generation with candidate list');
       const responseText = await this.callDeepSeekAPI(systemPrompt, userPrompt);
 
       const llmResponse = parseLLMResponse(responseText);
 
       if (!llmResponse) {
-        logger.warn('Failed to parse LLM response, using fallback');
-        const fallbackMove = getFallbackMove(board);
+        logger.warn('Failed to parse LLM response, using best candidate fallback');
+        const bestCandidate = candidates[0];
         return {
-          move: fallbackMove,
-          reason: 'Failed to parse LLM response',
+          move: {
+            x: bestCandidate.x,
+            y: bestCandidate.y,
+            isValid: true,
+            reason: `Fallback: best candidate (${bestCandidate.reason})`,
+          },
+          reason: 'Failed to parse LLM response, using heuristic best candidate',
           isFallback: true,
         };
       }
 
+      // Step 4: Validate that LLM chose from the candidate list
       const validatedMove = validateMove(board, llmResponse.move);
 
       if (!validatedMove.isValid) {
         logger.warn(`LLM hallucination detected: ${llmResponse.move} - ${validatedMove.reason}`);
-        const fallbackMove = getFallbackMove(board);
+        const bestCandidate = candidates[0];
         return {
-          move: fallbackMove,
-          reason: `LLM suggested invalid move: ${llmResponse.move}. ${validatedMove.reason}`,
+          move: {
+            x: bestCandidate.x,
+            y: bestCandidate.y,
+            isValid: true,
+            reason: `Fallback: best candidate (${bestCandidate.reason})`,
+          },
+          reason: `LLM suggested invalid move: ${llmResponse.move}. Using heuristic fallback.`,
           isFallback: true,
         };
       }
 
-      logger.info(`LLM generated valid move: ${llmResponse.move}`);
+      // Step 5: Check if LLM's choice is in the candidate list
+      const candidateMatch = candidates.find(
+        c => c.x === validatedMove.x && c.y === validatedMove.y
+      );
+
+      if (!candidateMatch) {
+        logger.warn(
+          `LLM chose non-candidate position: ${llmResponse.move}. Using best candidate fallback.`
+        );
+        const bestCandidate = candidates[0];
+        return {
+          move: {
+            x: bestCandidate.x,
+            y: bestCandidate.y,
+            isValid: true,
+            reason: `Fallback: best candidate (${bestCandidate.reason})`,
+          },
+          reason: `LLM chose position outside candidate list. Using heuristic fallback.`,
+          isFallback: true,
+        };
+      }
+
+      logger.info(`LLM generated valid move from candidate list: ${llmResponse.move}`);
       return {
         move: validatedMove,
         reason: llmResponse.reason,
         isFallback: false,
+        situation_analysis: llmResponse.situation_analysis,
       };
     } catch (error) {
       logger.error('LLM API call failed:', error);
-      const fallbackMove = getFallbackMove(board);
+      const bestCandidate = candidates[0];
       return {
-        move: fallbackMove,
+        move: {
+          x: bestCandidate.x,
+          y: bestCandidate.y,
+          isValid: true,
+          reason: `Fallback: best candidate (${bestCandidate.reason})`,
+        },
         reason: error instanceof Error ? error.message : 'Unknown error',
         isFallback: true,
       };
@@ -281,6 +364,7 @@ export class LLMAIService {
     move: ValidatedMove;
     reason: string;
     isFallback: boolean;
+    situation_analysis?: SituationAnalysis;
   }> {
     const {
       createLLMRequest,
