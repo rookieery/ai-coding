@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { gomokuController } from '../../controllers/gomoku.controller';
+import { llmAiController } from '../../controllers/llm-ai.controller';
 import { optionalAuthenticate } from '../../middleware/auth';
 import { validateId } from '../../middleware/validation';
 
@@ -38,5 +39,19 @@ router.get('/frontend', optionalAuthenticate, gomokuController.getGamesForFronte
  * @access  Public
  */
 router.get('/frontend/:id', optionalAuthenticate, validateId(), gomokuController.getGameForFrontend.bind(gomokuController));
+
+/**
+ * @route   GET /api/games/gomoku/llm/health
+ * @desc    LLM AI服务健康检查
+ * @access  Public
+ */
+router.get('/llm/health', llmAiController.healthCheck.bind(llmAiController));
+
+/**
+ * @route   POST /api/games/gomoku/llm/move
+ * @desc    使用LLM AI生成五子棋落子
+ * @access  Public
+ */
+router.post('/llm/move', llmAiController.generateMove.bind(llmAiController));
 
 export default router;
