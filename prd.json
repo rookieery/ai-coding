@@ -2,22 +2,10 @@
   "branchName": "feature/agent-split-screen",
   "stories": [
     {
-      "id": "SPLIT-04-Play-Panel-Wrapper",
-      "title": "创建右侧对弈面板包装组件",
-      "description": "组件封装任务。为了不破坏原有五子棋组件，请在 `src/components/` (或合适目录) 下新建 `AgentGomokuPanel.vue`。功能：引入原有的 `Board.vue` 并使其居中。顶部可保留一个极简的撤销/认输按钮区。该组件负责将 `Board.vue` 的交互事件向上抛出。请确保该组件能够自适应其父容器的宽度。",
-      "passes": true
-    },
-    {
-      "id": "SPLIT-05-Split-Screen-Layout",
-      "title": "Agent 视图：实现左右分屏响应式布局",
-      "description": "布局重构任务。请先阅读 `useAgentPlay.ts`、`AgentView.vue` 和上一步的 `AgentGomokuPanel.vue`。修改 `AgentView.vue` 布局：引入 `useAgentPlay` 的 `playMode` 状态。当为 'chat' 时，保持单列居中；当为 'gomoku' 时，根容器切换为 `flex row`。左侧聊天区宽度设为 35% 左右，右侧区域引入 `AgentGomokuPanel.vue` 占据剩余空间。确保切换时过渡平滑。",
-      "passes": false
-    },
-    {
       "id": "SPLIT-06-Interaction-User-Move",
       "title": "数据桥接：拦截落子触发 Agent 思考",
       "description": "联调任务。请先阅读 `AgentView.vue`、`AgentGomokuPanel.vue` 和后端的 LLM 通信服务。逻辑：在分屏模式下，当监听到右侧棋盘发出用户落子事件（如 H8）时：1. 向左侧聊天流追加系统消息：'[系统] 玩家落子于 H8'。2. 将 `isAIThinking` 置为 true 锁定 UI。3. 调用后端大模型接口发起对弈请求。此任务主要实现发送流程。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "SPLIT-07-Interaction-AI-Response",

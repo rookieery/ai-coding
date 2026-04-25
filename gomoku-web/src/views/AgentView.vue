@@ -3,9 +3,10 @@ import { ref, nextTick } from 'vue';
 import { Send, ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
+import { gomokuAiApi } from '../api/gomoku-ai-api';
 import { useMarkdown } from '../composables/useMarkdown';
 import { useGlobalAgentPlay } from '../composables/useAgentPlay';
-import { BOARD_SIZE } from '../games/gomoku/gameLogic';
+import { BOARD_SIZE, EMPTY, BLACK, WHITE } from '../games/gomoku/gameLogic';
 import ThinkingProcess from '../common/components/ui/ThinkingProcess.vue';
 import AnswerContent from '../common/components/ui/AnswerContent.vue';
 import MessageActions from '../common/components/ui/MessageActions.vue';
@@ -40,7 +41,7 @@ const handleEnterGomokuMode = () => {
   });
 };
 
-const handleUserMove = (r: number, c: number) => {
+const handleUserMove = async (r: number, c: number) => {
   const colLetter = String.fromCharCode(65 + c);
   const rowNumber = BOARD_SIZE - r;
   const moveCoord = `${colLetter}${rowNumber}`;
@@ -49,6 +50,60 @@ const handleUserMove = (r: number, c: number) => {
     role: 'agent',
     text: t('agentUserMoveNotification', moveCoord)
   });
+
+  if (!gomokuPanelRef.value) return;
+
+  const board = gomokuPanelRef.value.getBoard();
+  const moveHistory = gomokuPanelRef.value.getMoveHistory();
+
+  isThinking.value = true;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await scrollToBottom();
+
+  try {
+    const response = await gomokuAiApi.generateMove({
+      board,
+      currentPlayer: 'white',
+      moveHistory,
+    });
+
+    if (response.success && response.data) {
+      const { x, y, reason, isFallback } = response.data;
+
+      thinkingContent.value = reason;
+
+      if (isFallback) {
+        showThinkingProcess.value = false;
+      }
+
+      messages.value.push({
+        role: 'agent',
+        text: reason,
+        reasoningContent: isFallback ? undefined : reason,
+      });
+
+      gomokuPanelRef.value.placeAiPiece(y, x);
+
+      isThinking.value = false;
+      thinkingContent.value = '';
+      answerContent.value = '';
+      showThinkingProcess.value = true;
+
+      await scrollToBottom();
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
+    messages.value.push({
+      role: 'agent',
+      text: `${t('genericErrorPrefix')}${errorMessage}`,
+    });
+    isThinking.value = false;
+    showThinkingProcess.value = true;
+    await scrollToBottom();
+  }
 };
 
 const handleSurrender = () => {

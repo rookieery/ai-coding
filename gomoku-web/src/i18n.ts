@@ -217,6 +217,7 @@ export interface Messages {
   agentBackToChat: string;
   agentUserMoveNotification: string;
   agentSurrenderNotification: string;
+  agentAiThinkingMove: string;
 }
 
 export type MessageKey = keyof Messages;
