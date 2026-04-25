@@ -678,6 +678,11 @@ const showHint = () => {
              ]">
           {{ statusText }}
         </div>
+        <div v-if="isAiThinking && aiDifficulty === 'neural'"
+             class="px-4 py-3 rounded-lg border text-center text-sm font-medium animate-pulse shrink-0 transition-colors"
+             :class="currentTheme === 'dark' ? 'bg-indigo-900/50 border-indigo-700 text-indigo-300' : 'bg-indigo-100 border-indigo-300 text-indigo-700'">
+          {{ t('llmThinking') }}
+        </div>
         <div class="flex-1 min-h-0 overflow-hidden">
           <HistoryPanel :moveHistory="moveHistory" @copySuccess="handleCopySuccess" />
         </div>
