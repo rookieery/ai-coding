@@ -22,6 +22,7 @@ const chatMessagesRef = ref<InstanceType<typeof AgentChatMessages> | null>(null)
 const chatInputRef = ref<InstanceType<typeof AgentChatInput> | null>(null);
 const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
 const showExitConfirm = ref(false);
+const gameSelectorActive = ref(false);
 
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
 
@@ -43,30 +44,24 @@ const {
 const { leftPanelWidth, isDragging, startDrag } = useSplitDrag();
 
 const handleEnterGomokuMode = () => {
-  if (messages.value.length === 0) {
-    messages.value.push({
-      role: 'agent',
-      text: t('agentGameSelectorPrompt'),
-      isGameSelector: true
-    });
-  } else {
-    enterGomokuMode();
-    gomokuPanelRef.value?.resetGame();
-    messages.value.push({
-      role: 'agent',
-      text: t('agentGomokuModeEntered')
-    });
-  }
+  gameSelectorActive.value = true;
+  messages.value.push({
+    role: 'agent',
+    text: t('agentGameSelectorPrompt'),
+    isGameSelector: true
+  });
 };
 
 const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
   msg.isGameSelector = false;
+  gameSelectorActive.value = false;
 
   const gameName = gameType === 'gomoku' ? t('agentGameGomoku') : t('agentGameChineseChess');
-  messages.value.push({
-    role: 'user',
-    text: gameName
-  });
+
+  messages.value = [
+    { role: 'agent', text: t('agentGameSelectorPrompt') },
+    { role: 'user', text: gameName },
+  ];
 
   if (gameType === 'gomoku') {
     enterGomokuMode();
@@ -161,6 +156,7 @@ const handleExitClick = () => {
 
 const confirmExit = () => {
   showExitConfirm.value = false;
+  gameSelectorActive.value = false;
   exitPlayMode();
 };
 
@@ -169,6 +165,13 @@ const cancelExit = () => {
 };
 
 const handleSend = () => {
+  if (gameSelectorActive.value) {
+    gameSelectorActive.value = false;
+    const selectorMsg = messages.value.find(m => m.isGameSelector);
+    if (selectorMsg) {
+      selectorMsg.isGameSelectorDismissed = true;
+    }
+  }
   sendMessage(query.value, () => {
     query.value = '';
     chatInputRef.value?.resetTextareaHeight();
@@ -231,7 +234,7 @@ const handleSend = () => {
       >
         <template #actions>
           <button
-            v-if="playMode !== 'gomoku'"
+            v-if="playMode !== 'gomoku' && !gameSelectorActive"
             @click="handleEnterGomokuMode"
             class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
           >

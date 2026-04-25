@@ -85,7 +85,11 @@ defineExpose({
           <div v-if="msg.isGameSelector" class="flex gap-3 mt-4">
             <button
               @click="$emit('select-game', 'gomoku', msg)"
-              class="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+              :disabled="msg.isGameSelectorDismissed"
+              class="px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+              :class="msg.isGameSelectorDismissed
+                ? (currentTheme === 'dark' ? 'cursor-not-allowed bg-stone-700 text-stone-500' : 'cursor-not-allowed bg-stone-200 text-stone-400')
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'"
             >
               {{ t('agentGameGomoku') }}
             </button>
