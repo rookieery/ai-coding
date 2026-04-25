@@ -205,5 +205,6 @@
   "agentReasoningSummary": "🧠 Agent is reasoning...",
   "agentActionChat": "💬 Chat with Qilin",
   "agentActionGomoku": "⚔️ Play Gomoku",
-  "agentGomokuModeEntered": "Entered game mode. I play white on the right. Your move."
+  "agentGomokuModeEntered": "Entered game mode. I play white on the right. Your move.",
+  "agentSurrender": "Surrender"
 }

@@ -2,22 +2,10 @@
   "branchName": "feature/agent-split-screen",
   "stories": [
     {
-      "id": "SPLIT-02-Chat-Message-UI",
-      "title": "聊天组件：实现可折叠的 AI 思考 UI",
-      "description": "组件开发任务。请先读取前端的聊天气泡组件（如 `ChatMessage.vue`）。修改逻辑：如果传入的消息数据中包含 `reasoning_content` 字段，则在气泡的主体文本上方渲染该内容。强制要求：使用 HTML 原生的 `<details>` 和 `<summary>` 标签，默认折叠。`<summary>` 标题固定为：'🧠 Agent 正在推演局势...'。内部文本调小并置灰。",
-      "passes": true
-    },
-    {
-      "id": "SPLIT-03-Home-Action-Chips",
-      "title": "Agent 首页：添加对弈快捷指令入口",
-      "description": "入口视图任务。请先阅读 `useAgentPlay.ts` 和 `AgentView.vue`。修改 `AgentView.vue`：在无聊天记录的欢迎语下方，添加两个胶囊按钮：'💬 棋林对话' 和 '⚔️ 棋林对弈'。点击 '⚔️ 棋林对弈' 时，调用 `useAgentPlay` 的 `enterGomokuMode()`，并在聊天流插入一条系统提示：'已进入对弈模式，我在右侧执白，请落子。'",
-      "passes": false
-    },
-    {
       "id": "SPLIT-04-Play-Panel-Wrapper",
       "title": "创建右侧对弈面板包装组件",
       "description": "组件封装任务。为了不破坏原有五子棋组件，请在 `src/components/` (或合适目录) 下新建 `AgentGomokuPanel.vue`。功能：引入原有的 `Board.vue` 并使其居中。顶部可保留一个极简的撤销/认输按钮区。该组件负责将 `Board.vue` 的交互事件向上抛出。请确保该组件能够自适应其父容器的宽度。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "SPLIT-05-Split-Screen-Layout",

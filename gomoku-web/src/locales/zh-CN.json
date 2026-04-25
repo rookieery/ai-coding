@@ -205,5 +205,6 @@
   "agentReasoningSummary": "🧠 Agent 正在推演局势...",
   "agentActionChat": "💬 棋林对话",
   "agentActionGomoku": "⚔️ 棋林对弈",
-  "agentGomokuModeEntered": "已进入对弈模式，我在右侧执白，请落子。"
+  "agentGomokuModeEntered": "已进入对弈模式，我在右侧执白，请落子。",
+  "agentSurrender": "认输"
 }
