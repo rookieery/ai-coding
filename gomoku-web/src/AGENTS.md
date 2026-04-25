@@ -1,7 +1,7 @@
 # i18n Translation Key Consistency
 
 ## Problem
-When adding new translation keys to `i18n.ts`, it's easy to forget to add them to all language locales (zh-CN, zh-TW, en-US, ja-JP). This leads to missing keys at runtime.
+When adding new translation keys to `i18n.ts`, it's easy to forget to add them to all language locales (zh-CN, en-US). This leads to missing keys at runtime.
 
 ## Solution
 - After adding new keys, run a script to compare key sets across languages.

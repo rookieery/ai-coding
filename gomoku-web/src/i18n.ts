@@ -1,7 +1,217 @@
 import { ref } from 'vue';
+import zhCN from './locales/zh-CN.json';
+import enUS from './locales/en-US.json';
 
-export type Locale = 'zh-CN' | 'zh-TW' | 'en-US' | 'ja-JP';
+export type Locale = 'zh-CN' | 'en-US';
 export type Theme = 'light' | 'dark';
+
+export interface Messages {
+  language: string;
+  title: string;
+  chineseChessTitle: string;
+  pvp: string;
+  pve: string;
+  ruleStandard: string;
+  ruleRenju: string;
+  hint: string;
+  undo: string;
+  restart: string;
+  difficultyBeginner: string;
+  difficultyIntermediate: string;
+  difficultyAdvanced: string;
+  difficultyExpert: string;
+  difficultyNeural: string;
+  roleSecond: string;
+  roleFirst: string;
+  roleRed: string;
+  roleBlack: string;
+  showThinking: string;
+  hideThinking: string;
+  analysisMode: string;
+  exitAnalysis: string;
+  history: string;
+  totalMoves: string;
+  black: string;
+  red: string;
+  white: string;
+  noMoves: string;
+  rules: string;
+  chineseChessRules: string;
+  currentModePve: string;
+  statusBlackTurn: string;
+  statusRedTurn: string;
+  statusWhiteTurn: string;
+  statusBlackWin: string;
+  statusRedWin: string;
+  statusWhiteWin: string;
+  statusDraw: string;
+  statusCheck: string;
+  statusCheckmate: string;
+  statusStalemate: string;
+  aiThinking: string;
+  llmThinking: string;
+  llmMoveFailed: string;
+  themeLight: string;
+  themeDark: string;
+  themeDefault: string;
+  themeZen: string;
+  themeCyber: string;
+  themeMinimal: string;
+  forbiddenOverline: string;
+  forbiddenDoubleFour: string;
+  forbiddenDoubleThree: string;
+  forbiddenAlert: string;
+  copySuccess: string;
+  showSteps: string;
+  hideSteps: string;
+  saveGame: string;
+  gameRecords: string;
+  saveSuccess: string;
+  saveNamePrompt: string;
+  saveNamePlaceholder: string;
+  save: string;
+  cancel: string;
+  confirm: string;
+  update: string;
+  edit: string;
+  nameExists: string;
+  noRecords: string;
+  importSuccess: string;
+  importFailed: string;
+  updateSuccess: string;
+  updateFailed: string;
+  deleteSuccess: string;
+  deleteFailed: string;
+  saveFailed: string;
+  recordAuthor: string;
+  confirmDelete: string;
+  appName: string;
+  appLogoChar: string;
+  agentTitle: string;
+  agentGreeting: string;
+  agentPlaceholder: string;
+  agentDisclaimer: string;
+  agentResponse: string;
+  loginSubtitleLogin: string;
+  loginSubtitleRegister: string;
+  phoneLabel: string;
+  phonePlaceholder: string;
+  passwordLabel: string;
+  passwordPlaceholderLogin: string;
+  passwordPlaceholderRegister: string;
+  usernameLabel: string;
+  usernamePlaceholder: string;
+  confirmPasswordLabel: string;
+  confirmPasswordPlaceholder: string;
+  emailLabel: string;
+  emailPlaceholder: string;
+  loginButton: string;
+  registerButton: string;
+  processing: string;
+  toggleLoginPrompt: string;
+  toggleRegisterPrompt: string;
+  toggleLoginAction: string;
+  toggleRegisterAction: string;
+  loginHint: string;
+  showPassword: string;
+  hidePassword: string;
+  errorPhoneRequired: string;
+  errorPhoneInvalid: string;
+  errorUsernameRequired: string;
+  errorUsernameLength: string;
+  errorPasswordLength: string;
+  errorPasswordComplexity: string;
+  errorPasswordMismatch: string;
+  loginSuccess: string;
+  registerSuccess: string;
+  requestFailed: string;
+  adminTitle: string;
+  adminSubtitle: string;
+  adminUsername: string;
+  adminPassword: string;
+  adminPrivateGameCount: string;
+  adminOperation: string;
+  adminDelete: string;
+  adminPasswordEncrypted: string;
+  adminPrivateGameUnit: string;
+  adminNoUsers: string;
+  adminNoUsersSubtitle: string;
+  adminConfirmDeleteTitle: string;
+  adminConfirmDeleteMessage: string;
+  adminConfirmDeleteWarning: string;
+  adminCancel: string;
+  adminConfirmDelete: string;
+  adminNav: string;
+  settings: string;
+  logout: string;
+  navAgent: string;
+  navGame: string;
+  navChineseChess: string;
+  settingsTitle: string;
+  changePasswordTitle: string;
+  settingsOldPasswordLabel: string;
+  settingsOldPasswordPlaceholder: string;
+  settingsNewPasswordPlaceholder: string;
+  settingsConfirmPasswordPlaceholder: string;
+  settingsPasswordChangeSuccess: string;
+  settingsPasswordChangeFailed: string;
+  settingsErrorOldPasswordRequired: string;
+  settingsErrorNewPasswordMinLength: string;
+  settingsErrorNewPasswordComplexity: string;
+  settingsErrorConfirmPasswordRequired: string;
+  settingsErrorPasswordsMismatch: string;
+  settingsErrorCurrentPasswordIncorrect: string;
+  oldPasswordLabel: string;
+  oldPasswordPlaceholder: string;
+  newPasswordPlaceholder: string;
+  passwordChangeSuccess: string;
+  passwordChangeFailed: string;
+  errorOldPasswordRequired: string;
+  errorNewPasswordMinLength: string;
+  errorConfirmPasswordRequired: string;
+  errorPasswordsMismatch: string;
+  publicGame: string;
+  privateGame: string;
+  noPermissionEditPublic: string;
+  noPermissionEdit: string;
+  noPermissionUpdatePublic: string;
+  noPermissionUpdate: string;
+  noPermissionDeletePublic: string;
+  noPermissionDelete: string;
+  thinkingProcess: string;
+  thinkingInProgress: string;
+  waiting: string;
+  modelThinking: string;
+  generatingAnswer: string;
+  character: string;
+  connectionError: string;
+  genericErrorPrefix: string;
+  copyText: string;
+  regenerate: string;
+  speak: string;
+  stopSpeaking: string;
+  copied: string;
+  riverChu: string;
+  riverHan: string;
+  columnTopNumbers: string;
+  columnBottomChineseNumbers: string;
+  pieceRedKing: string;
+  pieceRedAdvisor: string;
+  pieceRedElephant: string;
+  pieceRedKnight: string;
+  pieceRedRook: string;
+  pieceRedCannon: string;
+  pieceRedPawn: string;
+  pieceBlackKing: string;
+  pieceBlackAdvisor: string;
+  pieceBlackElephant: string;
+  pieceBlackKnight: string;
+  pieceBlackRook: string;
+  pieceBlackCannon: string;
+  pieceBlackPawn: string;
+}
+
+export type MessageKey = keyof Messages;
 
 const savedLocale = localStorage.getItem('gomoku_locale') as Locale || 'zh-CN';
 export const currentLocale = ref<Locale>(savedLocale);
@@ -15,836 +225,18 @@ export const toggleTheme = () => {
 };
 
 export const toggleLocale = () => {
-  const locales: Locale[] = ['zh-CN', 'zh-TW', 'en-US', 'ja-JP'];
+  const locales: Locale[] = ['zh-CN', 'en-US'];
   const currentIndex = locales.indexOf(currentLocale.value);
   currentLocale.value = locales[(currentIndex + 1) % locales.length];
   localStorage.setItem('gomoku_locale', currentLocale.value);
 };
 
-const messages = {
-  'zh-CN': {
-    language: '中文',
-    title: '五子棋',
-    chineseChessTitle: '中国象棋',
-    pvp: '双人对战',
-    pve: '人机对战',
-    ruleStandard: '无禁手',
-    ruleRenju: '有禁手',
-    hint: '提示',
-    undo: '悔棋',
-    restart: '重新开始',
-    difficultyBeginner: '初级',
-    difficultyIntermediate: '中级',
-    difficultyAdvanced: '高级',
-    difficultyExpert: '顶级',
-    difficultyNeural: '神经网络 (实验)',
-    roleSecond: '电脑后手 (执白)',
-    roleFirst: '电脑先手 (执黑)',
-    roleRed: '电脑执红',
-    roleBlack: '电脑执黑',
-    showThinking: '显示思考',
-    hideThinking: '隐藏思考',
-    analysisMode: '打谱模式',
-    exitAnalysis: '退出打谱',
-    history: '对战记录',
-    totalMoves: '共 {0} 步',
-    black: '黑棋',
-    red: '红方',
-    white: '白棋',
-    noMoves: '暂无落子记录',
-    rules: '规则：黑棋先手，任意方向（横、竖、斜）连续五子即获胜。',
-    chineseChessRules: '规则：红方先手，将/帅只能在九宫格内移动，士斜线，象田字，马日字，车直线，炮隔子吃子，兵过河前只能前进，过河后可左右移动。',
-    currentModePve: '当前模式：人机对战，电脑执{0}棋，难度：{1}。',
-    statusBlackTurn: '黑棋回合',
-    statusRedTurn: '红方回合',
-    statusWhiteTurn: '白棋回合',
-    statusBlackWin: '黑棋获胜！',
-    statusRedWin: '红方获胜！',
-    statusWhiteWin: '白棋获胜！',
-    statusDraw: '平局！',
-    statusCheck: '将军！',
-    statusCheckmate: '将死！',
-    statusStalemate: '困毙！',
-    aiThinking: '电脑正在思考...',
-    llmThinking: 'DeepSeek 正在推演局势...',
-    llmMoveFailed: 'AI服务暂时不可用，请稍后重试',
-    themeLight: '浅色主题',
-    themeDark: '深色主题',
-    themeDefault: '经典默认',
-    themeZen: '墨韵檀香',
-    themeCyber: '赛博弈域',
-    themeMinimal: '极简奢华',
-    forbiddenOverline: '长连禁手',
-    forbiddenDoubleFour: '四四禁手',
-    forbiddenDoubleThree: '三三禁手',
-    forbiddenAlert: '禁手！该位置为 {0}，黑棋不可落子。',
-    copySuccess: '复制成功！',
-    showSteps: '显示步骤',
-    hideSteps: '隐藏步骤',
-    saveGame: '保存棋谱',
-    gameRecords: '棋谱列表',
-    saveSuccess: '保存成功！',
-    saveNamePrompt: '请输入棋谱名称：',
-    saveNamePlaceholder: '例如：经典对局1',
-    save: '保存',
-    cancel: '取消',
-    confirm: '确定',
-    update: '更新',
-    edit: '编辑',
-    nameExists: '该名称已存在，请使用其他名称。',
-    noRecords: '暂无保存的棋谱',
-    importSuccess: '导入成功！',
-    importFailed: '导入失败！',
-    updateSuccess: '更新成功！',
-    updateFailed: '更新失败！',
-    deleteSuccess: '删除成功！',
-    deleteFailed: '删除失败！',
-    saveFailed: '保存失败！',
-    recordAuthor: '作者：{0}',
-    confirmDelete: '确定要删除该棋谱吗？',
-    appName: '棋林',
-    appLogoChar: '棋',
-    agentTitle: '棋林智能体',
-    agentGreeting: '你好！我是棋林智能体。我可以帮你分析五子棋和中国象棋开局、解答规则疑问，或者提供对局策略。请在下方输入你的问题。',
-    agentPlaceholder: '询问五子棋或中国象棋开局、规则或策略...',
-    agentDisclaimer: '棋林智能体可能会犯错。请核查重要信息。',
-    agentResponse: '这是关于“{0}”的棋林分析（功能开发中...）',
-    loginSubtitleLogin: '登录以开始您的棋林之旅',
-    loginSubtitleRegister: '创建新账户',
-    phoneLabel: '手机号',
-    phonePlaceholder: '请输入您的手机号',
-    passwordLabel: '密码',
-    passwordPlaceholderLogin: '请输入您的密码',
-    passwordPlaceholderRegister: '请设置密码（至少6位）',
-    usernameLabel: '用户名',
-    usernamePlaceholder: '请输入用户名（3-50字符）',
-    confirmPasswordLabel: '确认密码',
-    confirmPasswordPlaceholder: '请再次输入密码',
-    emailLabel: '邮箱（可选）',
-    emailPlaceholder: '请输入邮箱地址',
-    loginButton: '登录',
-    registerButton: '注册',
-    processing: '处理中...',
-    toggleLoginPrompt: '还没有账户？',
-    toggleRegisterPrompt: '已有账户？',
-    toggleLoginAction: '立即注册',
-    toggleRegisterAction: '立即登录',
-    loginHint: '登录后即可使用智能体功能并保存您的棋谱记录',
-    showPassword: '显示密码',
-    hidePassword: '隐藏密码',
-    errorPhoneRequired: '手机号和密码不能为空',
-    errorPhoneInvalid: '请输入有效的中国大陆手机号',
-    errorUsernameRequired: '用户名不能为空',
-    errorUsernameLength: '用户名长度需在3-50字符之间',
-    errorPasswordLength: '密码长度至少6位',
-    errorPasswordComplexity: '密码长度8-20位，必须包含大小写字母和数字，不能有空格',
-    errorPasswordMismatch: '两次输入的密码不一致',
-    loginSuccess: '登录成功！正在跳转...',
-    registerSuccess: '注册成功！正在跳转...',
-    requestFailed: '请求失败，请重试',
-    adminTitle: '权限设置',
-    adminSubtitle: '管理所有普通用户账号，可查看用户信息和删除账号',
-    adminUsername: '用户名',
-    adminPassword: '密码',
-    adminPrivateGameCount: '私有棋谱数量',
-    adminOperation: '操作',
-    adminDelete: '删除',
-    adminPasswordEncrypted: '密码已加密存储',
-    adminPrivateGameUnit: '个私有棋谱',
-    adminNoUsers: '暂无用户',
-    adminNoUsersSubtitle: '当前没有其他用户注册',
-    adminConfirmDeleteTitle: '确认删除用户',
-    adminConfirmDeleteMessage: '删除后此用户的所有数据（包括棋谱）将被永久删除，且需要重新注册才能使用系统。',
-    adminConfirmDeleteWarning: '此操作不可撤销，请谨慎操作。',
-    adminCancel: '取消',
-    adminConfirmDelete: '确认删除',
-    adminNav: '权限设置',
-    settings: '个人设置',
-    logout: '退出登录',
-    navAgent: '棋林智能体',
-    navGame: '五子棋',
-    navChineseChess: '中国象棋',
-    settingsTitle: '个人设置',
-    changePasswordTitle: '修改密码',
-    settingsOldPasswordLabel: '旧密码',
-    settingsOldPasswordPlaceholder: '请输入当前密码',
-    settingsNewPasswordPlaceholder: '请输入新密码（至少6位）',
-    settingsConfirmPasswordPlaceholder: '请再次输入新密码',
-    settingsPasswordChangeSuccess: '密码修改成功',
-    settingsPasswordChangeFailed: '修改密码失败，请检查旧密码是否正确',
-    settingsErrorOldPasswordRequired: '请输入旧密码',
-    settingsErrorNewPasswordMinLength: '新密码至少需要6个字符',
-    settingsErrorNewPasswordComplexity: '新密码长度8-20位，必须包含大小写字母和数字，不能有空格',
-    settingsErrorConfirmPasswordRequired: '请确认新密码',
-    settingsErrorPasswordsMismatch: '两次输入的新密码不一致',
-    settingsErrorCurrentPasswordIncorrect: '当前密码不正确',
-    oldPasswordLabel: '旧密码',
-    oldPasswordPlaceholder: '请输入当前密码',
-    newPasswordPlaceholder: '请输入新密码（至少6位）',
-    passwordChangeSuccess: '密码修改成功',
-    passwordChangeFailed: '修改密码失败，请检查旧密码是否正确',
-    errorOldPasswordRequired: '请输入旧密码',
-    errorNewPasswordMinLength: '新密码至少需要6个字符',
-    errorConfirmPasswordRequired: '请确认新密码',
-    errorPasswordsMismatch: '两次输入的新密码不一致',
-    publicGame: '公开',
-    privateGame: '私有',
-    noPermissionEditPublic: '无权编辑公开棋谱',
-    noPermissionEdit: '无权编辑棋谱',
-    noPermissionUpdatePublic: '无权更新公开棋谱',
-    noPermissionUpdate: '无权更新棋谱',
-    noPermissionDeletePublic: '无权删除公开棋谱',
-    noPermissionDelete: '无权删除棋谱',
-    thinkingProcess: '思考过程',
-    thinkingInProgress: '正在思考中...',
-    waiting: '等待中',
-    modelThinking: '模型正在思考中...',
-    generatingAnswer: '正在生成回答...',
-    character: '字符',
-    connectionError: '无法连接到AI助手',
-    genericErrorPrefix: '抱歉，发生了一些错误：',
-    copyText: '复制文本',
-    regenerate: '重新生成',
-    speak: '朗读内容',
-    stopSpeaking: '停止朗读',
-    copied: '已复制',
-    riverChu: '楚河',
-    riverHan: '汉界',
-    columnTopNumbers: '1,2,3,4,5,6,7,8,9',
-    columnBottomChineseNumbers: '九,八,七,六,五,四,三,二,一',
-    pieceRedKing: '帅',
-    pieceRedAdvisor: '仕',
-    pieceRedElephant: '相',
-    pieceRedKnight: '马',
-    pieceRedRook: '车',
-    pieceRedCannon: '炮',
-    pieceRedPawn: '兵',
-    pieceBlackKing: '将',
-    pieceBlackAdvisor: '士',
-    pieceBlackElephant: '象',
-    pieceBlackKnight: '马',
-    pieceBlackRook: '车',
-    pieceBlackCannon: '炮',
-    pieceBlackPawn: '卒',
-  },
-  'zh-TW': {
-    language: '繁體中文',
-    title: '五子棋',
-    chineseChessTitle: '中國象棋',
-    pvp: '雙人對戰',
-    pve: '人機對戰',
-    ruleStandard: '無禁手',
-    ruleRenju: '有禁手',
-    hint: '提示',
-    undo: '悔棋',
-    restart: '重新開始',
-    difficultyBeginner: '初級',
-    difficultyIntermediate: '中級',
-    difficultyAdvanced: '高級',
-    difficultyExpert: '頂級',
-    difficultyNeural: '神經網絡 (實驗)',
-    roleSecond: '電腦後手 (執白)',
-    roleFirst: '電腦先手 (執黑)',
-    roleRed: '電腦執紅',
-    roleBlack: '電腦執黑',
-    showThinking: '顯示思考',
-    hideThinking: '隱藏思考',
-    analysisMode: '打譜模式',
-    exitAnalysis: '退出打譜',
-    history: '對戰記錄',
-    totalMoves: '共 {0} 步',
-    black: '黑棋',
-    red: '紅方',
-    white: '白棋',
-    noMoves: '暫無落子記錄',
-    rules: '規則：黑棋先手，任意方向（橫、豎、斜）連續五子即獲勝。',
-    chineseChessRules: '規則：紅方先手，將/帥只能在九宮格內移動，士斜線，象田字，馬日字，車直線，炮隔子吃子，兵過河前只能前進，過河後可左右移動。',
-    currentModePve: '當前模式：人機對戰，電腦執{0}棋，難度：{1}。',
-    statusBlackTurn: '黑棋回合',
-    statusRedTurn: '紅方回合',
-    statusWhiteTurn: '白棋回合',
-    statusBlackWin: '黑棋獲勝！',
-    statusRedWin: '紅方獲勝！',
-    statusWhiteWin: '白棋獲勝！',
-    statusDraw: '平局！',
-    statusCheck: '將軍！',
-    statusCheckmate: '將死！',
-    statusStalemate: '困斃！',
-    aiThinking: '電腦正在思考...',
-    llmThinking: 'DeepSeek 正在推演局勢...',
-    llmMoveFailed: 'AI服務暫時不可用，請稍後重試',
-    themeLight: '淺色主題',
-    themeDark: '深色主題',
-    themeDefault: '經典默認',
-    themeZen: '墨韻檀香',
-    themeCyber: '賽博弈域',
-    themeMinimal: '極簡奢華',
-    forbiddenOverline: '長連禁手',
-    forbiddenDoubleFour: '四四禁手',
-    forbiddenDoubleThree: '三三禁手',
-    forbiddenAlert: '禁手！該位置為 {0}，黑棋不可落子。',
-    copySuccess: '複製成功！',
-    showSteps: '顯示步驟',
-    hideSteps: '隱藏步驟',
-    saveGame: '保存棋譜',
-    gameRecords: '棋譜列表',
-    saveSuccess: '保存成功！',
-    saveNamePrompt: '請輸入棋譜名稱：',
-    saveNamePlaceholder: '例如：經典對局1',
-    save: '保存',
-    cancel: '取消',
-    confirm: '確定',
-    update: '更新',
-    edit: '編輯',
-    nameExists: '該名稱已存在，請使用其他名稱。',
-    noRecords: '暫無保存的棋譜',
-    importSuccess: '導入成功！',
-    importFailed: '導入失敗！',
-    updateSuccess: '更新成功！',
-    updateFailed: '更新失敗！',
-    deleteSuccess: '刪除成功！',
-    deleteFailed: '刪除失敗！',
-    saveFailed: '保存失敗！',
-    recordAuthor: '作者：{0}',
-    confirmDelete: '確定要刪除該棋譜嗎？',
-    appName: '棋林',
-    appLogoChar: '棋',
-    agentTitle: '棋林智能體',
-    agentGreeting: '你好！我是棋林智能體。我可以幫你分析五子棋和中國象棋開局、解答規則疑問，或者提供對局策略。請在下方輸入你的問題。',
-    agentPlaceholder: '詢問五子棋或中國象棋開局、規則或策略...',
-    agentDisclaimer: '棋林智能體可能會犯錯。請核查重要信息。',
-    agentResponse: '這是關於「{0}」的棋林分析（功能開發中...）',
-    loginSubtitleLogin: '登錄以開始您的棋林之旅',
-    loginSubtitleRegister: '創建新賬戶',
-    phoneLabel: '手機號',
-    phonePlaceholder: '請輸入您的手機號',
-    passwordLabel: '密碼',
-    passwordPlaceholderLogin: '請輸入您的密碼',
-    passwordPlaceholderRegister: '請設置密碼（至少6位）',
-    usernameLabel: '用戶名',
-    usernamePlaceholder: '請輸入用戶名（3-50字符）',
-    confirmPasswordLabel: '確認密碼',
-    confirmPasswordPlaceholder: '請再次輸入密碼',
-    emailLabel: '郵箱（可選）',
-    emailPlaceholder: '請輸入郵箱地址',
-    loginButton: '登錄',
-    registerButton: '註冊',
-    processing: '處理中...',
-    toggleLoginPrompt: '還沒有賬戶？',
-    toggleRegisterPrompt: '已有賬戶？',
-    toggleLoginAction: '立即註冊',
-    toggleRegisterAction: '立即登錄',
-    loginHint: '登錄後即可使用智能體功能並保存您的棋譜記錄',
-    showPassword: '顯示密碼',
-    hidePassword: '隱藏密碼',
-    errorPhoneRequired: '手機號和密碼不能為空',
-    errorPhoneInvalid: '請輸入有效的中國大陸手機號',
-    errorUsernameRequired: '用戶名不能為空',
-    errorUsernameLength: '用戶名長度需在3-50字符之間',
-    errorPasswordLength: '密碼長度至少6位',
-    errorPasswordComplexity: '密碼長度8-20位，必須包含大小寫字母和數字，不能有空格',
-    errorPasswordMismatch: '兩次輸入的密碼不一致',
-    loginSuccess: '登錄成功！正在跳轉...',
-    registerSuccess: '註冊成功！正在跳轉...',
-    requestFailed: '請求失敗，請重試',
-    adminTitle: '權限設置',
-    adminSubtitle: '管理所有普通用戶賬號，可查看用戶信息和刪除賬號',
-    adminUsername: '用戶名',
-    adminPassword: '密碼',
-    adminPrivateGameCount: '私有棋譜數量',
-    adminOperation: '操作',
-    adminDelete: '刪除',
-    adminPasswordEncrypted: '密碼已加密存儲',
-    adminPrivateGameUnit: '個私有棋譜',
-    adminNoUsers: '暫無用戶',
-    adminNoUsersSubtitle: '當前沒有其他用戶註冊',
-    adminConfirmDeleteTitle: '確認刪除用戶',
-    adminConfirmDeleteMessage: '刪除後此用戶的所有數據（包括棋譜）將被永久刪除，且需要重新註冊才能使用系統。',
-    adminConfirmDeleteWarning: '此操作不可撤銷，請謹慎操作。',
-    adminCancel: '取消',
-    adminConfirmDelete: '確認刪除',
-    adminNav: '權限設置',
-    settings: '個人設置',
-    logout: '退出登錄',
-    navAgent: '棋林智能體',
-    navGame: '五子棋',
-    navChineseChess: '中國象棋',
-    settingsTitle: '個人設置',
-    settingsOldPasswordLabel: '舊密碼',
-    settingsOldPasswordPlaceholder: '請輸入當前密碼',
-    settingsNewPasswordPlaceholder: '請輸入新密碼（至少6位）',
-    settingsConfirmPasswordPlaceholder: '請再次輸入新密碼',
-    settingsPasswordChangeSuccess: '密碼修改成功',
-    settingsPasswordChangeFailed: '修改密碼失敗，請檢查舊密碼是否正確',
-    settingsErrorOldPasswordRequired: '請輸入舊密碼',
-    settingsErrorNewPasswordMinLength: '新密碼至少需要6個字符',
-    settingsErrorNewPasswordComplexity: '新密碼長度8-20位，必須包含大小寫字母和數字，不能有空格',
-    settingsErrorConfirmPasswordRequired: '請確認新密碼',
-    settingsErrorPasswordsMismatch: '兩次輸入的新密碼不一致',
-    settingsErrorCurrentPasswordIncorrect: '當前密碼不正確',
-    changePasswordTitle: '修改密碼',
-    oldPasswordLabel: '舊密碼',
-    oldPasswordPlaceholder: '請輸入當前密碼',
-    newPasswordPlaceholder: '請輸入新密碼（至少6位）',
-    passwordChangeSuccess: '密碼修改成功',
-    passwordChangeFailed: '修改密碼失敗，請檢查舊密碼是否正確',
-    errorOldPasswordRequired: '請輸入舊密碼',
-    errorNewPasswordMinLength: '新密碼至少需要6個字符',
-    errorConfirmPasswordRequired: '請確認新密碼',
-    errorPasswordsMismatch: '兩次輸入的新密碼不一致',
-    publicGame: '公開',
-    privateGame: '私有',
-    noPermissionEditPublic: '無權編輯公開棋譜',
-    noPermissionEdit: '無權編輯棋譜',
-    noPermissionUpdatePublic: '無權更新公開棋譜',
-    noPermissionUpdate: '無權更新棋譜',
-    noPermissionDeletePublic: '無權刪除公開棋譜',
-    noPermissionDelete: '無權刪除棋譜',
-    thinkingProcess: '思考過程',
-    thinkingInProgress: '正在思考中...',
-    waiting: '等待中',
-    modelThinking: '模型正在思考中...',
-    generatingAnswer: '正在生成回答...',
-    character: '字元',
-    connectionError: '無法連接到AI助手',
-    genericErrorPrefix: '抱歉，發生了一些錯誤：',
-    copyText: '複製文本',
-    regenerate: '重新生成',
-    speak: '朗讀內容',
-    stopSpeaking: '停止朗讀',
-    copied: '已複製',
-    riverChu: '楚河',
-    riverHan: '漢界',
-    columnTopNumbers: '1,2,3,4,5,6,7,8,9',
-    columnBottomChineseNumbers: '九,八,七,六,五,四,三,二,一',
-    pieceRedKing: '帥',
-    pieceRedAdvisor: '仕',
-    pieceRedElephant: '相',
-    pieceRedKnight: '馬',
-    pieceRedRook: '車',
-    pieceRedCannon: '炮',
-    pieceRedPawn: '兵',
-    pieceBlackKing: '將',
-    pieceBlackAdvisor: '士',
-    pieceBlackElephant: '象',
-    pieceBlackKnight: '馬',
-    pieceBlackRook: '車',
-    pieceBlackCannon: '炮',
-    pieceBlackPawn: '卒',
-  },
-  'en-US': {
-    language: 'English',
-    title: 'Gomoku',
-    chineseChessTitle: 'Chinese Chess',
-    pvp: 'PvP',
-    pve: 'PvE',
-    ruleStandard: 'Standard',
-    ruleRenju: 'Renju',
-    hint: 'Hint',
-    undo: 'Undo',
-    restart: 'Restart',
-    difficultyBeginner: 'Beginner',
-    difficultyIntermediate: 'Intermediate',
-    difficultyAdvanced: 'Advanced',
-    difficultyExpert: 'Expert',
-    difficultyNeural: 'Neural Network (Exp)',
-    roleSecond: 'AI Second (White)',
-    roleFirst: 'AI First (Black)',
-    roleRed: 'AI Red',
-    roleBlack: 'AI Black',
-    showThinking: 'Show AI Thought',
-    hideThinking: 'Hide AI Thought',
-    analysisMode: 'Analysis Mode',
-    exitAnalysis: 'Exit Analysis',
-    history: 'Match History',
-    totalMoves: '{0} moves',
-    black: 'Black',
-    red: 'Red',
-    white: 'White',
-    noMoves: 'No moves yet',
-    rules: 'Rules: Black plays first. Get 5 in a row (horizontally, vertically, or diagonally) to win.',
-    chineseChessRules: 'Rules: Red moves first. King/General moves within palace, Advisor diagonally, Elephant two diagonal steps, Knight L‑shape, Rook straight, Cannon captures by jumping, Pawn moves forward before crossing river, then sideways.',
-    currentModePve: 'Current Mode: PvE, AI plays {0}, Difficulty: {1}.',
-    statusBlackTurn: "Black's Turn",
-    statusRedTurn: "Red's Turn",
-    statusWhiteTurn: "White's Turn",
-    statusBlackWin: 'Black Wins!',
-    statusRedWin: 'Red Wins!',
-    statusWhiteWin: 'White Wins!',
-    statusDraw: 'Draw!',
-    statusCheck: 'Check!',
-    statusCheckmate: 'Checkmate!',
-    statusStalemate: 'Stalemate!',
-    aiThinking: 'AI is thinking...',
-    llmThinking: 'DeepSeek is analyzing the board...',
-    llmMoveFailed: 'AI service temporarily unavailable, please try again later',
-    themeLight: 'Light Theme',
-    themeDark: 'Dark Theme',
-    themeDefault: 'Classic Default',
-    themeZen: 'Ink Zen Sandalwood',
-    themeCyber: 'Cyber Game Domain',
-    themeMinimal: 'Minimal Luxury',
-    forbiddenOverline: 'Overline',
-    forbiddenDoubleFour: 'Double-Four',
-    forbiddenDoubleThree: 'Double-Three',
-    forbiddenAlert: 'Forbidden Move! This is a {0}. Black cannot play here.',
-    copySuccess: 'Copied successfully!',
-    showSteps: 'Show Steps',
-    hideSteps: 'Hide Steps',
-    saveGame: 'Save Game',
-    gameRecords: 'Game Records',
-    saveSuccess: 'Saved successfully!',
-    saveNamePrompt: 'Enter a name for this record:',
-    saveNamePlaceholder: 'e.g., Epic Match 1',
-    save: 'Save',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    update: 'Update',
-    edit: 'Edit',
-    nameExists: 'This name already exists. Please choose another.',
-    noRecords: 'No saved records.',
-    importSuccess: 'Imported successfully!',
-    importFailed: 'Import failed!',
-    updateSuccess: 'Updated successfully!',
-    updateFailed: 'Update failed!',
-    deleteSuccess: 'Deleted successfully!',
-    deleteFailed: 'Delete failed!',
-    saveFailed: 'Save failed!',
-    recordAuthor: 'Author: {0}',
-    confirmDelete: 'Are you sure you want to delete this record?',
-    appName: 'Qilin',
-    appLogoChar: '棋',
-    agentTitle: 'Qilin Agent',
-    agentGreeting: 'Hello! I am Qilin Agent. I can help you analyze Gomoku and Chinese Chess openings, answer rule questions, or provide game strategies. Please enter your question below.',
-    agentPlaceholder: 'Ask about Gomoku or Chinese Chess openings, rules, or strategies...',
-    agentDisclaimer: 'Qilin Agent can make mistakes. Check important info.',
-    agentResponse: 'This is an analysis about "{0}" (Feature in development...)',
-    loginSubtitleLogin: 'Login to start your Qilin journey',
-    loginSubtitleRegister: 'Create new account',
-    phoneLabel: 'Phone Number',
-    phonePlaceholder: 'Please enter your phone number',
-    passwordLabel: 'Password',
-    passwordPlaceholderLogin: 'Please enter your password',
-    passwordPlaceholderRegister: 'Please set password (at least 6 characters)',
-    usernameLabel: 'Username',
-    usernamePlaceholder: 'Please enter username (3-50 characters)',
-    confirmPasswordLabel: 'Confirm Password',
-    confirmPasswordPlaceholder: 'Please enter password again',
-    emailLabel: 'Email (Optional)',
-    emailPlaceholder: 'Please enter email address',
-    loginButton: 'Login',
-    registerButton: 'Register',
-    processing: 'Processing...',
-    toggleLoginPrompt: 'No account yet?',
-    toggleRegisterPrompt: 'Already have an account?',
-    toggleLoginAction: 'Sign up now',
-    toggleRegisterAction: 'Login now',
-    loginHint: 'Login to use agent features and save your game records',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
-    errorPhoneRequired: 'Phone number and password cannot be empty',
-    errorPhoneInvalid: 'Please enter a valid mainland China phone number',
-    errorUsernameRequired: 'Username cannot be empty',
-    errorUsernameLength: 'Username must be 3-50 characters',
-    errorPasswordLength: 'Password must be at least 6 characters',
-    errorPasswordComplexity: 'Password must be 8-20 characters, contain uppercase and lowercase letters and numbers, and no spaces',
-    errorPasswordMismatch: 'Passwords do not match',
-    loginSuccess: 'Login successful! Redirecting...',
-    registerSuccess: 'Registration successful! Redirecting...',
-    requestFailed: 'Request failed, please try again',
-    adminTitle: 'Permission Settings',
-    adminSubtitle: 'Manage all regular user accounts, view user information and delete accounts',
-    adminUsername: 'Username',
-    adminPassword: 'Password',
-    adminPrivateGameCount: 'Private Game Count',
-    adminOperation: 'Operation',
-    adminDelete: 'Delete',
-    adminPasswordEncrypted: 'Password encrypted and stored',
-    adminPrivateGameUnit: 'private games',
-    adminNoUsers: 'No users yet',
-    adminNoUsersSubtitle: 'Currently no other users registered',
-    adminConfirmDeleteTitle: 'Confirm Delete User',
-    adminConfirmDeleteMessage: 'After deletion, all user data (including game records) will be permanently deleted, and the user will need to re-register to use the system.',
-    adminConfirmDeleteWarning: 'This operation cannot be undone, please proceed with caution.',
-    adminCancel: 'Cancel',
-    adminConfirmDelete: 'Confirm Delete',
-    adminNav: 'Permission Settings',
-    settings: 'Personal Settings',
-    logout: 'Logout',
-    navAgent: 'Qilin Agent',
-    navGame: 'Gomoku',
-    navChineseChess: 'Chinese Chess',
-    settingsTitle: 'Personal Settings',
-    settingsOldPasswordLabel: 'Current Password',
-    settingsOldPasswordPlaceholder: 'Enter current password',
-    settingsNewPasswordPlaceholder: 'Enter new password (at least 6 characters)',
-    settingsConfirmPasswordPlaceholder: 'Re-enter new password',
-    settingsPasswordChangeSuccess: 'Password changed successfully',
-    settingsPasswordChangeFailed: 'Password change failed, please check if current password is correct',
-    settingsErrorOldPasswordRequired: 'Please enter current password',
-    settingsErrorNewPasswordMinLength: 'New password must be at least 6 characters',
-    settingsErrorNewPasswordComplexity: 'New password must be 8-20 characters, contain uppercase and lowercase letters and numbers, and no spaces',
-    settingsErrorConfirmPasswordRequired: 'Please confirm new password',
-    settingsErrorPasswordsMismatch: 'New passwords do not match',
-    settingsErrorCurrentPasswordIncorrect: 'Current password is incorrect',
-    changePasswordTitle: 'Change Password',
-    oldPasswordLabel: 'Current Password',
-    oldPasswordPlaceholder: 'Enter current password',
-    newPasswordPlaceholder: 'Enter new password (at least 6 characters)',
-    passwordChangeSuccess: 'Password changed successfully',
-    passwordChangeFailed: 'Password change failed, please check if current password is correct',
-    errorOldPasswordRequired: 'Please enter current password',
-    errorNewPasswordMinLength: 'New password must be at least 6 characters',
-    errorConfirmPasswordRequired: 'Please confirm new password',
-    errorPasswordsMismatch: 'New passwords do not match',
-    publicGame: 'Public',
-    privateGame: 'Private',
-    noPermissionEditPublic: 'No permission to edit public game',
-    noPermissionEdit: 'No permission to edit game',
-    noPermissionUpdatePublic: 'No permission to update public game',
-    noPermissionUpdate: 'No permission to update game',
-    noPermissionDeletePublic: 'No permission to delete public game',
-    noPermissionDelete: 'No permission to delete game',
-    thinkingProcess: 'Thinking Process',
-    thinkingInProgress: 'Thinking...',
-    waiting: 'Waiting',
-    modelThinking: 'Model is thinking...',
-    generatingAnswer: 'Generating answer...',
-    character: 'chars',
-    connectionError: 'Unable to connect to AI assistant',
-    genericErrorPrefix: 'Sorry, an error occurred: ',
-    copyText: 'Copy text',
-    regenerate: 'Regenerate',
-    speak: 'Speak',
-    stopSpeaking: 'Stop speaking',
-    copied: 'Copied',
-    riverChu: '楚',
-    riverHan: '河',
-    columnTopNumbers: '1,2,3,4,5,6,7,8,9',
-    columnBottomChineseNumbers: '九,八,七,六,五,四,三,二,一',
-    pieceRedKing: '帥',
-    pieceRedAdvisor: '仕',
-    pieceRedElephant: '相',
-    pieceRedKnight: '馬',
-    pieceRedRook: '車',
-    pieceRedCannon: '炮',
-    pieceRedPawn: '兵',
-    pieceBlackKing: '將',
-    pieceBlackAdvisor: '士',
-    pieceBlackElephant: '象',
-    pieceBlackKnight: '馬',
-    pieceBlackRook: '車',
-    pieceBlackCannon: '炮',
-    pieceBlackPawn: '卒',
-  },
-  'ja-JP': {
-    language: '日本語',
-    title: '五目並べ',
-    chineseChessTitle: '中国象棋',
-    pvp: '対人戦',
-    pve: 'CPU戦',
-    ruleStandard: '禁手なし',
-    ruleRenju: '連珠',
-    hint: 'ヒント',
-    undo: '待った',
-    restart: 'リスタート',
-    difficultyBeginner: '初級',
-    difficultyIntermediate: '中級',
-    difficultyAdvanced: '上級',
-    difficultyExpert: '特級',
-    difficultyNeural: 'ニューラルネットワーク (実験)',
-    roleSecond: 'CPU 後手 (白)',
-    roleFirst: 'CPU 先手 (黒)',
-    roleRed: 'CPU 赤',
-    roleBlack: 'CPU 黒',
-    showThinking: '思考を表示',
-    hideThinking: '思考を隠す',
-    analysisMode: '検討モード',
-    exitAnalysis: '検討終了',
-    history: '棋譜',
-    totalMoves: '全 {0} 手',
-    black: '黒',
-    red: '赤',
-    white: '白',
-    noMoves: 'まだ手はありません',
-    rules: 'ルール: 黒が先手。縦、横、斜めのいずれかに5つ並べると勝利です。',
-    chineseChessRules: 'ルール: 赤が先手。王/将は九宮格内、士は斜め、象は田の字、馬は桂馬飛び、車は直線、炮は飛び石、兵は河を渡る前に前に進み、渡った後は左右に動ける。',
-    currentModePve: '現在のモード: CPU戦, CPUは{0}, 難易度: {1}。',
-    statusBlackTurn: '黒の番',
-    statusRedTurn: '赤の番',
-    statusWhiteTurn: '白の番',
-    statusBlackWin: '黒の勝利！',
-    statusRedWin: '赤の勝利！',
-    statusWhiteWin: '白の勝利！',
-    statusDraw: '引き分け！',
-    statusCheck: '王手！',
-    statusCheckmate: '詰み！',
-    statusStalemate: 'ステイルメイト！',
-    aiThinking: '思考中...',
-    llmThinking: 'DeepSeek が局面を分析中...',
-    llmMoveFailed: 'AIサービスが一時的に利用できません。後でもう一度お試しください',
-    themeLight: 'ライト',
-    themeDark: 'ダーク',
-    themeDefault: 'クラシックデフォルト',
-    themeZen: '墨韻檀香',
-    themeCyber: 'サイバーゲーム領域',
-    themeMinimal: 'ミニマルラグジュアリー',
-    forbiddenOverline: '長連',
-    forbiddenDoubleFour: '四四',
-    forbiddenDoubleThree: '三三',
-    forbiddenAlert: '禁手！ここは {0} です。黒は打てません。',
-    copySuccess: 'コピーしました！',
-    showSteps: '手順を表示',
-    hideSteps: '手順を隠す',
-    saveGame: '棋譜を保存',
-    gameRecords: '棋譜一覧',
-    saveSuccess: '保存しました！',
-    saveNamePrompt: '棋譜の名前を入力してください：',
-    saveNamePlaceholder: '例：名局1',
-    save: '保存',
-    cancel: 'キャンセル',
-    confirm: '確定',
-    update: '更新',
-    edit: '編集',
-    nameExists: 'その名前は既に存在します。別の名前を入力してください。',
-    noRecords: '保存された棋譜はありません。',
-    importSuccess: '読み込みました！',
-    importFailed: '読み込みに失敗しました！',
-    updateSuccess: '更新しました！',
-    updateFailed: '更新に失敗しました！',
-    deleteSuccess: '削除しました！',
-    deleteFailed: '削除に失敗しました！',
-    saveFailed: '保存に失敗しました！',
-    recordAuthor: '作成者：{0}',
-    confirmDelete: 'この棋譜を削除してもよろしいですか？',
-    appName: '棋林',
-    appLogoChar: '棋',
-    agentTitle: '棋林エージェント',
-    agentGreeting: 'こんにちは！棋林エージェントです。五目並べと中国象棋の序盤の分析、ルールの疑問への回答、対局戦略の提供などができます。下に質問を入力してください。',
-    agentPlaceholder: '五目並べや中国象棋の序盤、ルール、戦略について質問する...',
-    agentDisclaimer: '棋林エージェントは間違えることがあります。重要な情報は確認してください。',
-    agentResponse: '「{0}」に関する分析です（機能開発中...）',
-    loginSubtitleLogin: 'ログインして棋林の旅を始めましょう',
-    loginSubtitleRegister: '新規アカウントを作成',
-    phoneLabel: '電話番号',
-    phonePlaceholder: '電話番号を入力してください',
-    passwordLabel: 'パスワード',
-    passwordPlaceholderLogin: 'パスワードを入力してください',
-    passwordPlaceholderRegister: 'パスワードを設定してください（6文字以上）',
-    usernameLabel: 'ユーザー名',
-    usernamePlaceholder: 'ユーザー名を入力してください（3-50文字）',
-    confirmPasswordLabel: 'パスワード確認',
-    confirmPasswordPlaceholder: 'もう一度パスワードを入力してください',
-    emailLabel: 'メールアドレス（任意）',
-    emailPlaceholder: 'メールアドレスを入力してください',
-    loginButton: 'ログイン',
-    registerButton: '登録',
-    processing: '処理中...',
-    toggleLoginPrompt: 'アカウントをお持ちでないですか？',
-    toggleRegisterPrompt: 'すでにアカウントをお持ちですか？',
-    toggleLoginAction: '今すぐ登録',
-    toggleRegisterAction: '今すぐログイン',
-    loginHint: 'ログインするとエージェント機能を使用し、棋譜を保存できます',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
-    errorPhoneRequired: '電話番号とパスワードは必須です',
-    errorPhoneInvalid: '有効な中国本土の電話番号を入力してください',
-    errorUsernameRequired: 'ユーザー名は必須です',
-    errorUsernameLength: 'ユーザー名は3-50文字で入力してください',
-    errorPasswordLength: 'パスワードは6文字以上で入力してください',
-    errorPasswordComplexity: 'パスワードは8-20文字で、大文字、小文字、数字を含み、スペースを含まないこと',
-    errorPasswordMismatch: 'パスワードが一致しません',
-    loginSuccess: 'ログイン成功！リダイレクト中...',
-    registerSuccess: '登録成功！リダイレクト中...',
-    requestFailed: 'リクエスト失敗、もう一度お試しください',
-    adminTitle: '権限設定',
-    adminSubtitle: 'すべての一般ユーザーアカウントを管理、ユーザー情報を表示およびアカウントを削除',
-    adminUsername: 'ユーザー名',
-    adminPassword: 'パスワード',
-    adminPrivateGameCount: '非公開棋譜数',
-    adminOperation: '操作',
-    adminDelete: '削除',
-    adminPasswordEncrypted: 'パスワードは暗号化されて保存されています',
-    adminPrivateGameUnit: '個の非公開棋譜',
-    adminNoUsers: 'ユーザーはいません',
-    adminNoUsersSubtitle: '現在他のユーザーは登録されていません',
-    adminConfirmDeleteTitle: 'ユーザー削除の確認',
-    adminConfirmDeleteMessage: '削除後、ユーザーのすべてのデータ（棋譜を含む）は永久に削除され、ユーザーはシステムを使用するために再登録する必要があります。',
-    adminConfirmDeleteWarning: 'この操作は取り消せません、注意して進めてください。',
-    adminCancel: 'キャンセル',
-    adminConfirmDelete: '削除を確認',
-    adminNav: '権限設定',
-    settings: '個人設定',
-    logout: 'ログアウト',
-    navAgent: '棋林エージェント',
-    navGame: '五目並べ',
-    navChineseChess: '中国象棋',
-    settingsTitle: '個人設定',
-    settingsOldPasswordLabel: '現在のパスワード',
-    settingsOldPasswordPlaceholder: '現在のパスワードを入力してください',
-    settingsNewPasswordPlaceholder: '新しいパスワードを入力してください（6文字以上）',
-    settingsConfirmPasswordPlaceholder: '新しいパスワードを再度入力してください',
-    settingsPasswordChangeSuccess: 'パスワードを変更しました',
-    settingsPasswordChangeFailed: 'パスワード変更に失敗しました。現在のパスワードが正しいか確認してください',
-    settingsErrorOldPasswordRequired: '現在のパスワードを入力してください',
-    settingsErrorNewPasswordMinLength: '新しいパスワードは6文字以上で入力してください',
-    settingsErrorNewPasswordComplexity: '新しいパスワードは8-20文字で、大文字、小文字、数字を含み、スペースを含まないこと',
-    settingsErrorConfirmPasswordRequired: '新しいパスワードを確認してください',
-    settingsErrorPasswordsMismatch: '新しいパスワードが一致しません',
-    settingsErrorCurrentPasswordIncorrect: '現在のパスワードが正しくありません',
-    changePasswordTitle: 'パスワード変更',
-    oldPasswordLabel: '現在のパスワード',
-    oldPasswordPlaceholder: '現在のパスワードを入力してください',
-    newPasswordPlaceholder: '新しいパスワードを入力してください（6文字以上）',
-    passwordChangeSuccess: 'パスワードを変更しました',
-    passwordChangeFailed: 'パスワード変更に失敗しました。現在のパスワードが正しいか確認してください',
-    errorOldPasswordRequired: '現在のパスワードを入力してください',
-    errorNewPasswordMinLength: '新しいパスワードは6文字以上で入力してください',
-    errorConfirmPasswordRequired: '新しいパスワードを確認してください',
-    errorPasswordsMismatch: '新しいパスワードが一致しません',
-    publicGame: '公開',
-    privateGame: '非公開',
-    noPermissionEditPublic: '公開棋譜を編集する権限がありません',
-    noPermissionEdit: '棋譜を編集する権限がありません',
-    noPermissionUpdatePublic: '公開棋譜を更新する権限がありません',
-    noPermissionUpdate: '棋譜を更新する権限がありません',
-    noPermissionDeletePublic: '公開棋譜を削除する権限がありません',
-    noPermissionDelete: '棋譜を削除する権限がありません',
-    thinkingProcess: '思考過程',
-    thinkingInProgress: '思考中...',
-    waiting: '待機中',
-    modelThinking: 'モデルが思考中...',
-    generatingAnswer: '回答を生成中...',
-    character: '文字',
-    connectionError: 'AIアシスタントに接続できません',
-    genericErrorPrefix: '申し訳ありません、エラーが発生しました：',
-    copyText: 'テキストをコピー',
-    regenerate: '再生成',
-    speak: '音声読み上げ',
-    stopSpeaking: '読み上げ停止',
-    copied: 'コピーしました',
-    riverChu: '楚',
-    riverHan: '河',
-    columnTopNumbers: '1,2,3,4,5,6,7,8,9',
-    columnBottomChineseNumbers: '九,八,七,六,五,四,三,二,一',
-    pieceRedKing: '帥',
-    pieceRedAdvisor: '仕',
-    pieceRedElephant: '相',
-    pieceRedKnight: '馬',
-    pieceRedRook: '車',
-    pieceRedCannon: '炮',
-    pieceRedPawn: '兵',
-    pieceBlackKing: '將',
-    pieceBlackAdvisor: '士',
-    pieceBlackElephant: '象',
-    pieceBlackKnight: '馬',
-    pieceBlackRook: '車',
-    pieceBlackCannon: '炮',
-    pieceBlackPawn: '卒',
-  }
+const messages: Record<Locale, Messages> = {
+  'zh-CN': zhCN as unknown as Messages,
+  'en-US': enUS as unknown as Messages,
 };
 
-export const t = (key: keyof typeof messages['zh-CN'], ...args: (string | number)[]) => {
+export const t = (key: MessageKey, ...args: (string | number)[]): string => {
   let msg = messages[currentLocale.value][key] || messages['zh-CN'][key];
   args.forEach((arg, i) => {
     msg = msg.replace(`{${i}}`, String(arg));
