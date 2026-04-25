@@ -22,12 +22,9 @@ const emit = defineEmits<{
 const { textareaRef, adjustTextareaHeight, resetTextareaHeight } = useAutoResize();
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-    emit('send');
-  } else if (event.key === 'Enter' && !event.shiftKey) {
+  if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
-    emit('update:query', props.query + '\n');
-    adjustTextareaHeight();
+    emit('send');
   }
 };
 
@@ -56,7 +53,7 @@ defineExpose({
         :placeholder="t('agentPlaceholder')"
         class="w-full bg-transparent px-4 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
         :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
-        @keydown.enter.prevent="handleKeydown"
+        @keydown="handleKeydown"
         :disabled="isThinking"
         rows="1"
       />
