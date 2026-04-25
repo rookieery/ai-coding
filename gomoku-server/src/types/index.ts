@@ -197,3 +197,6 @@ export interface MatchQueryParams extends PaginationParams {
   mode?: GameMode;
   result?: string;
 }
+
+// LLM AI Service Types
+export * from './llm.types';
