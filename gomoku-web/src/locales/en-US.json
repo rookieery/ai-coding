@@ -201,5 +201,6 @@
   "pieceBlackKnight": "馬",
   "pieceBlackRook": "車",
   "pieceBlackCannon": "炮",
-  "pieceBlackPawn": "卒"
+  "pieceBlackPawn": "卒",
+  "agentReasoningSummary": "🧠 Agent is reasoning..."
 }

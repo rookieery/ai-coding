@@ -16,7 +16,8 @@ const query = ref('');
 interface Message {
   role: 'user' | 'agent';
   text: string;
-  relatedUserQuery?: string; // 仅对 agent 消息有效，表示对应的用户提问
+  reasoningContent?: string;
+  relatedUserQuery?: string;
 }
 const messages = ref<Message[]>([]);
 const isThinking = ref(false);
@@ -166,6 +167,7 @@ const sendMessage = async () => {
           messages.value.push({
             role: 'agent',
             text: answerContent.value,
+            reasoningContent: thinkingContent.value.trim() || undefined,
             relatedUserQuery: currentUserQuery.value
           });
         } else if (thinkingContent.value.trim()) {
@@ -254,6 +256,7 @@ const regenerateStreamingAnswer = async () => {
           messages.value.push({
             role: 'agent',
             text: answerContent.value,
+            reasoningContent: thinkingContent.value.trim() || undefined,
             relatedUserQuery: currentUserQuery.value
           });
         } else if (thinkingContent.value.trim()) {
@@ -367,6 +370,7 @@ const regenerateAnswer = async (index: number) => {
           messages.value.push({
             role: 'agent',
             text: answerContent.value,
+            reasoningContent: thinkingContent.value.trim() || undefined,
             relatedUserQuery: relatedUserQuery
           });
         } else if (thinkingContent.value.trim()) {
@@ -428,6 +432,20 @@ const regenerateAnswer = async (index: number) => {
         <div v-else class="relative">
           <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
                :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 rounded-bl-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-bl-sm'">
+            <details v-if="msg.reasoningContent" class="mb-3">
+              <summary class="text-xs font-medium cursor-pointer select-none list-none flex items-center gap-1"
+                       :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+                <svg class="w-3 h-3 transition-transform details-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+                {{ t('agentReasoningSummary') }}
+              </summary>
+              <div class="mt-2 text-xs leading-relaxed whitespace-pre-wrap font-mono opacity-70"
+                   :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+                {{ msg.reasoningContent }}
+              </div>
+            </details>
+
             <div class="markdown-body message-markdown" :data-index="index" v-html="renderMarkdown(msg.text)"></div>
 
             <!-- 操作栏 -->
@@ -497,3 +515,9 @@ const regenerateAnswer = async (index: number) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+details[open] .details-chevron {
+  transform: rotate(90deg);
+}
+</style>

@@ -209,6 +209,7 @@ export interface Messages {
   pieceBlackRook: string;
   pieceBlackCannon: string;
   pieceBlackPawn: string;
+  agentReasoningSummary: string;
 }
 
 export type MessageKey = keyof Messages;

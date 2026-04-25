@@ -2,16 +2,10 @@
   "branchName": "feature/agent-split-screen",
   "stories": [
     {
-      "id": "SPLIT-01-Global-State",
-      "title": "创建分屏对弈的全局状态管理",
-      "description": "纯状态管理任务。请在前端 `src/composables/` (或 store 目录) 下新建 `useAgentPlay.ts`。定义并导出响应式状态：1. `playMode`: 默认 'chat'，可选 'gomoku'。2. `isAIThinking`: 布尔值默认 false。3. 提供 `enterGomokuMode()` 和 `exitPlayMode()` 状态切换方法。请确保代码极简，仅负责状态流转，不涉及任何 UI 组件。",
-      "passes": true
-    },
-    {
       "id": "SPLIT-02-Chat-Message-UI",
       "title": "聊天组件：实现可折叠的 AI 思考 UI",
       "description": "组件开发任务。请先读取前端的聊天气泡组件（如 `ChatMessage.vue`）。修改逻辑：如果传入的消息数据中包含 `reasoning_content` 字段，则在气泡的主体文本上方渲染该内容。强制要求：使用 HTML 原生的 `<details>` 和 `<summary>` 标签，默认折叠。`<summary>` 标题固定为：'🧠 Agent 正在推演局势...'。内部文本调小并置灰。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "SPLIT-03-Home-Action-Chips",
