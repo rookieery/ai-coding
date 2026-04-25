@@ -1,11 +1,4 @@
 {
   "branchName": "feature/agent-split-screen",
-  "stories": [
-    {
-      "id": "FLOW-REFINE-03-Handle-Selection",
-      "title": "AgentView 实现选择回调与分屏流转",
-      "description": "闭环联调任务。回到 `AgentView.vue`。1. 在 `<template>` 中，为 `<AgentChatMessages ...>` 组件增加事件监听 `@select-game=\"handleGameSelection\"`。2. 在 `<script setup>` 中实现 `handleGameSelection(gameType, msg)` 方法。3. 方法逻辑：首先将传入的 `msg.isGameSelector` 设为 `false`（使按钮在视图中消失）；接着，若 `gameType === 'gomoku'`，则调用 `enterGomokuMode()` 触发分屏；然后向 `messages` 数组推送新提示消息 `{ role: 'agent', text: t('agentGomokuModeEntered') }`；最后，必须通过 `nextTick` 或直接 await 调用 `chatMessagesRef.value?.scrollToBottom()`。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
