@@ -2,16 +2,10 @@
   "branchName": "feature/gomoku-llm",
   "stories": [
     {
-      "id": "LLM-OPT-01-Advanced-Threats",
-      "title": "重构威胁检测器：实现冲四与活三防御",
-      "description": "逻辑层任务。修改 `src/utils/threatDetector.ts`，扩展 `findCriticalMove` 函数。要求：除了检测必胜点，必须能识别对手的’活三’（两头空）和’冲四’（一边堵住但可连五）的坐标。如果检测到此类生死局，函数需立即返回防御坐标。这是 AI 棋力的物理底线。",
-      "passes": true
-    },
-    {
       "id": "LLM-OPT-02-Candidate-Generator",
       "title": "实现启发式候选落子生成器",
-      "description": "逻辑层任务。在 `src/utils/` 下新建 `candidateGenerator.ts`。实现一个评估算法：遍历棋盘所有空位，根据其周围形成的棋型（活二、眠三等）计算攻防分值，返回 Top 10 的候选点数组（包含坐标、分值和简短的落子理由，如 '构成活三'）。这将作为大模型的‘选题目’。",
-      "passes": false
+      "description": "逻辑层任务。在 `src/utils/` 下新建 `candidateGenerator.ts`。实现一个评估算法：遍历棋盘所有空位，根据其周围形成的棋型（活二、眠三等）计算攻防分值，返回 Top 10 的候选点数组（包含坐标、分值和简短的落子理由，如 ‘构成活三’）。这将作为大模型的’选题目’。",
+      "passes": true
     },
     {
       "id": "LLM-OPT-03-Advanced-Prompt-Engineering",
