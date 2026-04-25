@@ -2,16 +2,10 @@
   "branchName": "feature/agent-split-screen",
   "stories": [
     {
-      "id": "SPLIT-06-Interaction-User-Move",
-      "title": "数据桥接：拦截落子触发 Agent 思考",
-      "description": "联调任务。请先阅读 `AgentView.vue`、`AgentGomokuPanel.vue` 和后端的 LLM 通信服务。逻辑：在分屏模式下，当监听到右侧棋盘发出用户落子事件（如 H8）时：1. 向左侧聊天流追加系统消息：'[系统] 玩家落子于 H8'。2. 将 `isAIThinking` 置为 true 锁定 UI。3. 调用后端大模型接口发起对弈请求。此任务主要实现发送流程。",
-      "passes": true
-    },
-    {
       "id": "SPLIT-07-Interaction-AI-Response",
       "title": "数据桥接：解析 AI 响应并同步渲染",
       "description": "闭环联调任务。接续上一个任务的接口回调逻辑。当大模型接口返回成功时：1. 构造一条完整的 AI 消息插入左侧聊天流（必须包含 `reasoning_content` 以触发第 2 步写的折叠 UI）。2. 关闭 `isAIThinking` 状态。3. 提取返回的 `move` 坐标，调用右侧 `AgentGomokuPanel.vue` (或底层引擎) 的方法渲染白子。确保数据流向清晰，无死锁。",
-      "passes": false
+      "passes": true
     }
   ]
 }

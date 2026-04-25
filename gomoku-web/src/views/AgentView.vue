@@ -57,7 +57,7 @@ const handleUserMove = async (r: number, c: number) => {
   const moveHistory = gomokuPanelRef.value.getMoveHistory();
 
   isThinking.value = true;
-  thinkingContent.value = '';
+  thinkingContent.value = t('agentAiThinkingMove');
   answerContent.value = '';
   showThinkingProcess.value = true;
 
