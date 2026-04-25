@@ -25,6 +25,7 @@ const emit = defineEmits<{
   regenerate: [index: number];
   toggleThinking: [show: boolean];
   regenerateStreaming: [];
+  selectGame: [gameType: string, message: AgentMessage];
 }>();
 
 const { renderMarkdown } = useMarkdown();
@@ -79,6 +80,23 @@ defineExpose({
           </details>
 
           <div class="markdown-body message-markdown" :data-index="index" v-html="renderMarkdown(msg.text)"></div>
+
+          <!-- 游戏选择按钮 -->
+          <div v-if="msg.isGameSelector" class="flex gap-3 mt-4">
+            <button
+              @click="$emit('select-game', 'gomoku', msg)"
+              class="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+            >
+              {{ t('agentGameGomoku') }}
+            </button>
+            <button
+              disabled
+              class="px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-not-allowed"
+              :class="currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-200 text-stone-400'"
+            >
+              {{ t('agentGameChineseChess') }}
+            </button>
+          </div>
 
           <!-- 操作栏 -->
           <div v-if="msg.text.trim()" class="flex justify-end mt-3">
