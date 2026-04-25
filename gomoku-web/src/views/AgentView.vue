@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
-import { Send } from 'lucide-vue-next';
+import { Send, ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
 import { useMarkdown } from '../composables/useMarkdown';
 import { useGlobalAgentPlay } from '../composables/useAgentPlay';
+import { BOARD_SIZE } from '../games/gomoku/gameLogic';
 import ThinkingProcess from '../common/components/ui/ThinkingProcess.vue';
 import AnswerContent from '../common/components/ui/AnswerContent.vue';
 import MessageActions from '../common/components/ui/MessageActions.vue';
+import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 
 defineOptions({
   name: 'AgentView'
@@ -24,16 +26,35 @@ const messages = ref<Message[]>([]);
 const isThinking = ref(false);
 const thinkingContent = ref('');
 const answerContent = ref('');
-const showThinkingProcess = ref(true); // 控制思考过程面板的展开/收起
+const showThinkingProcess = ref(true);
 const messagesContainer = ref<HTMLElement | null>(null);
 const { renderMarkdown } = useMarkdown();
-const { enterGomokuMode } = useGlobalAgentPlay();
+const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
+const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
 
 const handleEnterGomokuMode = () => {
   enterGomokuMode();
   messages.value.push({
     role: 'agent',
     text: t('agentGomokuModeEntered')
+  });
+};
+
+const handleUserMove = (r: number, c: number) => {
+  const colLetter = String.fromCharCode(65 + c);
+  const rowNumber = BOARD_SIZE - r;
+  const moveCoord = `${colLetter}${rowNumber}`;
+
+  messages.value.push({
+    role: 'agent',
+    text: t('agentUserMoveNotification', moveCoord)
+  });
+};
+
+const handleSurrender = () => {
+  messages.value.push({
+    role: 'agent',
+    text: t('agentSurrenderNotification')
   });
 };
 
@@ -420,124 +441,157 @@ const regenerateAnswer = async (index: number) => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center w-full max-w-4xl mx-auto min-h-[80vh] px-4">
-    <div v-if="messages.length === 0" class="flex flex-col items-center justify-center flex-1 w-full mt-12">
-      <div class="w-24 h-24 mb-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-        <span class="text-4xl text-white font-bold">五</span>
-      </div>
-      <h2 class="text-4xl font-bold mb-4 tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">{{ t('agentTitle') }}</h2>
-      <p class="text-lg text-center max-w-2xl mb-8" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
-        {{ t('agentGreeting') }}
-      </p>
-      <div class="flex gap-3">
-        <button
-          class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-          :class="currentTheme === 'dark'
-            ? 'bg-stone-700 text-stone-200 hover:bg-stone-600 border border-stone-600'
-            : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200'"
-        >
-          {{ t('agentActionChat') }}
-        </button>
-        <button
-          @click="handleEnterGomokuMode"
-          class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700"
-        >
-          {{ t('agentActionGomoku') }}
-        </button>
-      </div>
-    </div>
+  <div class="flex w-full h-full transition-all duration-300 ease-in-out"
+       :class="playMode === 'gomoku' ? 'flex-row' : 'flex-col items-center justify-center'">
 
-    <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4">
-      <!-- 历史消息 -->
-      <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
-        <div v-if="msg.role === 'user'" class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm bg-indigo-600 text-white rounded-br-sm">
-          <div class="whitespace-pre-wrap">{{ msg.text }}</div>
+    <!-- 左侧聊天区域 -->
+    <div class="flex flex-col h-full transition-all duration-300 ease-in-out"
+         :class="playMode === 'gomoku' ? 'w-[35%] min-w-[320px] max-w-[500px] border-r' : 'max-w-4xl mx-auto min-h-[80vh] px-4'"
+         :style="playMode === 'gomoku' ? '' : 'width: 100%'">
+
+      <!-- 返回按钮（仅分屏模式显示） -->
+      <div v-if="playMode === 'gomoku'" class="flex items-center px-4 py-3 border-b shrink-0"
+           :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
+        <button @click="exitPlayMode"
+                class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                :class="currentTheme === 'dark'
+                  ? 'text-stone-300 hover:bg-stone-700'
+                  : 'text-stone-600 hover:bg-stone-100'">
+          <ArrowLeft class="w-4 h-4" />
+          {{ t('agentBackToChat') }}
+        </button>
+      </div>
+
+      <div v-if="messages.length === 0" class="flex flex-col items-center justify-center flex-1 w-full mt-12">
+        <div class="w-24 h-24 mb-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+          <span class="text-4xl text-white font-bold">五</span>
+        </div>
+        <h2 class="text-4xl font-bold mb-4 tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">{{ t('agentTitle') }}</h2>
+        <p class="text-lg text-center max-w-2xl mb-8" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+          {{ t('agentGreeting') }}
+        </p>
+        <div class="flex gap-3">
+          <button
+            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+            :class="currentTheme === 'dark'
+              ? 'bg-stone-700 text-stone-200 hover:bg-stone-600 border border-stone-600'
+              : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200'"
+          >
+            {{ t('agentActionChat') }}
+          </button>
+          <button
+            @click="handleEnterGomokuMode"
+            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700"
+          >
+            {{ t('agentActionGomoku') }}
+          </button>
+        </div>
+      </div>
+
+      <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4"
+           :class="playMode === 'gomoku' ? 'px-4' : ''">
+        <!-- 历史消息 -->
+        <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
+          <div v-if="msg.role === 'user'" class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm bg-indigo-600 text-white rounded-br-sm">
+            <div class="whitespace-pre-wrap">{{ msg.text }}</div>
+          </div>
+
+          <!-- AI消息 -->
+          <div v-else class="relative">
+            <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
+                 :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 rounded-bl-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-bl-sm'">
+              <details v-if="msg.reasoningContent" class="mb-3">
+                <summary class="text-xs font-medium cursor-pointer select-none list-none flex items-center gap-1"
+                         :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+                  <svg class="w-3 h-3 transition-transform details-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                  {{ t('agentReasoningSummary') }}
+                </summary>
+                <div class="mt-2 text-xs leading-relaxed whitespace-pre-wrap font-mono opacity-70"
+                     :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+                  {{ msg.reasoningContent }}
+                </div>
+              </details>
+
+              <div class="markdown-body message-markdown" :data-index="index" v-html="renderMarkdown(msg.text)"></div>
+
+              <!-- 操作栏 -->
+              <div v-if="msg.text.trim()" class="flex justify-end mt-3">
+                <MessageActions
+                  :content="msg.text"
+                  :is-streaming="false"
+                  :on-regenerate="() => regenerateAnswer(index)"
+                  :get-text-to-copy="() => getRenderedTextForMessage(index)"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- AI消息 -->
-        <div v-else class="relative">
-          <div class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm"
-               :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 rounded-bl-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-bl-sm'">
-            <details v-if="msg.reasoningContent" class="mb-3">
-              <summary class="text-xs font-medium cursor-pointer select-none list-none flex items-center gap-1"
-                       :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
-                <svg class="w-3 h-3 transition-transform details-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-                {{ t('agentReasoningSummary') }}
-              </summary>
-              <div class="mt-2 text-xs leading-relaxed whitespace-pre-wrap font-mono opacity-70"
-                   :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
-                {{ msg.reasoningContent }}
-              </div>
-            </details>
+        <!-- 流式响应区域 -->
+        <div v-if="isThinking" class="space-y-4">
+          <!-- 思考过程面板 -->
+          <ThinkingProcess
+            :is-thinking="isThinking"
+            :content="thinkingContent"
+            :show="showThinkingProcess"
+            @toggle="(show) => showThinkingProcess = show"
+          />
 
-            <div class="markdown-body message-markdown" :data-index="index" v-html="renderMarkdown(msg.text)"></div>
-
-            <!-- 操作栏 -->
-            <div v-if="msg.text.trim()" class="flex justify-end mt-3">
-              <MessageActions
-                :content="msg.text"
-                :is-streaming="false"
-                :on-regenerate="() => regenerateAnswer(index)"
-                :get-text-to-copy="() => getRenderedTextForMessage(index)"
-              />
-            </div>
+          <!-- 正式回答内容 -->
+          <div v-if="answerContent.trim()" class="flex w-full justify-start">
+            <AnswerContent
+              :content="answerContent"
+              :is-streaming="isThinking"
+              :on-regenerate="regenerateStreamingAnswer"
+            />
           </div>
         </div>
       </div>
 
-      <!-- 流式响应区域 -->
-      <div v-if="isThinking" class="space-y-4">
-        <!-- 思考过程面板 -->
-        <ThinkingProcess
-          :is-thinking="isThinking"
-          :content="thinkingContent"
-          :show="showThinkingProcess"
-          @toggle="(show) => showThinkingProcess = show"
-        />
-
-        <!-- 正式回答内容 -->
-        <div v-if="answerContent.trim()" class="flex w-full justify-start">
-          <AnswerContent
-            :content="answerContent"
-            :is-streaming="isThinking"
-            :on-regenerate="regenerateStreamingAnswer"
+      <div class="w-full relative mt-auto mb-8"
+           :class="playMode === 'gomoku' ? 'px-4 max-w-full' : 'max-w-3xl'">
+        <div class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
+             :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'">
+          <textarea
+            ref="textareaRef"
+            v-model="query"
+            :placeholder="t('agentPlaceholder')"
+            class="w-full bg-transparent px-4 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
+            :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
+            @keydown.enter.prevent="handleTextareaEnter"
+            @input="adjustTextareaHeight"
+            :disabled="isThinking"
+            rows="1"
           />
+          <button
+            @click="sendMessage"
+            class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
+            :class="[
+              query.trim() && !isThinking
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
+            ]"
+            :disabled="!query.trim() || isThinking"
+          >
+            <Send class="w-5 h-5" />
+          </button>
+        </div>
+        <div class="text-center mt-3 text-xs" :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'">
+          {{ t('agentDisclaimer') }}
         </div>
       </div>
     </div>
 
-    <div class="w-full max-w-3xl relative mt-auto mb-8">
-      <div class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
-           :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'">
-        <textarea
-          ref="textareaRef"
-          v-model="query"
-          :placeholder="t('agentPlaceholder')"
-          class="w-full bg-transparent px-4 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
-          :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
-          @keydown.enter.prevent="handleTextareaEnter"
-          @input="adjustTextareaHeight"
-          :disabled="isThinking"
-          rows="1"
-        />
-        <button
-          @click="sendMessage"
-          class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
-          :class="[
-            query.trim() && !isThinking
-              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-              : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
-          ]"
-          :disabled="!query.trim() || isThinking"
-        >
-          <Send class="w-5 h-5" />
-        </button>
-      </div>
-      <div class="text-center mt-3 text-xs" :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'">
-        {{ t('agentDisclaimer') }}
-      </div>
+    <!-- 右侧对弈面板（仅分屏模式显示） -->
+    <div v-if="playMode === 'gomoku'" class="flex-1 h-full overflow-hidden"
+         :class="currentTheme === 'dark' ? 'bg-stone-900' : 'bg-stone-50'">
+      <AgentGomokuPanel
+        ref="gomokuPanelRef"
+        @userMove="handleUserMove"
+        @surrender="handleSurrender"
+      />
     </div>
   </div>
 </template>

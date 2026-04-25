@@ -214,6 +214,9 @@ export interface Messages {
   agentActionGomoku: string;
   agentGomokuModeEntered: string;
   agentSurrender: string;
+  agentBackToChat: string;
+  agentUserMoveNotification: string;
+  agentSurrenderNotification: string;
 }
 
 export type MessageKey = keyof Messages;
