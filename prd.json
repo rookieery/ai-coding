@@ -1,11 +1,4 @@
 {
   "branchName": "feature/gomoku-llm",
-  "stories": [
-    {
-      "id": "LLM-OPT-04-Integration-Smart-Fallback",
-      "title": "集成服务层与智能兜底逻辑",
-      "description": "系统集成任务。修改 `src/services/llm-ai.service.ts`。逻辑：1. 调用拦截器。2. 若无拦截，组装高级 Prompt 调用大模型。3. 重点：若大模型返回非法坐标或无法解析，立即调用 `candidateGenerator` 选取评分第一的候选点进行 Fallback。确保 AI 在任何时候都不会’乱下一气’。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }

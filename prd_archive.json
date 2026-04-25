@@ -498,6 +498,30 @@
         "title": "在 LLM 服务层接入威胁拦截器",
         "description": "API 逻辑优化任务。修改 `src/services/llm-ai.service.ts`（或对应的接口处理文件）。要求：在调用大模型 API 之前，先调用上一步的 `findCriticalMove`。1. 如果检测到关键坐标，直接跳过大模型网络请求，组装一个标准的 JSON 响应直接返回，例如 `{ \"move\": \"[计算出的坐标]\", \"reason\": \"AI 本能反应：这么明显的必杀/威胁，我当然要走这里！\", \"isFallback\": true }`。2. 只有当 `findCriticalMove` 返回 null 时，才去调用 DeepSeek 大模型让其进行战术思考。这样既保证了绝对的防守底线，又节省了 API 的 Token 消耗。",
         "passes": true
+      },
+      {
+        "id": "LLM-OPT-01-Advanced-Threats",
+        "title": "重构威胁检测器：实现冲四与活三防御",
+        "description": "逻辑层任务。修改 `src/utils/threatDetector.ts`，扩展 `findCriticalMove` 函数。要求：除了检测必胜点，必须能识别对手的’活三’（两头空）和’冲四’（一边堵住但可连五）的坐标。如果检测到此类生死局，函数需立即返回防御坐标。这是 AI 棋力的物理底线。",
+        "passes": true
+      },
+      {
+        "id": "LLM-OPT-02-Candidate-Generator",
+        "title": "实现启发式候选落子生成器",
+        "description": "逻辑层任务。在 `src/utils/` 下新建 `candidateGenerator.ts`。实现一个评估算法：遍历棋盘所有空位，根据其周围形成的棋型（活二、眠三等）计算攻防分值，返回 Top 10 的候选点数组（包含坐标、分值和简短的落子理由，如 ‘构成活三’）。这将作为大模型的’选题目’。",
+        "passes": true
+      },
+      {
+        "id": "LLM-OPT-03-Advanced-Prompt-Engineering",
+        "title": "重构 System Prompt：注入专业五子棋知识体系",
+        "description": "Prompt 优化任务。修改 `src/utils/boardPromptUtils.ts` 中的 Prompt 模板。要求：1. 注入专业术语定义（如：连五 > 活四 > 冲四 > 活三）。2. 设定策略优先级：优先堵截对手连四/活三，其次寻找己方四三/双三杀招。3. 强制 CoT 思维链：要求 AI 在返回坐标前，先在 JSON 中输出 situation_analysis（局势分析）。4. 动态接入 Phase 2 生成的 Top 10 候选名单，要求 AI 必须从名单中挑选并给出选择理由。",
+        "passes": true
+      },
+      {
+        "id": "LLM-OPT-04-Integration-Smart-Fallback",
+        "title": "集成服务层与智能兜底逻辑",
+        "description": "系统集成任务。修改 `src/services/llm-ai.service.ts`。逻辑：1. 调用拦截器。2. 若无拦截，组装高级 Prompt 调用大模型。3. 重点：若大模型返回非法坐标或无法解析，立即调用 `candidateGenerator` 选取评分第一的候选点进行 Fallback。确保 AI 在任何时候都不会’乱下一气’。",
+        "passes": true
       }
     ]
   }
