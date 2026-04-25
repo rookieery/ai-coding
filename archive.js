@@ -12,53 +12,51 @@ console.log('🧹 正在执行 Ralph 自动瘦身归档...');
 // ==========================================
 // 1. 处理 prd.json (提取 passes: true，按分支归档)
 // ==========================================
+const signalFile = path.join(__dirname, '.all_done');
+
 if (fs.existsSync(prdPath)) {
     try {
         const prd = JSON.parse(fs.readFileSync(prdPath, 'utf8'));
-        const completed = prd.stories.filter(s => s.passes === true);
-        const pending = prd.stories.filter(s => s.passes === false);
+        
+        // 健壮性增强：兼容 AI 可能输出的字符串 "false" 
+        const completed = prd.stories.filter(s => s.passes === true || s.passes === "true");
+        const pending = prd.stories.filter(s => s.passes === false || s.passes === "false");
         const currentBranch = prd.branchName || 'default-branch';
 
         if (completed.length > 0) {
             let archiveData = [];
-
-            // 读取已有归档并进行格式迁移
             if (fs.existsSync(prdArchivePath)) {
                 const rawData = JSON.parse(fs.readFileSync(prdArchivePath, 'utf8'));
-                
-                // 向下兼容：如果旧版本是一个对象 { branchName: '...', stories: [...] }
                 if (!Array.isArray(rawData) && rawData.branchName) {
-                    archiveData = [rawData]; // 自动升级为数组格式
+                    archiveData = [rawData]; 
                 } else if (Array.isArray(rawData)) {
                     archiveData = rawData;
                 }
             }
 
-            // 查找当前分支的归档记录
             let branchArchive = archiveData.find(item => item.branchName === currentBranch);
-
             if (branchArchive) {
-                // 如果该分支已存在归档，追加到该分支的 stories 中
                 branchArchive.stories.push(...completed);
             } else {
-                // 如果不存在，创建新分支的归档块
-                archiveData.push({
-                    branchName: currentBranch,
-                    stories: [...completed]
-                });
+                archiveData.push({ branchName: currentBranch, stories: [...completed] });
             }
 
-            // 写回归档文件
             fs.writeFileSync(prdArchivePath, JSON.stringify(archiveData, null, 2));
-
-            // 更新当前 prd.json，只保留未完成的任务
             prd.stories = pending;
             fs.writeFileSync(prdPath, JSON.stringify(prd, null, 2));
-            
-            console.log(`✅ 已将 ${completed.length} 个完成的任务归档到 prd_archive.json 的 [${currentBranch}] 分支下`);
+            console.log(`✅ 已将 ${completed.length} 个完成的任务归档到 [${currentBranch}]`);
         }
+
+        // 核心修复：基于 JSON AST 精确判定是否全部完工
+        if (pending.length === 0) {
+            fs.writeFileSync(signalFile, 'done');
+        } else if (fs.existsSync(signalFile)) {
+            fs.unlinkSync(signalFile);
+        }
+
     } catch (e) {
-        console.error('❌ 解析 prd.json 失败，跳过 PRD 归档', e.message);
+        console.error('❌ 解析 prd.json 失败 (AI 可能写坏了 JSON)，跳过归档。等待 AI 自我修复...', e.message);
+        if (fs.existsSync(signalFile)) fs.unlinkSync(signalFile);
     }
 }
 

@@ -93,16 +93,16 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   # ==========================================
   # 自动收尾与安全退出机制
   # ==========================================
-  # 检查 prd.json 中是否还存在未完成的任务 (passes: false)
-  if ! grep -q '"passes": false' "$SCRIPT_DIR/prd.json"; then
+  # 监听 archive.js 发出的完工信号文件
+  if [ -f "$SCRIPT_DIR/.all_done" ]; then
       echo "🎉 检测到所有任务已归档，准备自动收尾..."
       
-      # 执行最终的代码提交
       git add .
       git commit -m "chore: all stories completed and archived" || echo "✅ 工作区干净，没有需要额外提交的文件。"
       
-      echo "🚀 Ralph 自动化流水线圆满结束，强制退出循环！"
-      break
+      echo "🚀 Ralph 自动化流水线圆满结束！"
+      rm -f "$SCRIPT_DIR/.all_done" # 阅后即焚清理现场
+      exit 0 # 完美退出，不再执行底部的报错
   fi
 
   # Run the selected tool with the ralph prompt
