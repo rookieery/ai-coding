@@ -644,7 +644,7 @@ const regenerateAnswer = async (index: number) => {
         <div v-if="messages.length === 0" class="flex flex-wrap gap-3 mb-4">
           <button
             @click="handleEnterGomokuMode"
-            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700"
+            class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
           >
             {{ t('agentActionGomoku') }}
           </button>
