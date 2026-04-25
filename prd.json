@@ -2,16 +2,10 @@
   "branchName": "feature/gomoku-llm",
   "stories": [
     {
-      "id": "LLM-001-Types",
-      "title": "后端：创建 LLM AI 服务接口与类型定义",
-      "description": "这是纯类型定义任务。请在后端项目的适当位置（如 `src/types/` 或 `src/services/`）定义接口：1. `LLMMoveRequest`：包含棋盘状态(15x15数组)、当前玩家颜色、历史落子记录 history。2. `LLMMoveResponse`：包含推荐落子坐标 move (如 'H8') 和分析文本 reason。确保完全使用 TypeScript 强类型，暂不实现业务逻辑。",
-      "passes": true
-    },
-    {
       "id": "LLM-002-Prompt-Builder",
       "title": "后端：编写二维矩阵转换与 Prompt 组装工具",
       "description": "纯纯工具类任务。在后端 `src/utils/` 创建 `boardPromptUtils.ts`：1. 编写函数将 15x15 的 pieces 数组转换为 ASCII 字符矩阵（X为黑，O为白，.为空位），增强 LLM 空间感知。2. 编写函数组装 System Prompt，严格要求 AI 作为五子棋专家，输出 {move: string, reason: string} 格式的 JSON，明确防守与进攻的思维链。暂不调用网络。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "LLM-003-API-Service",
