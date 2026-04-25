@@ -208,7 +208,7 @@
   "agentGomokuModeEntered": "Entered game mode. I play white on the right. Your move.",
   "agentSurrender": "Surrender",
   "agentBackToChat": "Back to Chat",
-  "agentUserMoveNotification": "[System] Player moved to {0}",
+  "agentUserMoveNotification": "Move {0}",
   "agentSurrenderNotification": "[System] Player surrendered. AI wins!",
   "agentAiThinkingMove": "AI is thinking about its move...",
   "agentGameSelectorPrompt": "Which game would you like to play?",

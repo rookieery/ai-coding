@@ -208,7 +208,7 @@
   "agentGomokuModeEntered": "已进入对弈模式，我在右侧执白，请落子。",
   "agentSurrender": "认输",
   "agentBackToChat": "返回对话",
-  "agentUserMoveNotification": "[系统] 玩家落子于 {0}",
+  "agentUserMoveNotification": "落子 {0}",
   "agentSurrenderNotification": "[系统] 玩家认输，AI获胜！",
   "agentAiThinkingMove": "AI正在思考下一步...",
   "agentGameSelectorPrompt": "你想切磋哪种棋艺？",

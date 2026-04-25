@@ -218,6 +218,9 @@ export interface Messages {
   agentUserMoveNotification: string;
   agentSurrenderNotification: string;
   agentAiThinkingMove: string;
+  agentGameSelectorPrompt: string;
+  agentGameGomoku: string;
+  agentGameChineseChess: string;
 }
 
 export type MessageKey = keyof Messages;

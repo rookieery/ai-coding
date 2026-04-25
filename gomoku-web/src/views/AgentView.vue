@@ -52,6 +52,12 @@ const handleEnterGomokuMode = () => {
 const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
   msg.isGameSelector = false;
 
+  const gameName = gameType === 'gomoku' ? t('agentGameGomoku') : t('agentGameChineseChess');
+  messages.value.push({
+    role: 'user',
+    text: gameName
+  });
+
   if (gameType === 'gomoku') {
     enterGomokuMode();
   }
@@ -71,7 +77,7 @@ const handleUserMove = async (r: number, c: number) => {
   const moveCoord = `${colLetter}${rowNumber}`;
 
   messages.value.push({
-    role: 'agent',
+    role: 'user',
     text: t('agentUserMoveNotification', moveCoord)
   });
 
