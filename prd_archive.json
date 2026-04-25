@@ -1,455 +1,504 @@
-{
-  "branchName": "feature/chinese-chess",
-  "stories": [
-    {
-      "id": "S1",
-      "title": "创建中国象棋类型定义文件",
-      "description": "在 gomoku-web/src/chinese-chess/types.ts 中定义棋子类型枚举、棋盘坐标、游戏状态、移动历史等接口。确保严格使用 TypeScript 类型，避免 any 类型。预估代码约 80 行。",
-      "passes": true
-    },
-    {
-      "id": "S2",
-      "title": "实现棋盘初始化和状态管理",
-      "description": "在 gomoku-web/src/chinese-chess/boardState.ts 中实现标准棋盘初始化（9x10）、棋子位置设置、当前回合管理和游戏状态管理。预估代码约 100 行。",
-      "passes": true
-    },
-    {
-      "id": "S3",
-      "title": "实现车（Rook）的移动规则验证",
-      "description": "在 gomoku-web/src/chinese-chess/rules/rook.ts 中实现车的移动规则：直线移动，不能越过其他棋子。预估代码约 60 行。",
-      "passes": true
-    },
-    {
-      "id": "S4",
-      "title": "实现马（Knight）的移动规则验证",
-      "description": "在 gomoku-web/src/chinese-chess/rules/knight.ts 中实现马的移动规则：日字移动，检查绊马腿（马腿位置是否有棋子）。预估代码约 70 行。",
-      "passes": true
-    },
-    {
-      "id": "S5",
-      "title": "实现炮（Cannon）的移动规则验证",
-      "description": "在 gomoku-web/src/chinese-chess/rules/cannon.ts 中实现炮的移动规则：直线移动，吃子时必须隔一个棋子（炮架）。预估代码约 70 行。",
-      "passes": true
-    },
-    {
-      "id": "S6",
-      "title": "实现兵（Pawn）的移动规则验证",
-      "description": "在 gomoku-web/src/chinese-chess/rules/pawn.ts 中实现兵的移动规则：过河前只能向前，过河后可左右移动，不能后退。预估代码约 60 行。",
-      "passes": true
-    },
-    {
-      "id": "S7",
-      "title": "实现士（Advisor）和象（Elephant）的移动规则验证",
-      "description": "在 gomoku-web/src/chinese-chess/rules/advisor-elephant.ts 中实现士和象的移动规则：士斜线移动（九宫格内）；象田字移动，不能过河，塞象眼。预估代码约 80 行。",
-      "passes": true
-    },
-    {
-      "id": "S8",
-      "title": "实现将（King）的移动规则验证",
-      "description": "在 gomoku-web/src/chinese-chess/rules/king.ts 中实现将的移动规则：九宫格内移动，将帅不能直接照面（中间无棋子）。预估代码约 70 行。",
-      "passes": true
-    },
-    {
-      "id": "S9",
-      "title": "实现将军检测逻辑",
-      "description": "在 gomoku-web/src/chinese-chess/rules/check.ts 中实现将军检测：检查当前玩家是否被将军（将/帅受到攻击）。预估代码约 90 行。",
-      "passes": true
-    },
-    {
-      "id": "S10",
-      "title": "实现将死检测逻辑",
-      "description": "在 gomoku-web/src/chinese-chess/rules/checkmate.ts 中实现将死检测：检查当前玩家是否无合法移动（将死）。预估代码约 100 行。",
-      "passes": true
-    },
-    {
-      "id": "S11",
-      "title": "创建游戏逻辑主文件",
-      "description": "在 gomoku-web/src/chinese-chess/gameLogic.ts 中集成所有规则，导出主要函数（移动验证、将军检测、胜负判定等）。预估代码约 100 行。",
-      "passes": true
-    },
-    {
-      "id": "S12",
-      "title": "编写单元测试框架配置",
-      "description": "在 gomoku-web/vitest.config.ts 或扩展现有配置，配置测试环境支持 TypeScript。预估代码约 40 行。",
-      "passes": true
-    },
-    {
-      "id": "S13a",
-      "title": "为车（Rook）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/rook.test.ts 中编写车的移动规则测试用例，包括直线移动、路径阻塞、吃子验证等。预估代码约 50 行。",
-      "passes": true
-    },
-    {
-      "id": "S13b",
-      "title": "为马（Knight）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/knight.test.ts 中编写马的移动规则测试用例，包括日字移动、绊马腿检测、吃子验证等。预估代码约 50 行。",
-      "passes": true
-    },
-    {
-      "id": "S13c",
-      "title": "为炮（Cannon）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/cannon.test.ts 中编写炮的移动规则测试用例，包括直线移动、炮架检测、吃子验证等。预估代码约 50 行。",
-      "passes": true
-    },
-    {
-      "id": "S13d",
-      "title": "为兵（Pawn）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/pawn.test.ts 中编写兵的移动规则测试用例，包括过河前后移动、不能后退、吃子验证等。预估代码约 50 行。",
-      "passes": true
-    },
-    {
-      "id": "S13e",
-      "title": "为士（Advisor）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/advisor-elephant.test.ts 中编写士的移动规则测试用例，包括九宫格内斜线移动、边界检测、吃子验证等。预估代码约 25 行。",
-      "passes": true
-    },
-    {
-      "id": "S13f",
-      "title": "为象（Elephant）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/advisor-elephant.test.ts 中编写象的移动规则测试用例，包括田字移动、塞象眼检测、过河限制、吃子验证等。预估代码约 25 行。",
-      "passes": true
-    },
-    {
-      "id": "S13g",
-      "title": "为将（King）编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/king.test.ts 中编写将的移动规则测试用例，包括九宫格内移动、将帅照面检测、吃子验证等。预估代码约 50 行。",
-      "passes": true
-    },
-    {
-      "id": "S14",
-      "title": "为将军和将死检测编写单元测试",
-      "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/check.test.ts 中测试将军和将死检测的各种场景。预估代码约 100 行。",
-      "passes": true
-    },
-    {
-      "id": "S15",
-      "title": "创建中国象棋 AI 基础框架",
-      "description": "在 gomoku-web/src/chinese-chess/ai/minimax.ts 中实现基本的 minimax 搜索，评估函数（棋子价值、位置）。预估代码约 100 行。",
-      "passes": true
-    },
-    {
-      "id": "S16",
-      "title": "将 AI 算法迁移到 Web Worker",
-      "description": "在 gomoku-web/src/chinese-chess/ai/aiWorker.ts 中创建 Worker，接收棋盘状态，返回最佳移动。预估代码约 80 行。",
-      "passes": true
-    },
-    {
-      "id": "S17",
-      "title": "创建中国象棋棋盘 UI 组件",
-      "description": "在 gomoku-web/src/components/chinese-chess/Board.vue 中渲染 9x10 棋盘，显示棋子（汉字或图标），处理点击事件，复用现有样式。预估代码约 150 行。",
-      "passes": true
-    },
-    {
-      "id": "S18",
-      "title": "创建中国象棋游戏控制组件",
-      "description": "在 gomoku-web/src/components/chinese-chess/GameControls.vue 中实现游戏模式选择、难度设置、悔棋、重新开始等，复用现有组件结构。预估代码约 120 行。",
-      "passes": true
-    },
-    {
-      "id": "S19",
-      "title": "创建中国象棋主视图",
-      "description": "在 gomoku-web/src/views/ChineseChessView.vue 中整合棋盘、控制面板、状态显示，管理游戏状态，复用 GameView.vue 的结构。预估代码约 200 行。",
-      "passes": true
-    },
-    {
-      "id": "S20",
-      "title": "在 i18n 中添加中国象棋翻译键",
-      "description": "在 gomoku-web/src/i18n.ts 中添加标题、棋子名称、游戏状态等翻译，确保所有用户界面文本使用 i18n 翻译。预估代码约 50 行。",
-      "passes": true
-    },
-    {
-      "id": "S21",
-      "title": "集成到现有路由和导航",
-      "description": "在 gomoku-web/src/router/index.ts 中添加中国象棋路由，更新导航菜单。预估代码约 30 行。",
-      "passes": true
-    },
-    {
-      "id": "S22",
-      "title": "进行端到端测试和 UI 验证",
-      "description": "手动测试游戏流程，AI 对战，规则正确性，验证各组件集成。无需新代码，但需要完整验证。",
-      "passes": true
-    },
-    {
-      "id": "S23a",
-      "title": "实现落子合法路径计算逻辑",
-      "description": "在 engine.ts 中新增 getLegalMovesForPiece 方法，根据当前棋子位置和规则引擎返回所有可落子的坐标数组。需包含单元测试验证。",
-      "passes": true
-    },
-    {
-      "id": "S23b",
-      "title": "渲染带呼吸灯效果的落子提示",
-      "description": "在 Board.vue 中，当棋子被选中时，渲染合法落子位置的提示点。提示点需具备呼吸动画效果：透明度在 0.3 到 0.8 之间循环，周期为 1.5s。使用 Tailwind 的 animate-pulse 或自定义 CSS 实现。",
-      "passes": true
-    },
-    {
-      "id": "S24",
-      "title": "重构象棋传统坐标系显示",
-      "description": "修改棋盘边缘渲染，上方（黑方）显示数字 1-9，下方（红方）显示中文数字‘九’至‘一’。确保与棋盘格子精准对齐。",
-      "passes": true
-    },
-    {
-      "id": "S25a",
-      "title": "完善悔棋底层数据结构",
-      "description": "修改 boardState.ts 中的移动记录逻辑，确保每一条 move 记录都包含被吃掉棋子的类型和颜色（capturedPiece）。",
-      "passes": true
-    },
-    {
-      "id": "S25b",
-      "title": "修复悔棋 UI 复原逻辑",
-      "description": "根据 S25a 完善的数据，在执行 undo 操作时，不仅回退坐标，还要将 capturedPiece 重新渲染到棋盘上。",
-      "passes": true
-    },
-    {
-      "id": "S26a",
-      "title": "实现中国象棋标准记谱法逻辑",
-      "description": "开发专门的记谱器（Notation Generator），将坐标移动转换为‘炮二平五’、‘马八进七’等标准中文术语。需处理红黑方差异。",
-      "passes": true
-    },
-    {
-      "id": "S26b",
-      "title": "实时渲染对局棋谱列表",
-      "description": "在右侧面板展示 S26a 生成的术语列表，支持自动滚动至底部。样式需与五子棋对战记录保持一致。",
-      "passes": true
-    },
-    {
-      "id": "S27a",
-      "title": "全局品牌更名：棋林（QiLin）",
-      "description": "在前端 i18n、HTML Title 和 Footer 中，将所有‘五林’或‘五子棋’品牌文案更改为‘棋林’。确保全局搜索替换时不会破坏代码逻辑变量名。",
-      "passes": true
-    },
-    {
-      "id": "S27b",
-      "title": "导航栏与路由标签优化",
-      "description": "在前端组件中将‘去下棋’标签重命名为‘五子棋’，新增‘中国象棋’标签（如果不存在）。更新路由配置文件中的面包屑和页面标题。",
-      "passes": true
-    },
-    {
-      "id": "S28",
-      "title": "棋林智能体（Agent）提示词升级",
-      "description": "更新 AI Agent 的系统提示词文件。将设定从五子棋专用改为‘棋林通用棋类专家’，使其能同时理解五子棋和中国象棋的规则。同步更新 UI 中的智能体名称。",
-      "passes": true
-    },
-    {
-      "id": "S29",
-      "title": "前端目录模块化：提取共享逻辑",
-      "description": "在 src 目录下创建 common 或 shared 文件夹，移动通用的 UI 组件（如按钮、弹窗）和工具函数，为后续隔离 Gomoku 和 Chess 做准备。",
-      "passes": true
-    },
-    {
-      "id": "S30a1",
-      "title": "前端：五子棋逻辑与状态层迁移",
-      "description": "在 src/games/gomoku/ 下建立基础结构。将五子棋专属的类型定义(types)、AI Web Worker 代码、以及状态管理相关文件移动过去。此阶段只关注底层文件，仅修复它们之间的相互引用。",
-      "passes": true
-    },
-    {
-      "id": "S30a2",
-      "title": "前端：五子棋 UI 组件层迁移",
-      "description": "将五子棋专属的 UI 组件（棋盘 Board、控制面板等）移动到 src/games/gomoku/components 目录。修复这些组件内部对 S30a1 中逻辑文件的引用路径。",
-      "passes": true
-    },
-    {
-      "id": "S30a3",
-      "title": "前端：五子棋视图与全局路由修复",
-      "description": "将五子棋的主视图（View/Page）移入 src/games/gomoku/。全面扫描 router 路由配置和 App 入口，修复所有指向五子棋模块的失效 import 路径。必须运行 npm run typecheck 确保 0 报错。",
-      "passes": true
-    },
-    {
-      "id": "S30b1",
-      "title": "前端：中国象棋逻辑与状态层迁移",
-      "description": "将中国象棋的类型定义、规则引擎 (engine) 和状态管理移动到 src/games/chinese-chess/ 下。修复模块内部的引用路径。",
-      "passes": true
-    },
-    {
-      "id": "S30b2",
-      "title": "前端：中国象棋 UI 组件与视图迁移",
-      "description": "将中国象棋的组件和视图移入 src/games/chinese-chess/。修复 router 中的路径引用。最后运行一次全局的前端编译和类型检查，确保模块化重构成功。",
-      "passes": true
-    },
-    {
-      "id": "S31",
-      "title": "后端 Express：创建模块化路由结构",
-      "description": "在 Express 后端 src/routes 目录下建立子目录结构。为不同的游戏业务预留独立的挂载点。确保符合项目现有的代码规范。",
-      "passes": true
-    },
-    {
-      "id": "S32",
-      "title": "后端：五子棋业务逻辑迁移",
-      "description": "将现有的五子棋 API 路由和控制器移动到后端的独立业务模块中。更新 express.Router() 的导出方式，确保模块化清晰。",
-      "passes": true
-    },
-    {
-      "id": "S33",
-      "title": "后端：中国象棋业务逻辑迁移",
-      "description": "将已有的中国象棋后端验证逻辑或 AI 接口移动到对应的业务模块中。修复所有的 import/require 路径。",
-      "passes": true
-    },
-    {
-      "id": "S34",
-      "title": "后端：重构主入口文件（app.ts/index.ts）",
-      "description": "修改 Express 主入口，按模块注册路由（例如 app.use('/api/gomoku', ...) 和 app.use('/api/chess', ...)）。确保中间件配置依然生效。",
-      "passes": true
-    },
-    {
-      "id": "S35",
-      "title": "全链路冒烟测试与重构验证",
-      "description": "启动前端和后端服务。验证五子棋和中国象棋的功能是否依然正常（包括下棋、悔棋和 AI 对战）。检查是否有遗漏的‘五林’文案。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-1",
-      "title": "修复 Board.vue 渲染崩溃与完善选中交互",
-      "description": "1. 修复 Bug：解决 Board.vue 中 'Cannot read properties of undefined (reading \"some\")' 的渲染报错，确保在调用数组方法前使用可选链 (?.) 或默认空数组判断。2. 优化 UI：当点击己方棋子时，被选中的棋子本身需增加明显的活跃状态（如外发光或轻微放大 scale-105）。3. 优化 UI：确保被选中棋子的合法落子点正确渲染出‘呼吸灯’效果（CSS opacity 在 0.3 到 0.8 之间循环过渡）。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-2",
-      "title": "修复并实现右侧对战记录（棋谱）渲染",
-      "description": "排查右侧对战记录面板始终显示‘暂无落子记录’的问题。确保象棋的引擎状态（boardState）与 HistoryPanel 组件的数据绑定是响应式的。将内部的历史移动数据，正确转换为中国象棋标准记谱法（如‘炮二平五’、‘马八进七’）并实时渲染在列表中，每次新增记录需自动滚动到底部。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-3",
-      "title": "修复吃子目标格无提示灯的 Bug",
-      "description": "排查 Board.vue 中合法落子提示（呼吸灯）的渲染逻辑。当前当合法落子点存在敌方棋子时（例如红炮可以跨子吃黑卒），该格子没有提示。请修改 Vue 模板或 CSS（如 z-index），确保敌方棋子所在格也能正常显示提示（建议使用红色边框高亮或叠加准星图标来区分普通的移动提示）。",
-      "passes": true
-    },
-    {
-      "id": "Feature-Theme-1",
-      "title": "定义全局主题配置与常量",
-      "description": "在 src/common/ (或全局 types 目录) 下新建 theme.ts，定义四种主题配置对象：1. 'default' (经典默认)；2. 'zen' (墨韵檀香：暖木色/宣纸背景，低对比度线条)；3. 'cyber' (赛博弈域：深灰蓝背景，带发光质感的强调色)；4. 'minimal' (极简奢华：石板灰背景，莫兰迪色系搭配)。配置需包含棋盘背景色、线条色、棋子主色和文字色。",
-      "passes": true
-    },
-    {
-      "id": "Feature-Theme-2",
-      "title": "实现独立的主题状态管理",
-      "description": "在项目中统一的状态管理处（如 Pinia store 或 Vue 组合式函数 useSettings），新增两个独立的状态：gomokuTheme 和 chessTheme，默认值均为 'default'。必须实现 localStorage 的持久化存储，确保刷新页面后两种棋的独立主题配置不丢失。",
-      "passes": true
-    },
-    {
-      "id": "Feature-Theme-3",
-      "title": "开发公共的主题切换选择器",
-      "description": "在 src/common/components/ 下创建一个公用的 ThemeSelector.vue 下拉选择器组件，支持传入当前选中的主题 key 和 update 事件。分别将该组件引入到五子棋和中国象棋的 GameControls.vue 控制面板中，并绑定各自独立的主题状态 (gomokuTheme / chessTheme)。",
-      "passes": true
-    },
-    {
-      "id": "Feature-Theme-4",
-      "title": "将主题应用到五子棋视图",
-      "description": "修改 src/games/gomoku 下的 Board.vue 和 Piece.vue。读取当前 gomokuTheme 的状态，利用 Vue 的动态 style 或 class (推荐计算属性结合 Feature-Theme-1 定义的颜色变量)，动态渲染五子棋的棋盘背景、网格线和黑白棋子颜色。确保切换主题时无刷新平滑过渡。",
-      "passes": true
-    },
-    {
-      "id": "Feature-Theme-5",
-      "title": "将主题应用到中国象棋视图",
-      "description": "修改 src/games/chinese-chess 下的 Board.vue 和 棋盘相关的组件。读取当前 chessTheme 的状态，动态渲染中国象棋的棋盘底色、楚河汉界样式、以及红黑双方棋子的底色和文字颜色。确保切换主题时无刷新平滑过渡，且不影响之前做好的‘呼吸灯’和吃子提示功能。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-Theme-Render",
-      "title": "修复主题配置导致的前端渲染崩溃白屏",
-      "description": "修复页面白屏问题。控制台报错提示：1. '[Vue warn]: Invalid prop: type check failed for prop \"theme\". Expected String, got Object'. 2. 'Uncaught TypeError: Cannot read properties of undefined (reading \"boardBackground\")' 位于 Board.vue。请排查主题数据的传递链路（Store/Composable -> GameView -> Board）。如果 Board.vue 接收的是主题 key (String)，请在内部通过 key 从 theme.ts 获取完整对象；如果在读取 boardBackground 时报错，请检查响应式绑定并添加可选链 (?.)。必须确保棋盘 UI 重新正常渲染。",
-      "passes": true
-    },
-    {
-      "id": "UI-Refine-1",
-      "title": "修复棋盘底层网格错误 (去除国际象棋格子)",
-      "description": "严重Bug：当前中国象棋棋盘被错误渲染成了国际象棋的黑白相间格子。请立即修改 Board.vue，删除所有交替格子（alternating squares）的背景色逻辑。棋盘必须是一个统一的、纯色的底层背景色（boardBackground），网格只能通过边框线（border）来体现。楚河汉界区域也不得有任何填色异常。",
-      "passes": true
-    },
-    {
-      "id": "UI-Refine-2",
-      "title": "强制恢复棋子红黑阵营颜色与可读性",
-      "description": "严重Bug：棋子无法区分红黑方且看不清文字。修改 Piece.vue：1. 棋子必须有不透明的实心背景色（如白色或浅米色），加上边框（border）和阴影（shadow-md）使其浮在棋盘上。2. 无论什么主题，红方棋子的文字颜色必须是红色系（如 text-red-600 或 #C82C2C），黑方必须是深色系（如 text-gray-900 或 #1A1A1A）。【赛博主题除外：赛博主题下红方用荧光粉/红，黑方用青/蓝，且自带发光特效】。",
-      "passes": true
-    },
-    {
-      "id": "UI-Refine-3",
-      "title": "重新注入四大主题的精确色号定义",
-      "description": "修改 theme.ts，严格使用以下色彩规范重写主题配置，严禁随意发挥：\n1. default: 棋盘 bg-[#F3E5AB] (原木色), 线条 border-[#8B4513], 棋子底色 bg-white, 选中高亮 ring-green-500。\n2. zen (墨韵): 棋盘 bg-[#E8DCC4] (柔和宣纸色), 线条 border-[#5C4033], 棋子底色 bg-[#F5F5DC], 红字 #8B0000, 黑字 #1A1A1A。\n3. cyber (赛博): 棋盘 bg-[#0F172A] (深渊蓝), 线条 border-[#38BDF8]/50 (半透明天蓝), 棋子底色 bg-[#1E293B], 红方 text-[#F43F5E] 并带 drop-shadow, 黑方 text-[#2DD4BF] 带 drop-shadow。\n4. minimal (极简): 棋盘 bg-[#F9FAFB], 线条 border-[#D1D5DB], 棋子底色 bg-white 且无明显边框(仅极淡阴影), 红字 #EF4444, 黑字 #374151。",
-      "passes": true
-    },
-    {
-      "id": "UI-Fix-Piece-Color",
-      "title": "强制固化红黑棋子字体颜色（禁用暗黑模式反转）",
-      "description": "严重视觉Bug：当前棋子的文字颜色会随着全局 Dark Mode（暗黑模式）错误反转为白色，导致在白底棋子上完全看不见，且彻底丢失了红黑阵营区分。请立即修改 Piece.vue 或 theme.ts：1. 彻底删除棋子文字上的 `dark:text-...` 等响应式类名。2. 强制绑定阵营颜色：红方棋子无论什么主题和模式，文字必须是固定的红色（如 text-red-600 或 #C82C2C）；黑方棋子文字必须是固定的深黑色（如 text-gray-900 或 #111827）。（赛博主题可保持发光设定，但必须严格区分红蓝两方）。",
-      "passes": true
-    },
-    {
-      "id": "UI-Fix-Grid-Lines",
-      "title": "大幅提升棋盘交叉线与楚河汉界对比度",
-      "description": "视觉Bug：目前四个主题的棋盘网格线几乎看不见。请修改 Board.vue 和 theme.ts：1. 严禁使用极低透明度的边框（如 border-black/10 或 opacity 属性）。2. 为每个主题配置【高对比度】的实线颜色 (lineColor)。例如：经典/墨韵使用实心深褐色（#5C4033），极简使用中度灰色（#9CA3AF），赛博使用明亮的青蓝色（#06B6D4）。3. 确保棋盘内部的交叉线、外围边框以及‘楚河汉界’的分割线，统一使用此高对比度颜色，必须清晰可见。",
-      "passes": true
-    },
-    {
-      "id": "UI-Fix-Piece-Contrast",
-      "title": "强制固化红黑棋子字体颜色（禁用暗黑模式反转）",
-      "description": "严重视觉Bug：当前棋子的文字颜色会随着全局 Dark Mode（暗黑模式）错误反转为白色，导致在白底棋子上完全看不见（参考 093662.jpg），且彻底丢失了红黑阵营区分。请立即修改 Piece.vue 或 theme.ts：1. 彻底删除棋子文字上的 `dark:text-...` 等响应式类名。2. 强制绑定阵营颜色：红方棋子无论什么主题和模式，文字必须是固定的红色（如 text-red-600 或 #C82C2C）；黑方棋子文字必须是固定的深黑色（如 text-gray-900 或 #111827）。（赛博主题可保持发光设定，但必须严格区分红蓝两方）。",
-      "passes": true
-    },
-    {
-      "id": "UI-Fix-Board-Boundary",
-      "title": "移除棋盘模糊装饰性边界，大幅提升交叉线对比度",
-      "description": "严重视觉Bug：棋盘边界呈现模糊、带有渐变或模糊效果的装饰性图案（参考 093641.jpg 和 093662.jpg），严重干扰棋局判定。1. 立即修改 Board.vue 的外围容器：彻底移除所有模糊、阴影、 border-image 或复杂的 linear-gradient 背景，强制将棋盘边界改为一条 Crisp（清晰）的单色 solid 边框。2. 提升内部交叉线对比度：严禁使用低透明度的线条（如 border-black/10），请为每个主题配置【高对比度】的实线颜色。例如：经典主题使用实心深褐色（#5C4033），极简使用中度灰色（#9CA3AF）。3. 确保九宫格斜线清晰锐利。",
-      "passes": true
-    },
-    {
-      "id": "UI-Opt-Board-Layout",
-      "title": "移除坐标系并放大棋盘与棋子尺寸",
-      "description": "优化 Board.vue 的布局结构：1. 彻底删除棋盘外围的坐标标识（包括顶部的阿拉伯数字 1-9、底部的中文数字、以及两侧的行号）。2. 在移除坐标后，将释放出的空间全部用于放大核心的 9x10 对弈网格。3. 相应地增大 Piece.vue 中棋子的宽高尺寸（例如从 w-10 h-10 增加到 w-14 h-14 或适应容器的百分比），让棋盘内容更加饱满，视觉效果对齐标准移动端象棋 App。",
-      "passes": true
-    },
-    {
-      "id": "UI-Opt-River-Style",
-      "title": "重构楚河汉界样式（合并单元格与去除杂线）",
-      "description": "修复 Board.vue 中楚河汉界（第5与第6行之间）的渲染异常：1. 移除目前通过 v-for 循环生成的重复文字（如‘楚楚楚’、‘河河河’）。2. 取消河流区域内部的水平边框线（dashed/dotted），使河流成为一个完整的空白矩形区域。3. 在河流区域内，使用绝对定位或 Flex 居中，在左侧放置‘楚河’，右侧放置‘汉界’，字体需放大且颜色与当前主题的线条颜色（lineColor）保持一致，实现图一中干净无边框的河流效果。",
-      "passes": true
-    },
-    {
-      "id": "UI-Refactor-Board-Grid",
-      "title": "重构棋盘底层网格（使用解耦的 SVG 或背景层绘制）",
-      "description": "当前的 Board.vue 棋盘网格绘制逻辑混乱导致交叉线和楚河汉界无法对齐。请放弃使用嵌套 div 来拼凑边框的做法。要求重构棋盘背景：1. 采用绝对定位的底层容器，专门用于绘制网格。2. 强烈建议使用行内 SVG (Inline SVG) 来绘制棋盘的 9条竖线 和 10条横线，以及九宫格的斜线。在绘制竖线时，在 y 轴的楚河汉界区域主动断开（不画线）。3. 使用普通的 div 绝对定位来居中展示'楚河'与'汉界'文字。4. 表层的棋子 (Piece) 使用相对坐标系独立渲染，覆盖在 SVG 网格之上。请确保重构后代码结构极致清晰。",
-      "passes": true
-    },
-    {
-      "id": "UI-SVG-Math-Blueprint",
-      "title": "注入精确的SVG坐标系与楚河汉界图纸",
-      "description": "目前的 SVG 棋盘缺少线条颜色，且比例错误导致没有河道空间。请严格按照以下数学模型修改 Board.vue 的 SVG 背景：1. 设定 <svg viewBox='0 0 900 1000' width='100%' height='100%'>。这代表留出 50px 的内边距。2. 棋盘网格从 (50, 50) 画到 (850, 950)。3. 所有的 line 和 rect 必须加上 stroke 颜色（读取 lineColor）和 stroke-width='2'。4. 绘制外边框：<rect x='50' y='50' width='800' height='900' fill='none' />。5. 绘制 8 条内部横线：y坐标为 150, 250... 到 850，x 从 50 到 850。6. 绘制内部竖线：x坐标为 150, 250... 到 750。竖线必须断开楚河汉界，即上半段 y 从 50 到 450，下半段 y 从 550 到 950。7. 绘制九宫格斜线（上：350,50到550,250等；下：350,750到550,950等）。",
-      "passes": true
-    },
-    {
-      "id": "Logic-Unified-Record-Service",
-      "title": "构建通用的棋谱数据服务层（支持多游戏类型）",
-      "description": "目前象棋缺少后端实现。请在数据层（Store 或 API Service）重构并统一棋谱获取逻辑：1. 引入 `game_type` 字段（'gomoku' | 'chinese_chess'）。2. 重写 `fetchRecords(gameType)` 接口调用，确保请求时携带 game_type。3. 强制执行统一权限：Admin 存为 `is_public: true`，普通用户存为 `is_public: false`。4. 过滤逻辑：后端/Store 必须根据 `(is_public == true) OR (owner_id == current_user.id)` 且匹配 `game_type` 来返回数据。如果后端暂无象棋接口，请在 API 层先通过 `game_type` 路由到对应的 Mock 或扩展现有接口。",
-      "passes": true
-    },
-    {
-      "id": "UI-Refactor-Gomoku-Records",
-      "title": "使用通用逻辑重构五子棋棋谱列表",
-      "description": "基于 Unified-Record-Service 改造五子棋。1. 移除组件内所有 filter 代码。2. 调用 `fetchRecords(‘gomoku’)`。3. 渲染 screenshots/image_969bb9.png 所示的列表，根据 `is_public` 标记’共有’或’私有’标签。",
-      "passes": true
-    },
-    {
-      "id": "UI-Implement-Chess-Records",
-      "title": "从零实现中国象棋棋谱列表功能",
-      "description": "中国象棋目前完全没有棋谱功能，请复刻五子棋的交互模式：1. 在象棋界面添加’棋谱列表’按钮与弹窗。2. 调用 `fetchRecords(‘chinese_chess’)`。3. 实现象棋棋谱的保存逻辑，确保保存时标记 `game_type: ‘chinese_chess’`。4. 确保权限逻辑（Admin 公有/个人私有）在象棋中同样生效。5. 使用 Puppeteer/dev-browser 截图验证象棋列表的保存与展示是否正确。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-Chess-Import-Crash",
-      "title": "修复中国象棋导入棋谱导致页面崩溃的问题",
-      "description": "严重Bug：在中国象棋界面点击导入棋谱时，控制台报错 `TypeError: Cannot read properties of undefined` 且页面白屏（主要发生在 HistoryPanel 或还原棋局历史的 moveToHistory 函数中）。请按以下步骤修复：1. 检查棋谱数据的反序列化（解析）逻辑，严禁将五子棋的 history 解析方式强加于象棋。2. 为 `game_type === ‘chinese_chess’` 编写专属的棋局还原逻辑，确保正确读取象棋的 move 对象（包含起点、终点、被吃掉的棋子等结构）。3. 增加健壮性校验，遇到无效步骤时拦截报错而不是让页面崩溃。4. 使用 puppeteer 模拟导入操作确保不再报错。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-Record-Permission-Leak",
-      "title": "修复 Admin 越权查看他人私有棋谱的 Bug",
-      "description": "严重权限Bug：当前 Admin 账号错误地看到了非 Admin 用户创建的’私有’棋谱（即 is_public 为 false 的记录）。请立即修复数据层（API 或 Store）的 `fetchRecords` 过滤逻辑。必须严格遵守以下真值表限制：\n- 当 `currentUser.role === ‘admin’` 时：查询条件必须【仅仅】是 `is_public === true`（即只能获取公有棋谱，绝对不能返回 is_public === false 的记录）。\n- 当 `currentUser.role !== ‘admin’` 时：查询条件是 `is_public === true OR owner_id === currentUser.id`。\n请仔细检查 if-else 分支或数据库查询语句，移除类似于 `if(isAdmin) return all` 的错误惯性逻辑。",
-      "passes": true
-    },
-    {
-      "id": "Bugfix-Chess-Board-Replay",
-      "title": "修复象棋导入棋谱后棋盘状态未重建导致视图消失的问题",
-      "description": "严重状态Bug：导入中国象棋棋谱后，右侧历史记录已成功渲染（如 image_ae8121.png），但左侧棋盘及棋子完全消失。这表明数据流正常，但游戏核心引擎的响应式状态未能正确重建。请排查对应的加载历史逻辑（如 `loadHistory`、`importRecord` 或引擎类中的状态恢复方法）：1. 在导入历史记录前，必须先调用初始化方法，将棋盘重置为标准的象棋开局状态。2. 确保遍历历史记录进行步骤推演（Replay）后，将最终的棋子分布数据（pieces）正确、安全地赋值给 Vue 的响应式变量（ref 或 reactive），绝对不要破坏对象的响应式代理。3. 检查 Board.vue 中是否有依赖棋子数量的异常 v-if 导致 SVG 背景层也被隐藏。4. 强制要求：修复完成后，使用 dev-browser/puppeteer 完整模拟一次“点击导入 -> 检查棋盘是否渲染 -> 检查棋子位置是否与历史记录对应”的流程。",
-      "passes": true
-    }
-  ]
-}
+[
+  {
+    "branchName": "feature/chinese-chess",
+    "stories": [
+      {
+        "id": "S1",
+        "title": "创建中国象棋类型定义文件",
+        "description": "在 gomoku-web/src/chinese-chess/types.ts 中定义棋子类型枚举、棋盘坐标、游戏状态、移动历史等接口。确保严格使用 TypeScript 类型，避免 any 类型。预估代码约 80 行。",
+        "passes": true
+      },
+      {
+        "id": "S2",
+        "title": "实现棋盘初始化和状态管理",
+        "description": "在 gomoku-web/src/chinese-chess/boardState.ts 中实现标准棋盘初始化（9x10）、棋子位置设置、当前回合管理和游戏状态管理。预估代码约 100 行。",
+        "passes": true
+      },
+      {
+        "id": "S3",
+        "title": "实现车（Rook）的移动规则验证",
+        "description": "在 gomoku-web/src/chinese-chess/rules/rook.ts 中实现车的移动规则：直线移动，不能越过其他棋子。预估代码约 60 行。",
+        "passes": true
+      },
+      {
+        "id": "S4",
+        "title": "实现马（Knight）的移动规则验证",
+        "description": "在 gomoku-web/src/chinese-chess/rules/knight.ts 中实现马的移动规则：日字移动，检查绊马腿（马腿位置是否有棋子）。预估代码约 70 行。",
+        "passes": true
+      },
+      {
+        "id": "S5",
+        "title": "实现炮（Cannon）的移动规则验证",
+        "description": "在 gomoku-web/src/chinese-chess/rules/cannon.ts 中实现炮的移动规则：直线移动，吃子时必须隔一个棋子（炮架）。预估代码约 70 行。",
+        "passes": true
+      },
+      {
+        "id": "S6",
+        "title": "实现兵（Pawn）的移动规则验证",
+        "description": "在 gomoku-web/src/chinese-chess/rules/pawn.ts 中实现兵的移动规则：过河前只能向前，过河后可左右移动，不能后退。预估代码约 60 行。",
+        "passes": true
+      },
+      {
+        "id": "S7",
+        "title": "实现士（Advisor）和象（Elephant）的移动规则验证",
+        "description": "在 gomoku-web/src/chinese-chess/rules/advisor-elephant.ts 中实现士和象的移动规则：士斜线移动（九宫格内）；象田字移动，不能过河，塞象眼。预估代码约 80 行。",
+        "passes": true
+      },
+      {
+        "id": "S8",
+        "title": "实现将（King）的移动规则验证",
+        "description": "在 gomoku-web/src/chinese-chess/rules/king.ts 中实现将的移动规则：九宫格内移动，将帅不能直接照面（中间无棋子）。预估代码约 70 行。",
+        "passes": true
+      },
+      {
+        "id": "S9",
+        "title": "实现将军检测逻辑",
+        "description": "在 gomoku-web/src/chinese-chess/rules/check.ts 中实现将军检测：检查当前玩家是否被将军（将/帅受到攻击）。预估代码约 90 行。",
+        "passes": true
+      },
+      {
+        "id": "S10",
+        "title": "实现将死检测逻辑",
+        "description": "在 gomoku-web/src/chinese-chess/rules/checkmate.ts 中实现将死检测：检查当前玩家是否无合法移动（将死）。预估代码约 100 行。",
+        "passes": true
+      },
+      {
+        "id": "S11",
+        "title": "创建游戏逻辑主文件",
+        "description": "在 gomoku-web/src/chinese-chess/gameLogic.ts 中集成所有规则，导出主要函数（移动验证、将军检测、胜负判定等）。预估代码约 100 行。",
+        "passes": true
+      },
+      {
+        "id": "S12",
+        "title": "编写单元测试框架配置",
+        "description": "在 gomoku-web/vitest.config.ts 或扩展现有配置，配置测试环境支持 TypeScript。预估代码约 40 行。",
+        "passes": true
+      },
+      {
+        "id": "S13a",
+        "title": "为车（Rook）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/rook.test.ts 中编写车的移动规则测试用例，包括直线移动、路径阻塞、吃子验证等。预估代码约 50 行。",
+        "passes": true
+      },
+      {
+        "id": "S13b",
+        "title": "为马（Knight）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/knight.test.ts 中编写马的移动规则测试用例，包括日字移动、绊马腿检测、吃子验证等。预估代码约 50 行。",
+        "passes": true
+      },
+      {
+        "id": "S13c",
+        "title": "为炮（Cannon）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/cannon.test.ts 中编写炮的移动规则测试用例，包括直线移动、炮架检测、吃子验证等。预估代码约 50 行。",
+        "passes": true
+      },
+      {
+        "id": "S13d",
+        "title": "为兵（Pawn）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/pawn.test.ts 中编写兵的移动规则测试用例，包括过河前后移动、不能后退、吃子验证等。预估代码约 50 行。",
+        "passes": true
+      },
+      {
+        "id": "S13e",
+        "title": "为士（Advisor）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/advisor-elephant.test.ts 中编写士的移动规则测试用例，包括九宫格内斜线移动、边界检测、吃子验证等。预估代码约 25 行。",
+        "passes": true
+      },
+      {
+        "id": "S13f",
+        "title": "为象（Elephant）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/advisor-elephant.test.ts 中编写象的移动规则测试用例，包括田字移动、塞象眼检测、过河限制、吃子验证等。预估代码约 25 行。",
+        "passes": true
+      },
+      {
+        "id": "S13g",
+        "title": "为将（King）编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/king.test.ts 中编写将的移动规则测试用例，包括九宫格内移动、将帅照面检测、吃子验证等。预估代码约 50 行。",
+        "passes": true
+      },
+      {
+        "id": "S14",
+        "title": "为将军和将死检测编写单元测试",
+        "description": "在 gomoku-web/src/chinese-chess/rules/__tests__/check.test.ts 中测试将军和将死检测的各种场景。预估代码约 100 行。",
+        "passes": true
+      },
+      {
+        "id": "S15",
+        "title": "创建中国象棋 AI 基础框架",
+        "description": "在 gomoku-web/src/chinese-chess/ai/minimax.ts 中实现基本的 minimax 搜索，评估函数（棋子价值、位置）。预估代码约 100 行。",
+        "passes": true
+      },
+      {
+        "id": "S16",
+        "title": "将 AI 算法迁移到 Web Worker",
+        "description": "在 gomoku-web/src/chinese-chess/ai/aiWorker.ts 中创建 Worker，接收棋盘状态，返回最佳移动。预估代码约 80 行。",
+        "passes": true
+      },
+      {
+        "id": "S17",
+        "title": "创建中国象棋棋盘 UI 组件",
+        "description": "在 gomoku-web/src/components/chinese-chess/Board.vue 中渲染 9x10 棋盘，显示棋子（汉字或图标），处理点击事件，复用现有样式。预估代码约 150 行。",
+        "passes": true
+      },
+      {
+        "id": "S18",
+        "title": "创建中国象棋游戏控制组件",
+        "description": "在 gomoku-web/src/components/chinese-chess/GameControls.vue 中实现游戏模式选择、难度设置、悔棋、重新开始等，复用现有组件结构。预估代码约 120 行。",
+        "passes": true
+      },
+      {
+        "id": "S19",
+        "title": "创建中国象棋主视图",
+        "description": "在 gomoku-web/src/views/ChineseChessView.vue 中整合棋盘、控制面板、状态显示，管理游戏状态，复用 GameView.vue 的结构。预估代码约 200 行。",
+        "passes": true
+      },
+      {
+        "id": "S20",
+        "title": "在 i18n 中添加中国象棋翻译键",
+        "description": "在 gomoku-web/src/i18n.ts 中添加标题、棋子名称、游戏状态等翻译，确保所有用户界面文本使用 i18n 翻译。预估代码约 50 行。",
+        "passes": true
+      },
+      {
+        "id": "S21",
+        "title": "集成到现有路由和导航",
+        "description": "在 gomoku-web/src/router/index.ts 中添加中国象棋路由，更新导航菜单。预估代码约 30 行。",
+        "passes": true
+      },
+      {
+        "id": "S22",
+        "title": "进行端到端测试和 UI 验证",
+        "description": "手动测试游戏流程，AI 对战，规则正确性，验证各组件集成。无需新代码，但需要完整验证。",
+        "passes": true
+      },
+      {
+        "id": "S23a",
+        "title": "实现落子合法路径计算逻辑",
+        "description": "在 engine.ts 中新增 getLegalMovesForPiece 方法，根据当前棋子位置和规则引擎返回所有可落子的坐标数组。需包含单元测试验证。",
+        "passes": true
+      },
+      {
+        "id": "S23b",
+        "title": "渲染带呼吸灯效果的落子提示",
+        "description": "在 Board.vue 中，当棋子被选中时，渲染合法落子位置的提示点。提示点需具备呼吸动画效果：透明度在 0.3 到 0.8 之间循环，周期为 1.5s。使用 Tailwind 的 animate-pulse 或自定义 CSS 实现。",
+        "passes": true
+      },
+      {
+        "id": "S24",
+        "title": "重构象棋传统坐标系显示",
+        "description": "修改棋盘边缘渲染，上方（黑方）显示数字 1-9，下方（红方）显示中文数字‘九’至‘一’。确保与棋盘格子精准对齐。",
+        "passes": true
+      },
+      {
+        "id": "S25a",
+        "title": "完善悔棋底层数据结构",
+        "description": "修改 boardState.ts 中的移动记录逻辑，确保每一条 move 记录都包含被吃掉棋子的类型和颜色（capturedPiece）。",
+        "passes": true
+      },
+      {
+        "id": "S25b",
+        "title": "修复悔棋 UI 复原逻辑",
+        "description": "根据 S25a 完善的数据，在执行 undo 操作时，不仅回退坐标，还要将 capturedPiece 重新渲染到棋盘上。",
+        "passes": true
+      },
+      {
+        "id": "S26a",
+        "title": "实现中国象棋标准记谱法逻辑",
+        "description": "开发专门的记谱器（Notation Generator），将坐标移动转换为‘炮二平五’、‘马八进七’等标准中文术语。需处理红黑方差异。",
+        "passes": true
+      },
+      {
+        "id": "S26b",
+        "title": "实时渲染对局棋谱列表",
+        "description": "在右侧面板展示 S26a 生成的术语列表，支持自动滚动至底部。样式需与五子棋对战记录保持一致。",
+        "passes": true
+      },
+      {
+        "id": "S27a",
+        "title": "全局品牌更名：棋林（QiLin）",
+        "description": "在前端 i18n、HTML Title 和 Footer 中，将所有‘五林’或‘五子棋’品牌文案更改为‘棋林’。确保全局搜索替换时不会破坏代码逻辑变量名。",
+        "passes": true
+      },
+      {
+        "id": "S27b",
+        "title": "导航栏与路由标签优化",
+        "description": "在前端组件中将‘去下棋’标签重命名为‘五子棋’，新增‘中国象棋’标签（如果不存在）。更新路由配置文件中的面包屑和页面标题。",
+        "passes": true
+      },
+      {
+        "id": "S28",
+        "title": "棋林智能体（Agent）提示词升级",
+        "description": "更新 AI Agent 的系统提示词文件。将设定从五子棋专用改为‘棋林通用棋类专家’，使其能同时理解五子棋和中国象棋的规则。同步更新 UI 中的智能体名称。",
+        "passes": true
+      },
+      {
+        "id": "S29",
+        "title": "前端目录模块化：提取共享逻辑",
+        "description": "在 src 目录下创建 common 或 shared 文件夹，移动通用的 UI 组件（如按钮、弹窗）和工具函数，为后续隔离 Gomoku 和 Chess 做准备。",
+        "passes": true
+      },
+      {
+        "id": "S30a1",
+        "title": "前端：五子棋逻辑与状态层迁移",
+        "description": "在 src/games/gomoku/ 下建立基础结构。将五子棋专属的类型定义(types)、AI Web Worker 代码、以及状态管理相关文件移动过去。此阶段只关注底层文件，仅修复它们之间的相互引用。",
+        "passes": true
+      },
+      {
+        "id": "S30a2",
+        "title": "前端：五子棋 UI 组件层迁移",
+        "description": "将五子棋专属的 UI 组件（棋盘 Board、控制面板等）移动到 src/games/gomoku/components 目录。修复这些组件内部对 S30a1 中逻辑文件的引用路径。",
+        "passes": true
+      },
+      {
+        "id": "S30a3",
+        "title": "前端：五子棋视图与全局路由修复",
+        "description": "将五子棋的主视图（View/Page）移入 src/games/gomoku/。全面扫描 router 路由配置和 App 入口，修复所有指向五子棋模块的失效 import 路径。必须运行 npm run typecheck 确保 0 报错。",
+        "passes": true
+      },
+      {
+        "id": "S30b1",
+        "title": "前端：中国象棋逻辑与状态层迁移",
+        "description": "将中国象棋的类型定义、规则引擎 (engine) 和状态管理移动到 src/games/chinese-chess/ 下。修复模块内部的引用路径。",
+        "passes": true
+      },
+      {
+        "id": "S30b2",
+        "title": "前端：中国象棋 UI 组件与视图迁移",
+        "description": "将中国象棋的组件和视图移入 src/games/chinese-chess/。修复 router 中的路径引用。最后运行一次全局的前端编译和类型检查，确保模块化重构成功。",
+        "passes": true
+      },
+      {
+        "id": "S31",
+        "title": "后端 Express：创建模块化路由结构",
+        "description": "在 Express 后端 src/routes 目录下建立子目录结构。为不同的游戏业务预留独立的挂载点。确保符合项目现有的代码规范。",
+        "passes": true
+      },
+      {
+        "id": "S32",
+        "title": "后端：五子棋业务逻辑迁移",
+        "description": "将现有的五子棋 API 路由和控制器移动到后端的独立业务模块中。更新 express.Router() 的导出方式，确保模块化清晰。",
+        "passes": true
+      },
+      {
+        "id": "S33",
+        "title": "后端：中国象棋业务逻辑迁移",
+        "description": "将已有的中国象棋后端验证逻辑或 AI 接口移动到对应的业务模块中。修复所有的 import/require 路径。",
+        "passes": true
+      },
+      {
+        "id": "S34",
+        "title": "后端：重构主入口文件（app.ts/index.ts）",
+        "description": "修改 Express 主入口，按模块注册路由（例如 app.use('/api/gomoku', ...) 和 app.use('/api/chess', ...)）。确保中间件配置依然生效。",
+        "passes": true
+      },
+      {
+        "id": "S35",
+        "title": "全链路冒烟测试与重构验证",
+        "description": "启动前端和后端服务。验证五子棋和中国象棋的功能是否依然正常（包括下棋、悔棋和 AI 对战）。检查是否有遗漏的‘五林’文案。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-1",
+        "title": "修复 Board.vue 渲染崩溃与完善选中交互",
+        "description": "1. 修复 Bug：解决 Board.vue 中 'Cannot read properties of undefined (reading \"some\")' 的渲染报错，确保在调用数组方法前使用可选链 (?.) 或默认空数组判断。2. 优化 UI：当点击己方棋子时，被选中的棋子本身需增加明显的活跃状态（如外发光或轻微放大 scale-105）。3. 优化 UI：确保被选中棋子的合法落子点正确渲染出‘呼吸灯’效果（CSS opacity 在 0.3 到 0.8 之间循环过渡）。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-2",
+        "title": "修复并实现右侧对战记录（棋谱）渲染",
+        "description": "排查右侧对战记录面板始终显示‘暂无落子记录’的问题。确保象棋的引擎状态（boardState）与 HistoryPanel 组件的数据绑定是响应式的。将内部的历史移动数据，正确转换为中国象棋标准记谱法（如‘炮二平五’、‘马八进七’）并实时渲染在列表中，每次新增记录需自动滚动到底部。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-3",
+        "title": "修复吃子目标格无提示灯的 Bug",
+        "description": "排查 Board.vue 中合法落子提示（呼吸灯）的渲染逻辑。当前当合法落子点存在敌方棋子时（例如红炮可以跨子吃黑卒），该格子没有提示。请修改 Vue 模板或 CSS（如 z-index），确保敌方棋子所在格也能正常显示提示（建议使用红色边框高亮或叠加准星图标来区分普通的移动提示）。",
+        "passes": true
+      },
+      {
+        "id": "Feature-Theme-1",
+        "title": "定义全局主题配置与常量",
+        "description": "在 src/common/ (或全局 types 目录) 下新建 theme.ts，定义四种主题配置对象：1. 'default' (经典默认)；2. 'zen' (墨韵檀香：暖木色/宣纸背景，低对比度线条)；3. 'cyber' (赛博弈域：深灰蓝背景，带发光质感的强调色)；4. 'minimal' (极简奢华：石板灰背景，莫兰迪色系搭配)。配置需包含棋盘背景色、线条色、棋子主色和文字色。",
+        "passes": true
+      },
+      {
+        "id": "Feature-Theme-2",
+        "title": "实现独立的主题状态管理",
+        "description": "在项目中统一的状态管理处（如 Pinia store 或 Vue 组合式函数 useSettings），新增两个独立的状态：gomokuTheme 和 chessTheme，默认值均为 'default'。必须实现 localStorage 的持久化存储，确保刷新页面后两种棋的独立主题配置不丢失。",
+        "passes": true
+      },
+      {
+        "id": "Feature-Theme-3",
+        "title": "开发公共的主题切换选择器",
+        "description": "在 src/common/components/ 下创建一个公用的 ThemeSelector.vue 下拉选择器组件，支持传入当前选中的主题 key 和 update 事件。分别将该组件引入到五子棋和中国象棋的 GameControls.vue 控制面板中，并绑定各自独立的主题状态 (gomokuTheme / chessTheme)。",
+        "passes": true
+      },
+      {
+        "id": "Feature-Theme-4",
+        "title": "将主题应用到五子棋视图",
+        "description": "修改 src/games/gomoku 下的 Board.vue 和 Piece.vue。读取当前 gomokuTheme 的状态，利用 Vue 的动态 style 或 class (推荐计算属性结合 Feature-Theme-1 定义的颜色变量)，动态渲染五子棋的棋盘背景、网格线和黑白棋子颜色。确保切换主题时无刷新平滑过渡。",
+        "passes": true
+      },
+      {
+        "id": "Feature-Theme-5",
+        "title": "将主题应用到中国象棋视图",
+        "description": "修改 src/games/chinese-chess 下的 Board.vue 和 棋盘相关的组件。读取当前 chessTheme 的状态，动态渲染中国象棋的棋盘底色、楚河汉界样式、以及红黑双方棋子的底色和文字颜色。确保切换主题时无刷新平滑过渡，且不影响之前做好的‘呼吸灯’和吃子提示功能。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-Theme-Render",
+        "title": "修复主题配置导致的前端渲染崩溃白屏",
+        "description": "修复页面白屏问题。控制台报错提示：1. '[Vue warn]: Invalid prop: type check failed for prop \"theme\". Expected String, got Object'. 2. 'Uncaught TypeError: Cannot read properties of undefined (reading \"boardBackground\")' 位于 Board.vue。请排查主题数据的传递链路（Store/Composable -> GameView -> Board）。如果 Board.vue 接收的是主题 key (String)，请在内部通过 key 从 theme.ts 获取完整对象；如果在读取 boardBackground 时报错，请检查响应式绑定并添加可选链 (?.)。必须确保棋盘 UI 重新正常渲染。",
+        "passes": true
+      },
+      {
+        "id": "UI-Refine-1",
+        "title": "修复棋盘底层网格错误 (去除国际象棋格子)",
+        "description": "严重Bug：当前中国象棋棋盘被错误渲染成了国际象棋的黑白相间格子。请立即修改 Board.vue，删除所有交替格子（alternating squares）的背景色逻辑。棋盘必须是一个统一的、纯色的底层背景色（boardBackground），网格只能通过边框线（border）来体现。楚河汉界区域也不得有任何填色异常。",
+        "passes": true
+      },
+      {
+        "id": "UI-Refine-2",
+        "title": "强制恢复棋子红黑阵营颜色与可读性",
+        "description": "严重Bug：棋子无法区分红黑方且看不清文字。修改 Piece.vue：1. 棋子必须有不透明的实心背景色（如白色或浅米色），加上边框（border）和阴影（shadow-md）使其浮在棋盘上。2. 无论什么主题，红方棋子的文字颜色必须是红色系（如 text-red-600 或 #C82C2C），黑方必须是深色系（如 text-gray-900 或 #1A1A1A）。【赛博主题除外：赛博主题下红方用荧光粉/红，黑方用青/蓝，且自带发光特效】。",
+        "passes": true
+      },
+      {
+        "id": "UI-Refine-3",
+        "title": "重新注入四大主题的精确色号定义",
+        "description": "修改 theme.ts，严格使用以下色彩规范重写主题配置，严禁随意发挥：\n1. default: 棋盘 bg-[#F3E5AB] (原木色), 线条 border-[#8B4513], 棋子底色 bg-white, 选中高亮 ring-green-500。\n2. zen (墨韵): 棋盘 bg-[#E8DCC4] (柔和宣纸色), 线条 border-[#5C4033], 棋子底色 bg-[#F5F5DC], 红字 #8B0000, 黑字 #1A1A1A。\n3. cyber (赛博): 棋盘 bg-[#0F172A] (深渊蓝), 线条 border-[#38BDF8]/50 (半透明天蓝), 棋子底色 bg-[#1E293B], 红方 text-[#F43F5E] 并带 drop-shadow, 黑方 text-[#2DD4BF] 带 drop-shadow。\n4. minimal (极简): 棋盘 bg-[#F9FAFB], 线条 border-[#D1D5DB], 棋子底色 bg-white 且无明显边框(仅极淡阴影), 红字 #EF4444, 黑字 #374151。",
+        "passes": true
+      },
+      {
+        "id": "UI-Fix-Piece-Color",
+        "title": "强制固化红黑棋子字体颜色（禁用暗黑模式反转）",
+        "description": "严重视觉Bug：当前棋子的文字颜色会随着全局 Dark Mode（暗黑模式）错误反转为白色，导致在白底棋子上完全看不见，且彻底丢失了红黑阵营区分。请立即修改 Piece.vue 或 theme.ts：1. 彻底删除棋子文字上的 `dark:text-...` 等响应式类名。2. 强制绑定阵营颜色：红方棋子无论什么主题和模式，文字必须是固定的红色（如 text-red-600 或 #C82C2C）；黑方棋子文字必须是固定的深黑色（如 text-gray-900 或 #111827）。（赛博主题可保持发光设定，但必须严格区分红蓝两方）。",
+        "passes": true
+      },
+      {
+        "id": "UI-Fix-Grid-Lines",
+        "title": "大幅提升棋盘交叉线与楚河汉界对比度",
+        "description": "视觉Bug：目前四个主题的棋盘网格线几乎看不见。请修改 Board.vue 和 theme.ts：1. 严禁使用极低透明度的边框（如 border-black/10 或 opacity 属性）。2. 为每个主题配置【高对比度】的实线颜色 (lineColor)。例如：经典/墨韵使用实心深褐色（#5C4033），极简使用中度灰色（#9CA3AF），赛博使用明亮的青蓝色（#06B6D4）。3. 确保棋盘内部的交叉线、外围边框以及‘楚河汉界’的分割线，统一使用此高对比度颜色，必须清晰可见。",
+        "passes": true
+      },
+      {
+        "id": "UI-Fix-Piece-Contrast",
+        "title": "强制固化红黑棋子字体颜色（禁用暗黑模式反转）",
+        "description": "严重视觉Bug：当前棋子的文字颜色会随着全局 Dark Mode（暗黑模式）错误反转为白色，导致在白底棋子上完全看不见（参考 093662.jpg），且彻底丢失了红黑阵营区分。请立即修改 Piece.vue 或 theme.ts：1. 彻底删除棋子文字上的 `dark:text-...` 等响应式类名。2. 强制绑定阵营颜色：红方棋子无论什么主题和模式，文字必须是固定的红色（如 text-red-600 或 #C82C2C）；黑方棋子文字必须是固定的深黑色（如 text-gray-900 或 #111827）。（赛博主题可保持发光设定，但必须严格区分红蓝两方）。",
+        "passes": true
+      },
+      {
+        "id": "UI-Fix-Board-Boundary",
+        "title": "移除棋盘模糊装饰性边界，大幅提升交叉线对比度",
+        "description": "严重视觉Bug：棋盘边界呈现模糊、带有渐变或模糊效果的装饰性图案（参考 093641.jpg 和 093662.jpg），严重干扰棋局判定。1. 立即修改 Board.vue 的外围容器：彻底移除所有模糊、阴影、 border-image 或复杂的 linear-gradient 背景，强制将棋盘边界改为一条 Crisp（清晰）的单色 solid 边框。2. 提升内部交叉线对比度：严禁使用低透明度的线条（如 border-black/10），请为每个主题配置【高对比度】的实线颜色。例如：经典主题使用实心深褐色（#5C4033），极简使用中度灰色（#9CA3AF）。3. 确保九宫格斜线清晰锐利。",
+        "passes": true
+      },
+      {
+        "id": "UI-Opt-Board-Layout",
+        "title": "移除坐标系并放大棋盘与棋子尺寸",
+        "description": "优化 Board.vue 的布局结构：1. 彻底删除棋盘外围的坐标标识（包括顶部的阿拉伯数字 1-9、底部的中文数字、以及两侧的行号）。2. 在移除坐标后，将释放出的空间全部用于放大核心的 9x10 对弈网格。3. 相应地增大 Piece.vue 中棋子的宽高尺寸（例如从 w-10 h-10 增加到 w-14 h-14 或适应容器的百分比），让棋盘内容更加饱满，视觉效果对齐标准移动端象棋 App。",
+        "passes": true
+      },
+      {
+        "id": "UI-Opt-River-Style",
+        "title": "重构楚河汉界样式（合并单元格与去除杂线）",
+        "description": "修复 Board.vue 中楚河汉界（第5与第6行之间）的渲染异常：1. 移除目前通过 v-for 循环生成的重复文字（如‘楚楚楚’、‘河河河’）。2. 取消河流区域内部的水平边框线（dashed/dotted），使河流成为一个完整的空白矩形区域。3. 在河流区域内，使用绝对定位或 Flex 居中，在左侧放置‘楚河’，右侧放置‘汉界’，字体需放大且颜色与当前主题的线条颜色（lineColor）保持一致，实现图一中干净无边框的河流效果。",
+        "passes": true
+      },
+      {
+        "id": "UI-Refactor-Board-Grid",
+        "title": "重构棋盘底层网格（使用解耦的 SVG 或背景层绘制）",
+        "description": "当前的 Board.vue 棋盘网格绘制逻辑混乱导致交叉线和楚河汉界无法对齐。请放弃使用嵌套 div 来拼凑边框的做法。要求重构棋盘背景：1. 采用绝对定位的底层容器，专门用于绘制网格。2. 强烈建议使用行内 SVG (Inline SVG) 来绘制棋盘的 9条竖线 和 10条横线，以及九宫格的斜线。在绘制竖线时，在 y 轴的楚河汉界区域主动断开（不画线）。3. 使用普通的 div 绝对定位来居中展示'楚河'与'汉界'文字。4. 表层的棋子 (Piece) 使用相对坐标系独立渲染，覆盖在 SVG 网格之上。请确保重构后代码结构极致清晰。",
+        "passes": true
+      },
+      {
+        "id": "UI-SVG-Math-Blueprint",
+        "title": "注入精确的SVG坐标系与楚河汉界图纸",
+        "description": "目前的 SVG 棋盘缺少线条颜色，且比例错误导致没有河道空间。请严格按照以下数学模型修改 Board.vue 的 SVG 背景：1. 设定 <svg viewBox='0 0 900 1000' width='100%' height='100%'>。这代表留出 50px 的内边距。2. 棋盘网格从 (50, 50) 画到 (850, 950)。3. 所有的 line 和 rect 必须加上 stroke 颜色（读取 lineColor）和 stroke-width='2'。4. 绘制外边框：<rect x='50' y='50' width='800' height='900' fill='none' />。5. 绘制 8 条内部横线：y坐标为 150, 250... 到 850，x 从 50 到 850。6. 绘制内部竖线：x坐标为 150, 250... 到 750。竖线必须断开楚河汉界，即上半段 y 从 50 到 450，下半段 y 从 550 到 950。7. 绘制九宫格斜线（上：350,50到550,250等；下：350,750到550,950等）。",
+        "passes": true
+      },
+      {
+        "id": "Logic-Unified-Record-Service",
+        "title": "构建通用的棋谱数据服务层（支持多游戏类型）",
+        "description": "目前象棋缺少后端实现。请在数据层（Store 或 API Service）重构并统一棋谱获取逻辑：1. 引入 `game_type` 字段（'gomoku' | 'chinese_chess'）。2. 重写 `fetchRecords(gameType)` 接口调用，确保请求时携带 game_type。3. 强制执行统一权限：Admin 存为 `is_public: true`，普通用户存为 `is_public: false`。4. 过滤逻辑：后端/Store 必须根据 `(is_public == true) OR (owner_id == current_user.id)` 且匹配 `game_type` 来返回数据。如果后端暂无象棋接口，请在 API 层先通过 `game_type` 路由到对应的 Mock 或扩展现有接口。",
+        "passes": true
+      },
+      {
+        "id": "UI-Refactor-Gomoku-Records",
+        "title": "使用通用逻辑重构五子棋棋谱列表",
+        "description": "基于 Unified-Record-Service 改造五子棋。1. 移除组件内所有 filter 代码。2. 调用 `fetchRecords(‘gomoku’)`。3. 渲染 screenshots/image_969bb9.png 所示的列表，根据 `is_public` 标记’共有’或’私有’标签。",
+        "passes": true
+      },
+      {
+        "id": "UI-Implement-Chess-Records",
+        "title": "从零实现中国象棋棋谱列表功能",
+        "description": "中国象棋目前完全没有棋谱功能，请复刻五子棋的交互模式：1. 在象棋界面添加’棋谱列表’按钮与弹窗。2. 调用 `fetchRecords(‘chinese_chess’)`。3. 实现象棋棋谱的保存逻辑，确保保存时标记 `game_type: ‘chinese_chess’`。4. 确保权限逻辑（Admin 公有/个人私有）在象棋中同样生效。5. 使用 Puppeteer/dev-browser 截图验证象棋列表的保存与展示是否正确。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-Chess-Import-Crash",
+        "title": "修复中国象棋导入棋谱导致页面崩溃的问题",
+        "description": "严重Bug：在中国象棋界面点击导入棋谱时，控制台报错 `TypeError: Cannot read properties of undefined` 且页面白屏（主要发生在 HistoryPanel 或还原棋局历史的 moveToHistory 函数中）。请按以下步骤修复：1. 检查棋谱数据的反序列化（解析）逻辑，严禁将五子棋的 history 解析方式强加于象棋。2. 为 `game_type === ‘chinese_chess’` 编写专属的棋局还原逻辑，确保正确读取象棋的 move 对象（包含起点、终点、被吃掉的棋子等结构）。3. 增加健壮性校验，遇到无效步骤时拦截报错而不是让页面崩溃。4. 使用 puppeteer 模拟导入操作确保不再报错。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-Record-Permission-Leak",
+        "title": "修复 Admin 越权查看他人私有棋谱的 Bug",
+        "description": "严重权限Bug：当前 Admin 账号错误地看到了非 Admin 用户创建的’私有’棋谱（即 is_public 为 false 的记录）。请立即修复数据层（API 或 Store）的 `fetchRecords` 过滤逻辑。必须严格遵守以下真值表限制：\n- 当 `currentUser.role === ‘admin’` 时：查询条件必须【仅仅】是 `is_public === true`（即只能获取公有棋谱，绝对不能返回 is_public === false 的记录）。\n- 当 `currentUser.role !== ‘admin’` 时：查询条件是 `is_public === true OR owner_id === currentUser.id`。\n请仔细检查 if-else 分支或数据库查询语句，移除类似于 `if(isAdmin) return all` 的错误惯性逻辑。",
+        "passes": true
+      },
+      {
+        "id": "Bugfix-Chess-Board-Replay",
+        "title": "修复象棋导入棋谱后棋盘状态未重建导致视图消失的问题",
+        "description": "严重状态Bug：导入中国象棋棋谱后，右侧历史记录已成功渲染（如 image_ae8121.png），但左侧棋盘及棋子完全消失。这表明数据流正常，但游戏核心引擎的响应式状态未能正确重建。请排查对应的加载历史逻辑（如 `loadHistory`、`importRecord` 或引擎类中的状态恢复方法）：1. 在导入历史记录前，必须先调用初始化方法，将棋盘重置为标准的象棋开局状态。2. 确保遍历历史记录进行步骤推演（Replay）后，将最终的棋子分布数据（pieces）正确、安全地赋值给 Vue 的响应式变量（ref 或 reactive），绝对不要破坏对象的响应式代理。3. 检查 Board.vue 中是否有依赖棋子数量的异常 v-if 导致 SVG 背景层也被隐藏。4. 强制要求：修复完成后，使用 dev-browser/puppeteer 完整模拟一次“点击导入 -> 检查棋盘是否渲染 -> 检查棋子位置是否与历史记录对应”的流程。",
+        "passes": true
+      }
+    ]
+  },
+  {
+    "branchName": "feature/gomoku-llm",
+    "stories": [
+      {
+        "id": "LLM-001-Types",
+        "title": "后端：创建 LLM AI 服务接口与类型定义",
+        "description": "这是纯类型定义任务。请在后端项目的适当位置（如 `src/types/` 或 `src/services/`）定义接口：1. `LLMMoveRequest`：包含棋盘状态(15x15数组)、当前玩家颜色、历史落子记录 history。2. `LLMMoveResponse`：包含推荐落子坐标 move (如 'H8') 和分析文本 reason。确保完全使用 TypeScript 强类型，暂不实现业务逻辑。",
+        "passes": true
+      },
+      {
+        "id": "LLM-002-Prompt-Builder",
+        "title": "后端：编写二维矩阵转换与 Prompt 组装工具",
+        "description": "纯纯工具类任务。在后端 `src/utils/` 创建 `boardPromptUtils.ts`：1. 编写函数将 15x15 的 pieces 数组转换为 ASCII 字符矩阵（X为黑，O为白，.为空位），增强 LLM 空间感知。2. 编写函数组装 System Prompt，严格要求 AI 作为五子棋专家，输出 {move: string, reason: string} 格式的 JSON，明确防守与进攻的思维链。暂不调用网络。",
+        "passes": true
+      },
+      {
+        "id": "LLM-003-API-Service",
+        "title": "后端：实现 DeepSeek API 调用与幻觉校验层",
+        "description": "核心逻辑任务。在 `src/services/llm-ai.service.ts` 中实现：1. 接收请求，调用上一步的工具生成 Prompt。2. 预留 DeepSeek API 调用代码（可使用 fetch 或已有 SDK）。3. 重点：编写解析返回 JSON 的 `validateMove` 函数，检查返回的坐标是否在 15x15 且为空位。4. 重点：如果大模型产生幻觉给出非法坐标，拦截错误，在空位中随机返回一个合法坐标作为兜底。5. 在对应的 routes 文件中暴露接口 `/api/games/gomoku/llm/move`。",
+        "passes": true
+      },
+      {
+        "id": "LLM-004-Frontend-API",
+        "title": "前端：创建 API 调用与状态管理",
+        "description": "前端数据层任务。在前端的 `src/games/gomoku/api/` 或对应位置：1. 编写请求 `/api/games/gomoku/llm/move` 的 axios/fetch 函数。2. 在五子棋的状态机（如 `useGomoku.ts`）中增加 `isAIThinking` 布尔值状态。3. 编写 `triggerAITurn` 方法，在方法内将 `isAIThinking` 设为 true，调用 API 获取坐标，然后调用底层 `placePiece` 落子，最后恢复 `isAIThinking` 为 false。",
+        "passes": true
+      },
+      {
+        "id": "LLM-005-UI-Integration",
+        "title": "前端：UI 交互集成与加载反馈",
+        "description": "最终的视图层任务。1. 在 `GameControls.vue` 的难度下拉菜单中添加 '神经网络(DeepSeek)' 选项。2. 当轮到 AI 且模式为神经网络时，禁用用户的棋盘点击事件。3. 当 `isAIThinking` 为 true 时，在右侧对战记录面板上方显示 'DeepSeek 正在推演局势...' 的加载提示。4. 使用 dev-browser 验证：选择神经网络模式，落下一子，观察前端是否能正确发送请求并在得到响应后自动落子。",
+        "passes": true
+      },
+      {
+        "id": "LLM-Opt-001-Threat-Detector",
+        "title": "编写纯逻辑的威胁检测扫描器",
+        "description": "纯算法工具任务。在 `src/utils/` 下创建一个独立文件 `threatDetector.ts`。要求：编写一个 `findCriticalMove(pieces, aiColor)` 函数。该函数扫描 15x15 的棋盘，寻找以下两种最高优先级情况：1. AI 存在可以立即连成五子的点（必胜）。2. 玩家存在’活三’或’冲四’的连线，AI 必须立刻堵截的坐标（防守必败）。如果存在这些关键坐标，返回该坐标（如 {r: 7, c: 6} 或 ‘H8’）；如果不存在，返回 null。请确保函数覆盖横向、纵向和两条对角线的扫描。",
+        "passes": true
+      },
+      {
+        "id": "LLM-Opt-002-Service-Interceptor",
+        "title": "在 LLM 服务层接入威胁拦截器",
+        "description": "API 逻辑优化任务。修改 `src/services/llm-ai.service.ts`（或对应的接口处理文件）。要求：在调用大模型 API 之前，先调用上一步的 `findCriticalMove`。1. 如果检测到关键坐标，直接跳过大模型网络请求，组装一个标准的 JSON 响应直接返回，例如 `{ \"move\": \"[计算出的坐标]\", \"reason\": \"AI 本能反应：这么明显的必杀/威胁，我当然要走这里！\", \"isFallback\": true }`。2. 只有当 `findCriticalMove` 返回 null 时，才去调用 DeepSeek 大模型让其进行战术思考。这样既保证了绝对的防守底线，又节省了 API 的 Token 消耗。",
+        "passes": true
+      }
+    ]
+  }
+]

@@ -90,6 +90,21 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   # 插入归档脚本：每次启动 AI 前先物理瘦身！
   node archive.js
 
+  # ==========================================
+  # 自动收尾与安全退出机制
+  # ==========================================
+  # 检查 prd.json 中是否还存在未完成的任务 (passes: false)
+  if ! grep -q '"passes": false' "$SCRIPT_DIR/prd.json"; then
+      echo "🎉 检测到所有任务已归档，准备自动收尾..."
+      
+      # 执行最终的代码提交
+      git add .
+      git commit -m "chore: all stories completed and archived" || echo "✅ 工作区干净，没有需要额外提交的文件。"
+      
+      echo "🚀 Ralph 自动化流水线圆满结束，强制退出循环！"
+      break
+  fi
+
   # Run the selected tool with the ralph prompt
   if [[ "$TOOL" == "amp" ]]; then
     OUTPUT=$(cat "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr) || true

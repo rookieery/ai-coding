@@ -1,11 +1,4 @@
 {
   "branchName": "feature/gomoku-llm",
-  "stories": [
-    {
-      "id": "LLM-Opt-002-Service-Interceptor",
-      "title": "在 LLM 服务层接入威胁拦截器",
-      "description": "API 逻辑优化任务。修改 `src/services/llm-ai.service.ts`（或对应的接口处理文件）。要求：在调用大模型 API 之前，先调用上一步的 `findCriticalMove`。1. 如果检测到关键坐标，直接跳过大模型网络请求，组装一个标准的 JSON 响应直接返回，例如 `{ \"move\": \"[计算出的坐标]\", \"reason\": \"AI 本能反应：这么明显的必杀/威胁，我当然要走这里！\", \"isFallback\": true }`。2. 只有当 `findCriticalMove` 返回 null 时，才去调用 DeepSeek 大模型让其进行战术思考。这样既保证了绝对的防守底线，又节省了 API 的 Token 消耗。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
