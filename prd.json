@@ -1,11 +1,4 @@
 {
   "branchName": "feature/agent-split-screen",
-  "stories": [
-    {
-      "id": "SPLIT-07-Interaction-AI-Response",
-      "title": "数据桥接：解析 AI 响应并同步渲染",
-      "description": "闭环联调任务。接续上一个任务的接口回调逻辑。当大模型接口返回成功时：1. 构造一条完整的 AI 消息插入左侧聊天流（必须包含 `reasoning_content` 以触发第 2 步写的折叠 UI）。2. 关闭 `isAIThinking` 状态。3. 提取返回的 `move` 坐标，调用右侧 `AgentGomokuPanel.vue` (或底层引擎) 的方法渲染白子。确保数据流向清晰，无死锁。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
