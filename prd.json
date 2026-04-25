@@ -2,16 +2,10 @@
   "branchName": "feature/gomoku-llm",
   "stories": [
     {
-      "id": "LLM-004-Frontend-API",
-      "title": "前端：创建 API 调用与状态管理",
-      "description": "前端数据层任务。在前端的 `src/games/gomoku/api/` 或对应位置：1. 编写请求 `/api/games/gomoku/llm/move` 的 axios/fetch 函数。2. 在五子棋的状态机（如 `useGomoku.ts`）中增加 `isAIThinking` 布尔值状态。3. 编写 `triggerAITurn` 方法，在方法内将 `isAIThinking` 设为 true，调用 API 获取坐标，然后调用底层 `placePiece` 落子，最后恢复 `isAIThinking` 为 false。",
-      "passes": true
-    },
-    {
       "id": "LLM-005-UI-Integration",
       "title": "前端：UI 交互集成与加载反馈",
       "description": "最终的视图层任务。1. 在 `GameControls.vue` 的难度下拉菜单中添加 '神经网络(DeepSeek)' 选项。2. 当轮到 AI 且模式为神经网络时，禁用用户的棋盘点击事件。3. 当 `isAIThinking` 为 true 时，在右侧对战记录面板上方显示 'DeepSeek 正在推演局势...' 的加载提示。4. 使用 dev-browser 验证：选择神经网络模式，落下一子，观察前端是否能正确发送请求并在得到响应后自动落子。",
-      "passes": false
+      "passes": true
     }
   ]
 }
