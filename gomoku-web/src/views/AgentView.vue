@@ -113,6 +113,7 @@ const handleUserMove = async (r: number, c: number) => {
         role: 'agent',
         text: reason,
         reasoningContent: isFallback ? undefined : reason,
+        isGameReasoning: true,
       });
 
       gomokuPanelRef.value.placeAiPiece(y, x);

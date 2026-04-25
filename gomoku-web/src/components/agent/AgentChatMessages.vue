@@ -71,7 +71,7 @@ defineExpose({
               <svg class="w-3 h-3 transition-transform details-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-              {{ t('agentReasoningSummary') }}
+              {{ msg.isGameReasoning ? t('agentReasoningSummary') : t('agentChatReasoningSummary') }}
             </summary>
             <div class="mt-2 text-xs leading-relaxed whitespace-pre-wrap font-mono opacity-70"
                  :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
