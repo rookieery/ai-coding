@@ -221,6 +221,10 @@ export interface Messages {
   agentGameSelectorPrompt: string;
   agentGameGomoku: string;
   agentGameChineseChess: string;
+  agentExitConfirmTitle: string;
+  agentExitConfirmMessage: string;
+  agentExitConfirmWarning: string;
+  agentStartNewGame: string;
 }
 
 export type MessageKey = keyof Messages;

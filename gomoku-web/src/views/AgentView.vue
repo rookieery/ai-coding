@@ -21,6 +21,7 @@ const query = ref('');
 const chatMessagesRef = ref<InstanceType<typeof AgentChatMessages> | null>(null);
 const chatInputRef = ref<InstanceType<typeof AgentChatInput> | null>(null);
 const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
+const showExitConfirm = ref(false);
 
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
 
@@ -42,11 +43,20 @@ const {
 const { leftPanelWidth, isDragging, startDrag } = useSplitDrag();
 
 const handleEnterGomokuMode = () => {
-  messages.value.push({
-    role: 'agent',
-    text: t('agentGameSelectorPrompt'),
-    isGameSelector: true
-  });
+  if (messages.value.length === 0) {
+    messages.value.push({
+      role: 'agent',
+      text: t('agentGameSelectorPrompt'),
+      isGameSelector: true
+    });
+  } else {
+    enterGomokuMode();
+    gomokuPanelRef.value?.resetGame();
+    messages.value.push({
+      role: 'agent',
+      text: t('agentGomokuModeEntered')
+    });
+  }
 };
 
 const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
@@ -60,6 +70,7 @@ const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
 
   if (gameType === 'gomoku') {
     enterGomokuMode();
+    gomokuPanelRef.value?.resetGame();
   }
 
   messages.value.push({
@@ -144,6 +155,19 @@ const handleSurrender = () => {
   });
 };
 
+const handleExitClick = () => {
+  showExitConfirm.value = true;
+};
+
+const confirmExit = () => {
+  showExitConfirm.value = false;
+  exitPlayMode();
+};
+
+const cancelExit = () => {
+  showExitConfirm.value = false;
+};
+
 const handleSend = () => {
   sendMessage(query.value, () => {
     query.value = '';
@@ -167,7 +191,7 @@ const handleSend = () => {
       <!-- 返回按钮（仅分屏模式显示） -->
       <div v-if="playMode === 'gomoku'" class="flex items-center px-4 py-3 border-b shrink-0"
            :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
-        <button @click="exitPlayMode"
+        <button @click="handleExitClick"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                 :class="currentTheme === 'dark'
                   ? 'text-stone-300 hover:bg-stone-700'
@@ -180,7 +204,6 @@ const handleSend = () => {
       <!-- 欢迎页 -->
       <AgentWelcomeScreen
         v-if="messages.length === 0"
-        @enter-gomoku="handleEnterGomokuMode"
       />
 
       <!-- 消息列表 -->
@@ -208,7 +231,7 @@ const handleSend = () => {
       >
         <template #actions>
           <button
-            v-if="messages.length === 0"
+            v-if="playMode !== 'gomoku'"
             @click="handleEnterGomokuMode"
             class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
           >
@@ -242,6 +265,33 @@ const handleSend = () => {
         @userMove="handleUserMove"
         @surrender="handleSurrender"
       />
+    </div>
+
+    <!-- 退出确认弹窗 -->
+    <div v-if="showExitConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div class="w-full max-w-md p-6 rounded-2xl shadow-xl transition-colors"
+           :class="currentTheme === 'dark' ? 'bg-stone-800 text-stone-100 shadow-stone-900/50' : 'bg-white text-stone-800'">
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-2">{{ t('agentExitConfirmTitle') }}</h3>
+          <p class="opacity-70">{{ t('agentExitConfirmMessage') }}</p>
+          <p class="opacity-70 mt-2">{{ t('agentExitConfirmWarning') }}</p>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button
+            @click="cancelExit"
+            class="px-4 py-2 rounded-lg font-medium transition-colors"
+            :class="currentTheme === 'dark' ? 'bg-stone-700 hover:bg-stone-600 text-stone-200' : 'bg-stone-200 hover:bg-stone-300 text-stone-800'"
+          >
+            {{ t('cancel') }}
+          </button>
+          <button
+            @click="confirmExit"
+            class="px-4 py-2 rounded-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+          >
+            {{ t('confirm') }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

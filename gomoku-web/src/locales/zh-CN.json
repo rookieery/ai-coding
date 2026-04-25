@@ -214,5 +214,9 @@
   "agentAiThinkingMove": "AI正在思考下一步...",
   "agentGameSelectorPrompt": "你想切磋哪种棋艺？",
   "agentGameGomoku": "五子棋",
-  "agentGameChineseChess": "中国象棋 (即将推出)"
+  "agentGameChineseChess": "中国象棋 (即将推出)",
+  "agentExitConfirmTitle": "返回首页",
+  "agentExitConfirmMessage": "返回首页后，当前对局将被清空。确定要返回吗？",
+  "agentExitConfirmWarning": "此操作无法撤销。",
+  "agentStartNewGame": "开始新对局"
 }
