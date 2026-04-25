@@ -44,6 +44,7 @@ const startDrag = (event: MouseEvent) => {
   startX.value = event.clientX;
   startWidth.value = leftPanelWidth.value;
 
+  document.body.style.userSelect = 'none';
   window.addEventListener('mousemove', onDrag);
   window.addEventListener('mouseup', stopDrag);
 };
@@ -61,6 +62,7 @@ const onDrag = (event: MouseEvent) => {
 
 const stopDrag = () => {
   isDragging.value = false;
+  document.body.style.userSelect = '';
   window.removeEventListener('mousemove', onDrag);
   window.removeEventListener('mouseup', stopDrag);
 };
@@ -532,7 +534,7 @@ const regenerateAnswer = async (index: number) => {
        :class="playMode === 'gomoku' ? 'flex-row' : 'flex-col items-center justify-center'">
 
     <!-- 左侧聊天区域 -->
-    <div class="flex flex-col h-full transition-all duration-300 ease-in-out"
+    <div class="flex flex-col h-full transition-all duration-300 ease-in-out shrink-0"
          :class="playMode === 'gomoku' ? 'min-w-[320px] max-w-[500px] border-r' : 'max-w-4xl mx-auto min-h-[80vh] px-4'"
          :style="playMode === 'gomoku' ? `width: ${leftPanelWidth}%` : 'width: 100%'">
 
@@ -667,7 +669,7 @@ const regenerateAnswer = async (index: number) => {
     <!-- 分割线（仅分屏模式显示） -->
     <div v-if="playMode === 'gomoku'"
          @mousedown.prevent="startDrag"
-         class="w-1 h-full cursor-col-resize group transition-colors duration-200"
+         class="w-1 h-full cursor-col-resize group transition-colors duration-200 z-50"
          :class="isDragging
            ? 'bg-indigo-500'
            : (currentTheme === 'dark'
