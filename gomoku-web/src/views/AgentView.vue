@@ -4,6 +4,7 @@ import { Send } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
 import { useMarkdown } from '../composables/useMarkdown';
+import { useGlobalAgentPlay } from '../composables/useAgentPlay';
 import ThinkingProcess from '../common/components/ui/ThinkingProcess.vue';
 import AnswerContent from '../common/components/ui/AnswerContent.vue';
 import MessageActions from '../common/components/ui/MessageActions.vue';
@@ -26,6 +27,15 @@ const answerContent = ref('');
 const showThinkingProcess = ref(true); // 控制思考过程面板的展开/收起
 const messagesContainer = ref<HTMLElement | null>(null);
 const { renderMarkdown } = useMarkdown();
+const { enterGomokuMode } = useGlobalAgentPlay();
+
+const handleEnterGomokuMode = () => {
+  enterGomokuMode();
+  messages.value.push({
+    role: 'agent',
+    text: t('agentGomokuModeEntered')
+  });
+};
 
 // 当前正在处理的用户提问（用于重新生成）
 const currentUserQuery = ref('');
@@ -416,9 +426,25 @@ const regenerateAnswer = async (index: number) => {
         <span class="text-4xl text-white font-bold">五</span>
       </div>
       <h2 class="text-4xl font-bold mb-4 tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">{{ t('agentTitle') }}</h2>
-      <p class="text-lg text-center max-w-2xl mb-12" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
+      <p class="text-lg text-center max-w-2xl mb-8" :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
         {{ t('agentGreeting') }}
       </p>
+      <div class="flex gap-3">
+        <button
+          class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+          :class="currentTheme === 'dark'
+            ? 'bg-stone-700 text-stone-200 hover:bg-stone-600 border border-stone-600'
+            : 'bg-white text-stone-700 hover:bg-stone-50 border border-stone-200'"
+        >
+          {{ t('agentActionChat') }}
+        </button>
+        <button
+          @click="handleEnterGomokuMode"
+          class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          {{ t('agentActionGomoku') }}
+        </button>
+      </div>
     </div>
 
     <div v-else ref="messagesContainer" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4">

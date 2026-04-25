@@ -210,6 +210,9 @@ export interface Messages {
   pieceBlackCannon: string;
   pieceBlackPawn: string;
   agentReasoningSummary: string;
+  agentActionChat: string;
+  agentActionGomoku: string;
+  agentGomokuModeEntered: string;
 }
 
 export type MessageKey = keyof Messages;

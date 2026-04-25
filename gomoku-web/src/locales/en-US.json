@@ -202,5 +202,8 @@
   "pieceBlackRook": "車",
   "pieceBlackCannon": "炮",
   "pieceBlackPawn": "卒",
-  "agentReasoningSummary": "🧠 Agent is reasoning..."
+  "agentReasoningSummary": "🧠 Agent is reasoning...",
+  "agentActionChat": "💬 Chat with Qilin",
+  "agentActionGomoku": "⚔️ Play Gomoku",
+  "agentGomokuModeEntered": "Entered game mode. I play white on the right. Your move."
 }
