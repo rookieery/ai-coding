@@ -1,4 +1,47 @@
 {
-  "branchName": "feature/gomoku-llm",
-  "stories": []
+  "branchName": "feature/agent-split-screen",
+  "stories": [
+    {
+      "id": "SPLIT-01-Global-State",
+      "title": "创建分屏对弈的全局状态管理",
+      "description": "纯状态管理任务。请在前端 `src/composables/` (或 store 目录) 下新建 `useAgentPlay.ts`。定义并导出响应式状态：1. `playMode`: 默认 'chat'，可选 'gomoku'。2. `isAIThinking`: 布尔值默认 false。3. 提供 `enterGomokuMode()` 和 `exitPlayMode()` 状态切换方法。请确保代码极简，仅负责状态流转，不涉及任何 UI 组件。",
+      "passes": true
+    },
+    {
+      "id": "SPLIT-02-Chat-Message-UI",
+      "title": "聊天组件：实现可折叠的 AI 思考 UI",
+      "description": "组件开发任务。请先读取前端的聊天气泡组件（如 `ChatMessage.vue`）。修改逻辑：如果传入的消息数据中包含 `reasoning_content` 字段，则在气泡的主体文本上方渲染该内容。强制要求：使用 HTML 原生的 `<details>` 和 `<summary>` 标签，默认折叠。`<summary>` 标题固定为：'🧠 Agent 正在推演局势...'。内部文本调小并置灰。",
+      "passes": false
+    },
+    {
+      "id": "SPLIT-03-Home-Action-Chips",
+      "title": "Agent 首页：添加对弈快捷指令入口",
+      "description": "入口视图任务。请先阅读 `useAgentPlay.ts` 和 `AgentView.vue`。修改 `AgentView.vue`：在无聊天记录的欢迎语下方，添加两个胶囊按钮：'💬 棋林对话' 和 '⚔️ 棋林对弈'。点击 '⚔️ 棋林对弈' 时，调用 `useAgentPlay` 的 `enterGomokuMode()`，并在聊天流插入一条系统提示：'已进入对弈模式，我在右侧执白，请落子。'",
+      "passes": false
+    },
+    {
+      "id": "SPLIT-04-Play-Panel-Wrapper",
+      "title": "创建右侧对弈面板包装组件",
+      "description": "组件封装任务。为了不破坏原有五子棋组件，请在 `src/components/` (或合适目录) 下新建 `AgentGomokuPanel.vue`。功能：引入原有的 `Board.vue` 并使其居中。顶部可保留一个极简的撤销/认输按钮区。该组件负责将 `Board.vue` 的交互事件向上抛出。请确保该组件能够自适应其父容器的宽度。",
+      "passes": false
+    },
+    {
+      "id": "SPLIT-05-Split-Screen-Layout",
+      "title": "Agent 视图：实现左右分屏响应式布局",
+      "description": "布局重构任务。请先阅读 `useAgentPlay.ts`、`AgentView.vue` 和上一步的 `AgentGomokuPanel.vue`。修改 `AgentView.vue` 布局：引入 `useAgentPlay` 的 `playMode` 状态。当为 'chat' 时，保持单列居中；当为 'gomoku' 时，根容器切换为 `flex row`。左侧聊天区宽度设为 35% 左右，右侧区域引入 `AgentGomokuPanel.vue` 占据剩余空间。确保切换时过渡平滑。",
+      "passes": false
+    },
+    {
+      "id": "SPLIT-06-Interaction-User-Move",
+      "title": "数据桥接：拦截落子触发 Agent 思考",
+      "description": "联调任务。请先阅读 `AgentView.vue`、`AgentGomokuPanel.vue` 和后端的 LLM 通信服务。逻辑：在分屏模式下，当监听到右侧棋盘发出用户落子事件（如 H8）时：1. 向左侧聊天流追加系统消息：'[系统] 玩家落子于 H8'。2. 将 `isAIThinking` 置为 true 锁定 UI。3. 调用后端大模型接口发起对弈请求。此任务主要实现发送流程。",
+      "passes": false
+    },
+    {
+      "id": "SPLIT-07-Interaction-AI-Response",
+      "title": "数据桥接：解析 AI 响应并同步渲染",
+      "description": "闭环联调任务。接续上一个任务的接口回调逻辑。当大模型接口返回成功时：1. 构造一条完整的 AI 消息插入左侧聊天流（必须包含 `reasoning_content` 以触发第 2 步写的折叠 UI）。2. 关闭 `isAIThinking` 状态。3. 提取返回的 `move` 坐标，调用右侧 `AgentGomokuPanel.vue` (或底层引擎) 的方法渲染白子。确保数据流向清晰，无死锁。",
+      "passes": false
+    }
+  ]
 }
