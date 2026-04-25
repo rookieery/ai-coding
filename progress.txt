@@ -20,7 +20,8 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-SPLIT-06-Interaction-User-Move: 数据桥接：拦截落子触发 Agent 思考。1. 创建 `gomoku-web/src/api/gomoku-ai-api.ts` 服务文件，封装 LLM AI 落子生成接口 `/api/games/gomoku/llm/move`。2. 定义 `GomokuAiMoveRequest` 和 `GomokuAiMoveResponse` 接口类型。3. 修改 `AgentView.vue` 的 `handleUserMove` 方法：接收用户落子坐标后，向聊天流插入系统消息，设置 `isThinking` 状态为 true，调用 `gomokuAiApi.generateMove()` 发起 LLM 请求。4. 成功响应后，将 AI 思考内容插入聊天流，调用 `gomokuPanelRef.placeAiPiece(y, x)` 在棋盘上渲染白子。5. 错误处理：捕获异常并显示错误消息。6. 新增 i18n key `agentAiThinkingMove` 到 zh-CN.json、en-US.json 和 Messages 接口。7. TypeScript 编译通过。 - 2026年04月25日
-SPLIT-07-Interaction-AI-Response: 数据桥接：解析 AI 响应并同步渲染。此任务已在 SPLIT-06 中一并完成。验证要点：1. AI 响应成功时，构造包含 `reasoningContent` 的消息插入聊天流（触发折叠 UI）。2. `isFallback` 为 true 时隐藏思考过程面板。3. 调用 `gomokuPanelRef.placeAiPiece(y, x)` 渲染白子。4. 关闭 `isThinking` 状态。5. 错误处理：捕获异常并显示带前缀的错误消息。6. TypeScript 编译通过。 - 2026年04月25日
-UI-REFINE-01-Relocate-Action-Chips: 重构首页快捷指令入口位置。1. 删除欢迎语下方的 `agentActionChat` 按钮。2. 将 `agentActionGomoku` 按钮移动到底部聊天输入框正上方。3. 使用 `flex flex-wrap gap-3 mb-4` 布局预留横向排列空间。4. 按钮仅在 `messages.length === 0` 时显示（空状态）。5. `handleEnterGomokuMode` 功能保持正常。6. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
-UI-REFINE-02-Draggable-Divider-State: 实现分屏拖拽的响应式状态与逻辑。1. 声明响应式变量 `leftPanelWidth`（默认 35%）。2. 编写拖拽状态：`isDragging`、`startX`、`startWidth`。3. 实现 `startDrag(event)` 方法：记录初始鼠标位置和宽度，绑定 `mousemove` 和 `mouseup` 到 `window`。4. 实现 `onDrag(event)` 方法：计算移动差值，动态更新 `leftPanelWidth`。5. 使用 `Math.max(25, Math.min(50, newWidth))` 强制宽度限制在 25%-50% 之间。6. 实现 `stopDrag()` 方法：移除全局事件监听。7. TypeScript 编译通过。 - 2026年04月25日
+
+
+UI-REFINE-03-Draggable-Divider-Render: 渲染分割线组件与宽度动态绑定。1. 在分屏模式下，左侧聊天区和右侧棋盘区之间插入分割线 `div` 元素。2. 绑定 `@mousedown.prevent="startDrag"` 事件。3. 样式：宽度 `w-1`（4px），`cursor-col-resize`，Hover 效果变为品牌色 `bg-indigo-400`，拖拽中显示 `bg-indigo-500`，过渡动画 `transition-colors duration-200`。4. 左侧聊天区宽度动态绑定为 `:style="\`width: \${leftPanelWidth}%\`"`，右侧容器保持 `flex-1`。5. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
+BUGFIX-UI-Divider-Drag: 修复分屏拖拽失效与计算单位错误。1. 添加 `shrink-0` (flex-shrink: 0) 防止左侧聊天面板被右侧棋盘面板挤压。2. 添加 `z-index: 50` 防止分割线被其他元素遮挡。3. 在 `startDrag` 时设置 `document.body.style.userSelect = 'none'` 防止拖拽时意外选中文字。4. 在 `stopDrag` 时清除 `userSelect` 样式。5. 边界限制（25%~50%）保持不变。6. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
+BUGFIX-UI-Drag-CSS-Conflicts: 修复分割线拖拽的 CSS 样式冲突。1. 移除左侧聊天容器的 `max-w-[500px]` 限制，保留 `min-w-[320px]`，让 width 百分比真正生效。2. 将 `transition-all duration-300` 改为动态绑定，仅当 `!isDragging` 时才应用过渡动画，避免拖拽时的视觉延迟。3. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
