@@ -1,11 +1,4 @@
 {
   "branchName": "feature/agent-split-screen",
-  "stories": [
-    {
-      "id": "BUGFIX-UI-Drag-CSS-Conflicts",
-      "title": "修复分割线拖拽的 CSS 样式冲突",
-      "description": "CSS 冲突修复任务。请直接修改 `AgentView.vue` 中左侧聊天容器（包含 class 'flex flex-col h-full...' 的最外层 div）的模板代码：\n1. 移除最大宽度限制：在 `:class` 绑定的 `playMode === 'gomoku'` 条件分支中，彻底删除 `max-w-[500px]` 这个类名，保留 `min-w-[320px]` 即可，让 width 百分比真正生效。\n2. 动态禁用过渡动画：拖拽时不能有 transition 动画。请将原有的 `transition-all duration-300` 设为动态绑定，仅当 `!isDragging` 时才添加这些过渡类名。\n示例修改思路：`:class=\"[!isDragging ? 'transition-all duration-300' : '', playMode === 'gomoku' ? 'min-w-[320px] border-r' : '...']\"`。请仅修改此 DOM 元素的属性，保留原有的 JS 逻辑不变。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
