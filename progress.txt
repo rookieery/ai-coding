@@ -22,7 +22,8 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-UI-REFINE-03-Draggable-Divider-Render: 渲染分割线组件与宽度动态绑定。1. 在分屏模式下，左侧聊天区和右侧棋盘区之间插入分割线 `div` 元素。2. 绑定 `@mousedown.prevent="startDrag"` 事件。3. 样式：宽度 `w-1`（4px），`cursor-col-resize`，Hover 效果变为品牌色 `bg-indigo-400`，拖拽中显示 `bg-indigo-500`，过渡动画 `transition-colors duration-200`。4. 左侧聊天区宽度动态绑定为 `:style="\`width: \${leftPanelWidth}%\`"`，右侧容器保持 `flex-1`。5. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
-BUGFIX-UI-Divider-Drag: 修复分屏拖拽失效与计算单位错误。1. 添加 `shrink-0` (flex-shrink: 0) 防止左侧聊天面板被右侧棋盘面板挤压。2. 添加 `z-index: 50` 防止分割线被其他元素遮挡。3. 在 `startDrag` 时设置 `document.body.style.userSelect = 'none'` 防止拖拽时意外选中文字。4. 在 `stopDrag` 时清除 `userSelect` 样式。5. 边界限制（25%~50%）保持不变。6. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
+
 BUGFIX-UI-Drag-CSS-Conflicts: 修复分割线拖拽的 CSS 样式冲突。1. 移除左侧聊天容器的 `max-w-[500px]` 限制，保留 `min-w-[320px]`，让 width 百分比真正生效。2. 将 `transition-all duration-300` 改为动态绑定，仅当 `!isDragging` 时才应用过渡动画，避免拖拽时的视觉延迟。3. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
 FLOW-REFINE-01-Types-And-Trigger: 修改消息数据结构与对弈触发逻辑。1. 在 `AgentMessage` 接口中增加 `isGameSelector?: boolean` 属性。2. 在 i18n 文件中新增 `agentGameSelectorPrompt`、`agentGameGomoku`、`agentGameChineseChess` 翻译键。3. 修改 `handleEnterGomokuMode` 方法：删除 `enterGomokuMode()` 调用，改为推送带 `isGameSelector: true` 的消息。4. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
+FLOW-REFINE-02-Render-Buttons: 在聊天消息组件中渲染游戏选择面板。1. 在 `AgentChatMessages.vue` 的 `defineEmits` 中新增 `selectGame` 事件。2. 在 AI 消息气泡中添加游戏选择按钮区块，使用 `v-if="msg.isGameSelector"` 条件渲染。3. 五子棋按钮使用 indigo-600 高亮样式并绑定点击事件，中国象棋按钮置灰禁用。4. 使用语义化 Tailwind 类名，支持深色模式。5. TypeScript 编译通过，生产构建成功。 - 2026年04月25日
+FLOW-REFINE-03-Handle-Selection: AgentView 实现选择回调与分屏流转。1. 在 `AgentChatMessages` 组件上添加 `@select-game="handleGameSelection"` 事件监听。2. 实现 `handleGameSelection(gameType, msg)` 方法：设置 `msg.isGameSelector = false` 隐藏按钮；若选择五子棋则调用 `enterGomokuMode()` 触发分屏；推送 `agentGomokuModeEntered` 提示消息；通过 `nextTick` 调用 `scrollToBottom()`。3. 导入 `AgentMessage` 类型和 `nextTick`。4. TypeScript 编译通过。 - 2026年04月25日

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { gomokuAiApi } from '../api/gomoku-ai-api';
@@ -11,6 +11,7 @@ import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
 import AgentChatMessages from '../components/agent/AgentChatMessages.vue';
 import AgentChatInput from '../components/agent/AgentChatInput.vue';
+import type { AgentMessage } from '../types/agent';
 
 defineOptions({
   name: 'AgentView'
@@ -46,6 +47,22 @@ const handleEnterGomokuMode = () => {
     text: t('agentGameSelectorPrompt'),
     isGameSelector: true
   });
+};
+
+const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
+  msg.isGameSelector = false;
+
+  if (gameType === 'gomoku') {
+    enterGomokuMode();
+  }
+
+  messages.value.push({
+    role: 'agent',
+    text: t('agentGomokuModeEntered')
+  });
+
+  await nextTick();
+  chatMessagesRef.value?.scrollToBottom();
 };
 
 const handleUserMove = async (r: number, c: number) => {
@@ -171,6 +188,7 @@ const handleSend = () => {
         @regenerate="regenerateAnswer"
         @toggle-thinking="(show: boolean) => showThinkingProcess = show"
         @regenerate-streaming="regenerateStreamingAnswer"
+        @select-game="handleGameSelection"
       />
 
       <!-- 输入区域 -->
