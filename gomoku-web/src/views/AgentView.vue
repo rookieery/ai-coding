@@ -533,8 +533,8 @@ const regenerateAnswer = async (index: number) => {
 
     <!-- 左侧聊天区域 -->
     <div class="flex flex-col h-full transition-all duration-300 ease-in-out"
-         :class="playMode === 'gomoku' ? 'w-[35%] min-w-[320px] max-w-[500px] border-r' : 'max-w-4xl mx-auto min-h-[80vh] px-4'"
-         :style="playMode === 'gomoku' ? '' : 'width: 100%'">
+         :class="playMode === 'gomoku' ? 'min-w-[320px] max-w-[500px] border-r' : 'max-w-4xl mx-auto min-h-[80vh] px-4'"
+         :style="playMode === 'gomoku' ? `width: ${leftPanelWidth}%` : 'width: 100%'">
 
       <!-- 返回按钮（仅分屏模式显示） -->
       <div v-if="playMode === 'gomoku'" class="flex items-center px-4 py-3 border-b shrink-0"
@@ -662,6 +662,17 @@ const regenerateAnswer = async (index: number) => {
           {{ t('agentDisclaimer') }}
         </div>
       </div>
+    </div>
+
+    <!-- 分割线（仅分屏模式显示） -->
+    <div v-if="playMode === 'gomoku'"
+         @mousedown.prevent="startDrag"
+         class="w-1 h-full cursor-col-resize group transition-colors duration-200"
+         :class="isDragging
+           ? 'bg-indigo-500'
+           : (currentTheme === 'dark'
+               ? 'bg-stone-700 hover:bg-indigo-400'
+               : 'bg-stone-200 hover:bg-indigo-400')">
     </div>
 
     <!-- 右侧对弈面板（仅分屏模式显示） -->
