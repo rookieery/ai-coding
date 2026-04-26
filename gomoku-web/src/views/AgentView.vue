@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { gomokuAiApi } from '../api/gomoku-ai-api';
@@ -7,7 +8,8 @@ import { visionApi } from '../api/vision-api';
 import { useGlobalAgentPlay } from '../composables/useAgentPlay';
 import { useAgentChat } from '../composables/useAgentChat';
 import { useSplitDrag } from '../composables/useSplitDrag';
-import { BOARD_SIZE, BLACK, WHITE } from '../games/gomoku/gameLogic';
+import { useVisionBridge } from '../composables/useVisionBridge';
+import { BOARD_SIZE } from '../games/gomoku/gameLogic';
 import { parseMoveText } from '../games/gomoku/moveParser';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
@@ -27,6 +29,8 @@ const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
+const router = useRouter();
+const { setVisionBoard } = useVisionBridge();
 
 const {
   messages,
@@ -258,21 +262,8 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     try {
       const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
 
-      // Enter gomoku mode and load board state
-      enterGomokuMode();
-      gomokuPanelRef.value?.resetGame();
-      gomokuPanelRef.value?.loadBoardState(result.pieces);
-
-      // Determine current player based on board state
-      let blackCount = 0;
-      let whiteCount = 0;
-      for (let r = 0; r < BOARD_SIZE; r++) {
-        for (let c = 0; c < BOARD_SIZE; c++) {
-          if (result.pieces[r][c] === BLACK) blackCount++;
-          else if (result.pieces[r][c] === WHITE) whiteCount++;
-        }
-      }
-      const currentTurn = blackCount <= whiteCount ? t('black') : t('white');
+      // Store board data in global bridge and navigate to standalone game page
+      setVisionBoard(result.pieces);
 
       isThinking.value = false;
       thinkingContent.value = '';
@@ -281,11 +272,11 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 
       messages.value.push({
         role: 'agent',
-        text: t('visionBoardLoaded', currentTurn),
+        text: t('visionBoardLoaded', ''),
       });
 
       await nextTick();
-      chatMessagesRef.value?.scrollToBottom();
+      await router.push({ name: 'game' });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
       messages.value.push({
