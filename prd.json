@@ -2,16 +2,10 @@
   "branchName": "feature/chess-board-recognition",
   "stories": [
     {
-      "id": "VISION-FINAL-02-Frontend-API",
-      "title": "前端：创建视觉 API 调用接口层",
-      "description": "前端接口层任务。1. 在 `gomoku-web/src/types/` 或对应类型文件中定义 `RecognitionResult` 接口：包含 `boardType: string` 和 `pieces: number[][]`。2. 在 `gomoku-web/src/api/` 下新建 `vision-api.ts`。3. 编写并导出 `recognizeBoardFromBase64(imageBase64: string): Promise<RecognitionResult>`，使用 axios 或 fetch POST 请求后端的 `/api/vision/recognize` 接口，并处理异常。",
-      "passes": true
-    },
-    {
       "id": "VISION-FINAL-03-Chat-Input-UI",
       "title": "前端：输入框支持图片选中、粘贴与预览",
       "description": "UI 改造任务。请先阅读 `AgentChatInput.vue`。1. 新增响应式状态 `selectedImageBase64` (string | null)。2. 在输入框左侧增加一个 📎 图标，绑定隐藏的 `<input type=\"file\" accept=\"image/*\">`。3. 为外层容器绑定 `@paste` 事件以拦截剪贴板图片。4. 编写 `fileToBase64` 函数，将选中的图片转为 Base64 存入状态。5. 若 `selectedImageBase64` 有值，在 `<textarea>` 上方渲染缩略图和 (x) 删除按钮。6. 触发 `handleSend` 时，将 `$emit('send', ...)` 的参数改为对象形式（包含文本和 Base64），发送后清空选中的图片。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "VISION-FINAL-04-Board-Override",
