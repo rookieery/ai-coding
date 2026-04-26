@@ -23,8 +23,32 @@ const DEFAULT_VISION_CONFIG: VisionConfig = {
   model: process.env.DOUBAO_VISION_ENDPOINT_ID || '',
 };
 
-const VISION_SYSTEM_PROMPT =
-  '你是一个五子棋视觉解析专家。分析图片中的15x15棋盘。只输出合法的JSON，不要有Markdown格式。格式为 {"boardType": "gomoku", "pieces": [[0,1,2...]]}，其中0为空，1为黑，2为白。';
+const VISION_SYSTEM_PROMPT = `你是一个五子棋视觉解析专家。请严格按照以下步骤分析图片中的15x15棋盘：
+
+**步骤1：定位棋盘区域**
+忽略图片顶部和底部的UI界面（如标题栏、按钮、状态文字等），只锁定包含交叉线的木质棋盘区域。
+
+**步骤2：建立坐标系**
+识别棋盘四个角和中心的特殊标记点（星位），以此为基准建立坐标系：
+- 行号：从上到下为 0-14
+- 列号：从左到右为 0-14
+
+**步骤3：逐行扫描**
+逐行扫描棋盘，在思考过程中写下每一个发现的棋子坐标。例如：
+- 第0行：发现黑子于(0,7)，白子于(0,9)...
+- 第1行：发现白子于(1,6)...
+
+**步骤4：确认并输出结果**
+确认所有棋子坐标无误后，提取最终结果。结果必须包裹在 json 代码块中，格式严格为：
+\`\`\`json
+{"boardType": "gomoku", "pieces": [[...], ...]}
+\`\`\`
+其中：
+- 0 代表空位
+- 1 代表黑子
+- 2 代表白子
+
+请务必输出完整的15x15二维数组，每个子数组代表一行，包含15个元素。`;
 
 export class VisionService {
   private config: VisionConfig;
@@ -107,6 +131,15 @@ export class VisionService {
 
   private parseVisionResponse(content: string): BoardRecognitionResult | null {
     try {
+      // First, try to extract JSON from markdown code blocks (```json ... ```)
+      const codeBlockMatch = content.match(/```json\s*([\s\S]*?)```/);
+      if (codeBlockMatch) {
+        logger.info('Found JSON in markdown code block');
+        const result = this.validateAndParseJson(codeBlockMatch[1].trim());
+        if (result) return result;
+      }
+
+      // Fallback: try to find raw JSON object in the response
       const jsonMatch = content.match(/\{[\s\S]*"boardType"[\s\S]*"pieces"[\s\S]*\}/);
 
       if (!jsonMatch) {
@@ -114,7 +147,17 @@ export class VisionService {
         return null;
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      const result = this.validateAndParseJson(jsonMatch[0]);
+      return result;
+    } catch (error) {
+      logger.error('Failed to parse vision response JSON:', error);
+      return null;
+    }
+  }
+
+  private validateAndParseJson(jsonString: string): BoardRecognitionResult | null {
+    try {
+      const parsed = JSON.parse(jsonString);
 
       if (typeof parsed.boardType !== 'string') {
         logger.warn('Invalid boardType in vision response');
@@ -151,7 +194,7 @@ export class VisionService {
         pieces: parsed.pieces,
       };
     } catch (error) {
-      logger.error('Failed to parse vision response JSON:', error);
+      logger.warn('JSON parse failed in validateAndParseJson:', error);
       return null;
     }
   }
