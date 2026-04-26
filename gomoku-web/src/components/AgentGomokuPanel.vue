@@ -198,6 +198,25 @@ const toggleAiFirst = () => {
   }
 };
 
+const loadBoardState = (pieces: number[][]) => {
+  board.value = pieces.map(row => [...row]);
+  moveHistory.value = [];
+  winner.value = EMPTY;
+  winningLine.value = [];
+  aiFirst.value = false;
+
+  let blackCount = 0;
+  let whiteCount = 0;
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (pieces[r][c] === BLACK) blackCount++;
+      else if (pieces[r][c] === WHITE) whiteCount++;
+    }
+  }
+
+  currentPlayer.value = blackCount <= whiteCount ? BLACK : WHITE;
+};
+
 defineExpose({
   placeAiPiece,
   resetGame,
@@ -205,6 +224,7 @@ defineExpose({
   getMoveHistory: () => moveHistory.value,
   isValidMove,
   placeUserPieceFromChat,
+  loadBoardState,
 });
 </script>
 

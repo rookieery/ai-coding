@@ -2,16 +2,10 @@
   "branchName": "feature/chess-board-recognition",
   "stories": [
     {
-      "id": "VISION-FINAL-03-Chat-Input-UI",
-      "title": "前端：输入框支持图片选中、粘贴与预览",
-      "description": "UI 改造任务。请先阅读 `AgentChatInput.vue`。1. 新增响应式状态 `selectedImageBase64` (string | null)。2. 在输入框左侧增加一个 📎 图标，绑定隐藏的 `<input type=\"file\" accept=\"image/*\">`。3. 为外层容器绑定 `@paste` 事件以拦截剪贴板图片。4. 编写 `fileToBase64` 函数，将选中的图片转为 Base64 存入状态。5. 若 `selectedImageBase64` 有值，在 `<textarea>` 上方渲染缩略图和 (x) 删除按钮。6. 触发 `handleSend` 时，将 `$emit('send', ...)` 的参数改为对象形式（包含文本和 Base64），发送后清空选中的图片。",
-      "passes": true
-    },
-    {
       "id": "VISION-FINAL-04-Board-Override",
       "title": "前端：引擎层增加强制覆盖残局的方法",
       "description": "底层组件修改任务。请先阅读 `AgentGomokuPanel.vue` 及其依赖的五子棋状态逻辑。1. 增加 `loadBoardState(pieces: number[][])` 方法：强制将传入的二维数组覆盖当前的棋盘状态，并清空历史记录（`moveHistory`）。2. 核心逻辑：遍历 pieces 数组统计黑子(1)和白子(2)的数量。如果黑子数量 <= 白子数量，则推断下一步轮到黑棋（'black'）；如果黑子 > 白子，轮到白棋（'white'）。3. 确保该 `loadBoardState` 方法通过 `defineExpose` 暴露给外层的 `AgentView.vue` 调用。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "VISION-FINAL-05-AgentView-Workflow",
