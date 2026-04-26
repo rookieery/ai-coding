@@ -649,5 +649,40 @@
         "passes": true
       }
     ]
+  },
+  {
+    "branchName": "feature/chess-board-recognition",
+    "stories": [
+      {
+        "id": "VISION-FINAL-01-Backend-Service",
+        "title": "后端：构建豆包多模态视觉解析服务与路由",
+        "description": "纯后端任务。请在 `gomoku-server/src/services/` 下新建 `vision.service.ts`。1. 引入 `openai` 库（如果未安装请先 npm install openai）。2. 使用环境变量 `VOLCENGINE_API_KEY` 和 `VOLCENGINE_BASE_URL` 初始化 OpenAI 客户端。3. 编写 `recognizeBoard(imageBase64: string)` 方法，使用 `DOUBAO_VISION_ENDPOINT_ID` 作为 model 发起请求。4. 必须在 System Prompt 严格限制：'你是一个五子棋视觉解析专家。分析图片中的15x15棋盘。只输出合法的JSON，不要有Markdown格式。格式为 {\"boardType\": \"gomoku\", \"pieces\": [[0,1,2...]]}，其中0为空，1为黑，2为白。' 5. 在后端的 routes 目录新增 API 路由 `/api/vision/recognize`，接收 POST 请求中的 `{ imageBase64 }` 并返回解析后的 JSON。",
+        "passes": true
+      },
+      {
+        "id": "VISION-FINAL-02-Frontend-API",
+        "title": "前端：创建视觉 API 调用接口层",
+        "description": "前端接口层任务。1. 在 `gomoku-web/src/types/` 或对应类型文件中定义 `RecognitionResult` 接口：包含 `boardType: string` 和 `pieces: number[][]`。2. 在 `gomoku-web/src/api/` 下新建 `vision-api.ts`。3. 编写并导出 `recognizeBoardFromBase64(imageBase64: string): Promise<RecognitionResult>`，使用 axios 或 fetch POST 请求后端的 `/api/vision/recognize` 接口，并处理异常。",
+        "passes": true
+      },
+      {
+        "id": "VISION-FINAL-03-Chat-Input-UI",
+        "title": "前端：输入框支持图片选中、粘贴与预览",
+        "description": "UI 改造任务。请先阅读 `AgentChatInput.vue`。1. 新增响应式状态 `selectedImageBase64` (string | null)。2. 在输入框左侧增加一个 📎 图标，绑定隐藏的 `<input type=\"file\" accept=\"image/*\">`。3. 为外层容器绑定 `@paste` 事件以拦截剪贴板图片。4. 编写 `fileToBase64` 函数，将选中的图片转为 Base64 存入状态。5. 若 `selectedImageBase64` 有值，在 `<textarea>` 上方渲染缩略图和 (x) 删除按钮。6. 触发 `handleSend` 时，将 `$emit('send', ...)` 的参数改为对象形式（包含文本和 Base64），发送后清空选中的图片。",
+        "passes": true
+      },
+      {
+        "id": "VISION-FINAL-04-Board-Override",
+        "title": "前端：引擎层增加强制覆盖残局的方法",
+        "description": "底层组件修改任务。请先阅读 `AgentGomokuPanel.vue` 及其依赖的五子棋状态逻辑。1. 增加 `loadBoardState(pieces: number[][])` 方法：强制将传入的二维数组覆盖当前的棋盘状态，并清空历史记录（`moveHistory`）。2. 核心逻辑：遍历 pieces 数组统计黑子(1)和白子(2)的数量。如果黑子数量 <= 白子数量，则推断下一步轮到黑棋（'black'）；如果黑子 > 白子，轮到白棋（'white'）。3. 确保该 `loadBoardState` 方法通过 `defineExpose` 暴露给外层的 `AgentView.vue` 调用。",
+        "passes": true
+      },
+      {
+        "id": "VISION-FINAL-05-AgentView-Workflow",
+        "title": "前端：AgentView 视觉解析工作流联动闭环",
+        "description": "核心中枢联调任务。请阅读 `AgentView.vue` 中的发送消息及状态管理逻辑。1. 适配修改后的发送事件，接收 `imageBase64` 参数。2. 若包含图片，先在聊天流显示用户发出的信息，并开启 `isThinking`。3. 在聊天流新增一条 Agent 提示：'正在使用豆包视觉模型解析棋局截图...'。4. 调用 `vision-api.ts` 的解析方法。5. 解析成功后，调用 `useGlobalAgentPlay().enterGomokuMode()` 展开右侧棋盘。6. 紧接着调用 `gomokuPanelRef.value.loadBoardState(result.pieces)` 覆盖棋盘状态。7. 在聊天流回复：'棋谱已载入！根据盘面推演，当前轮到[黑/白]方落子，请继续。' 并关闭 `isThinking`。",
+        "passes": true
+      }
+    ]
   }
 ]
