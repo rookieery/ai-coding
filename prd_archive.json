@@ -617,6 +617,24 @@
         "title": "AgentView 实现选择回调与分屏流转",
         "description": "闭环联调任务。回到 `AgentView.vue`。1. 在 `<template>` 中，为 `<AgentChatMessages ...>` 组件增加事件监听 `@select-game=\"handleGameSelection\"`。2. 在 `<script setup>` 中实现 `handleGameSelection(gameType, msg)` 方法。3. 方法逻辑：首先将传入的 `msg.isGameSelector` 设为 `false`（使按钮在视图中消失）；接着，若 `gameType === 'gomoku'`，则调用 `enterGomokuMode()` 触发分屏；然后向 `messages` 数组推送新提示消息 `{ role: 'agent', text: t('agentGomokuModeEntered') }`；最后，必须通过 `nextTick` 或直接 await 调用 `chatMessagesRef.value?.scrollToBottom()`。",
         "passes": true
+      },
+      {
+        "id": "CHAT-MOVE-01-Regex-Helper",
+        "title": "编写坐标解析工具函数",
+        "description": "纯逻辑层任务。在 `src/games/gomoku/` 或 `utils` 目录下新建 `moveParser.ts`。编写并导出 `parseMoveText(text: string)` 函数：1. 使用正则表达式匹配类似 'H8', 'h8', '落子 h8', '下 H8' 的字符串。正则需提取 A-O 字母和 1-15 数字。2. 将字母映射为列索引 `c` (A=0, O=14)，数字映射为行索引 `r`。注意：根据现有逻辑，数字 1-15 映射到数组行索引的公式为 `r = 15 - number`。3. 如果未匹配到坐标，返回 null；如果匹配到，返回 { r, c, coord: 'H8' }。",
+        "passes": true
+      },
+      {
+        "id": "CHAT-MOVE-02-Expose-Board-API",
+        "title": "对弈面板暴露合法性校验与强制落子方法",
+        "description": "组件修改任务。请阅读 `AgentGomokuPanel.vue` 的 `<script setup>` 源码。要求：1. 使用 `defineExpose` 额外暴露一个 `isValidMove(r, c)` 方法，用于判断该坐标在二维数组中是否为空 (`EMPTY`)。2. 暴露一个 `placeUserPieceFromChat(r, c)` 方法，该方法直接在棋盘底层执行玩家落子，并随后触发与鼠标点击相同的 `@userMove` 事件（或直接调用内部的处理逻辑）。确保不破坏原有的鼠标点击落子流程。",
+        "passes": true
+      },
+      {
+        "id": "CHAT-MOVE-03-Message-Interceptor",
+        "title": "AgentView 聊天输入拦截与分流逻辑",
+        "description": "核心联调任务。请阅读 `AgentView.vue` 中的 `handleSend` 方法。修改逻辑：1. 当 `playMode === 'gomoku'` 时，获取用户输入 `query.value`，先调用 `parseMoveText`。2. 若解析出坐标 `{r, c}`：通过 `gomokuPanelRef.value.isValidMove(r, c)` 校验。如果无效（已被占用），直接发送系统/Agent提示词告诉用户“该位置不合法或已有棋子”。3. 如果合法：将用户消息上屏展示，清空输入框，随后调用 `gomokuPanelRef.value.placeUserPieceFromChat(r, c)`。4. 如果 `parseMoveText` 返回 null，说明用户在普通聊天，直接走原有的 `sendMessage` 逻辑。",
+        "passes": true
       }
     ]
   }
