@@ -30,6 +30,8 @@ const emit = defineEmits<{
 
 const { renderMarkdown } = useMarkdown();
 const containerRef = ref<HTMLElement | null>(null);
+const previewImageSrc = ref<string | null>(null);
+const showImagePreview = ref(false);
 
 const scrollToBottom = async () => {
   await nextTick();
@@ -48,6 +50,16 @@ const getRenderedTextForMessage = async (index: number): Promise<string> => {
   return '';
 };
 
+const openImagePreview = (src: string) => {
+  previewImageSrc.value = src;
+  showImagePreview.value = true;
+};
+
+const closeImagePreview = () => {
+  showImagePreview.value = false;
+  previewImageSrc.value = null;
+};
+
 defineExpose({
   scrollToBottom,
 });
@@ -58,6 +70,15 @@ defineExpose({
     <!-- 历史消息 -->
     <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
       <div v-if="msg.role === 'user'" class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm bg-indigo-600 text-white rounded-br-sm">
+        <!-- 图片预览 -->
+        <div v-if="msg.hasImage && msg.imageBase64" class="mb-2">
+          <img
+            :src="msg.imageBase64"
+            :alt="t('selectedImagePreview')"
+            class="max-h-48 max-w-full object-contain rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            @click="openImagePreview(msg.imageBase64!)"
+          />
+        </div>
         <div class="whitespace-pre-wrap">{{ msg.text }}</div>
       </div>
 
@@ -135,10 +156,47 @@ defineExpose({
       </div>
     </div>
   </div>
+
+  <!-- 图片预览弹窗 -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="showImagePreview && previewImageSrc"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        @click="closeImagePreview"
+      >
+        <img
+          :src="previewImageSrc"
+          :alt="t('selectedImagePreview')"
+          class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+          @click.stop
+        />
+        <button
+          class="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          :aria-label="t('close')"
+          @click="closeImagePreview"
+        >
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
 details[open] .details-chevron {
   transform: rotate(90deg);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

@@ -244,11 +244,12 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 
   // Handle image input - vision recognition workflow
   if (payload.imageBase64) {
-    // Add user message with image indicator
+    // Add user message with image
     messages.value.push({
       role: 'user',
       text: payload.text || t('visionImageSent'),
       hasImage: true,
+      imageBase64: payload.imageBase64,
     });
 
     isThinking.value = true;

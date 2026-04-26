@@ -229,5 +229,6 @@
   "visionImageSent": "[Image]",
   "visionParsingBoard": "Parsing board screenshot with Doubao Vision model...",
   "visionBoardLoaded": "Board loaded! Based on the position, it's {0}'s turn. Please continue.",
-  "visionParseFailed": "Failed to parse board"
+  "visionParseFailed": "Failed to parse board",
+  "close": "Close"
 }

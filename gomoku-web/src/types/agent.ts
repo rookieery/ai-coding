@@ -7,4 +7,5 @@ export interface AgentMessage {
   isGameSelectorDismissed?: boolean;
   isGameReasoning?: boolean;
   hasImage?: boolean;
+  imageBase64?: string;
 }

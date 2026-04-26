@@ -233,6 +233,7 @@ export interface Messages {
   visionParsingBoard: string;
   visionBoardLoaded: string;
   visionParseFailed: string;
+  close: string;
 }
 
 export type MessageKey = keyof Messages;

@@ -229,5 +229,6 @@
   "visionImageSent": "[图片]",
   "visionParsingBoard": "正在使用豆包视觉模型解析棋局截图...",
   "visionBoardLoaded": "棋谱已载入！根据盘面推演，当前轮到{0}方落子，请继续。",
-  "visionParseFailed": "棋局解析失败"
+  "visionParseFailed": "棋局解析失败",
+  "close": "关闭"
 }
