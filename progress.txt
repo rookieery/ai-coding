@@ -25,7 +25,7 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-CHAT-MOVE-01-Regex-Helper: 编写坐标解析工具函数。1. 在 `gomoku-web/src/games/gomoku/` 目录下新建 `moveParser.ts`。2. 实现 `parseMoveText(text: string)` 函数：使用正则表达式匹配 'H8', 'h8', '落子 h8', '下 H8' 等格式。3. 字母 A-O 映射为列索引 (A=0, O=14)，数字 1-15 映射为行索引 (r = 15 - number)。4. 返回 `{ r, c, coord }` 或 null。5. 添加单元测试覆盖各种边界情况，所有测试通过。 - 2026年04月26日
-CHAT-MOVE-02-Expose-Board-API: 对弈面板暴露合法性校验与强制落子方法。1. 在 `AgentGomokuPanel.vue` 中新增 `isValidMove(r, c)` 方法：校验坐标边界、游戏是否结束、位置是否为空、是否为玩家回合、禁手规则。2. 新增 `placeUserPieceFromChat(r, c)` 方法：调用 `isValidMove` 校验后执行落子逻辑，更新棋盘状态，检查胜负/和棋，触发 `userMove` 事件。3. 通过 `defineExpose` 暴露两个方法供父组件调用。4. TypeScript 编译通过。 - 2026年04月26日
+
 CHAT-MOVE-03-Message-Interceptor: AgentView 聊天输入拦截与分流逻辑。1. 在 `AgentView.vue` 中导入 `parseMoveText` 函数。2. 修改 `handleSend` 方法：当 `playMode === 'gomoku'` 时，先解析用户输入。3. 若解析出坐标，调用 `isValidMove` 校验：合法则显示用户消息并执行落子，非法则提示用户"位置不合法或已有棋子"。4. 若未解析出坐标，走原有 `sendMessage` 逻辑。5. 新增 i18n 词条 `agentInvalidMove`。6. TypeScript 编译通过。 - 2026年04月26日
 UI-SCROLL-01-Root-Constraint: 锁定对弈模式下的全局视口高度。1. 修改 `AgentView.vue` 根元素：移除静态 `h-full`。2. 动态绑定 `:class`：对弈模式 `h-screen overflow-hidden`，聊天模式 `min-h-screen`。3. TypeScript 编译通过。 - 2026年04月26日
+UI-SCROLL-02-Flex-Layout-Fix: 实现左侧聊天列表内部独立滚动。1. 在 `AgentView.vue` 中为 `<AgentChatMessages>` 组件外层包裹新的 `<div>`。2. 包裹层绑定动态样式：对弈模式 `flex-1 overflow-y-auto`，聊天模式 `w-full`。3. 为 `<AgentChatInput>` 组件添加 `shrink-0` class 确保输入框固定在底部。4. 为 `<AgentWelcomeScreen>` 添加动态 class 以适配布局。5. TypeScript 编译通过。 - 2026年04月26日
