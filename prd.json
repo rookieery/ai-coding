@@ -1,4 +1,11 @@
 {
   "branchName": "feature/chess-board-recognition",
-  "stories": []
+  "stories": [
+    {
+      "id": "BUGFIX-VISION-02-Frontend-Image-Compress",
+      "title": "前端：添加基础的图片压缩机制（可选防线）",
+      "description": "前端健壮性优化。请找到 `AgentChatInput.vue` 中将文件转为 Base64 的 `fileToBase64` 方法。由于原始截图可能极大（如 4K 屏截图），在转 Base64 之前，请利用 HTML5 `<canvas>` API 对过大的图片进行简单的尺寸等比缩放（例如限制最大宽度为 1024px，或导出 quality 为 0.8 的 image/jpeg）。这能将 Base64 的体积从几MB 暴降到几百KB，不仅能彻底杜绝后端超载，还能大幅提升豆包 API 的识别响应速度。",
+      "passes": true
+    }
+  ]
 }
