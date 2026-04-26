@@ -26,7 +26,7 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-CHAT-MOVE-03-Message-Interceptor: AgentView 聊天输入拦截与分流逻辑。1. 在 `AgentView.vue` 中导入 `parseMoveText` 函数。2. 修改 `handleSend` 方法：当 `playMode === 'gomoku'` 时，先解析用户输入。3. 若解析出坐标，调用 `isValidMove` 校验：合法则显示用户消息并执行落子，非法则提示用户"位置不合法或已有棋子"。4. 若未解析出坐标，走原有 `sendMessage` 逻辑。5. 新增 i18n 词条 `agentInvalidMove`。6. TypeScript 编译通过。 - 2026年04月26日
-UI-SCROLL-01-Root-Constraint: 锁定对弈模式下的全局视口高度。1. 修改 `AgentView.vue` 根元素：移除静态 `h-full`。2. 动态绑定 `:class`：对弈模式 `h-screen overflow-hidden`，聊天模式 `min-h-screen`。3. TypeScript 编译通过。 - 2026年04月26日
+
 UI-SCROLL-02-Flex-Layout-Fix: 实现左侧聊天列表内部独立滚动。1. 在 `AgentView.vue` 中为 `<AgentChatMessages>` 组件外层包裹新的 `<div>`。2. 包裹层绑定动态样式：对弈模式 `flex-1 overflow-y-auto`，聊天模式 `w-full`。3. 为 `<AgentChatInput>` 组件添加 `shrink-0` class 确保输入框固定在底部。4. 为 `<AgentWelcomeScreen>` 添加动态 class 以适配布局。5. TypeScript 编译通过。 - 2026年04月26日
 VISION-FINAL-01-Backend-Service: 后端构建豆包多模态视觉解析服务与路由。1. 在 `gomoku-server/src/services/` 下新建 `vision.service.ts`，引入 `openai` 库。2. 使用环境变量 `VOLCENGINE_API_KEY`、`VOLCENGINE_BASE_URL` 和 `DOUBAO_VISION_ENDPOINT_ID` 初始化 OpenAI 客户端。3. 实现 `recognizeBoard(imageBase64: string)` 方法，包含严格的 System Prompt 限制输出格式。4. 在 `gomoku-server/src/routes/` 下新建 `vision.routes.ts`，新增 `/api/vision/recognize` POST 路由。5. 在 `routes/index.ts` 中注册 vision 路由。6. TypeScript 编译通过。 - 2026年04月26日
+VISION-FINAL-02-Frontend-API: 前端创建视觉API调用接口层。1. 在 `gomoku-web/src/api/vision-api.ts` 中定义 `RecognitionResult` 接口（`boardType: string`, `pieces: number[][]`）和 `VisionApiResponse<T>` 泛型响应接口。2. 创建 `VisionApiService` 类，遵循项目现有 API 模式（class-based service + singleton export）。3. 实现 `recognizeBoardFromBase64(imageBase64: string): Promise<RecognitionResult>` 方法，使用 fetch POST 请求 `/vision/recognize` 端点，包含认证头和异常处理。4. TypeScript 编译通过。 - 2026年04月26日
