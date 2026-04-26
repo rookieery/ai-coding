@@ -230,5 +230,6 @@
   "visionParsingBoard": "Parsing board screenshot with Doubao Vision model...",
   "visionBoardLoaded": "Board loaded! Based on the position, it's {0}'s turn. Please continue.",
   "visionParseFailed": "Failed to parse board",
+  "imageUploadGuidance": "Tip: Crop the image to show only the board grid, excluding extra UI elements for better recognition accuracy!",
   "close": "Close"
 }

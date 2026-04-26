@@ -32,7 +32,7 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-BUGFIX-VISION-03-Reactivity-Fix: 修复引擎层的数组响应式覆盖逻辑。1. 在 `GameView.vue` 中新增 `loadBoardState(pieces)` 方法。2. 使用 `board.value = pieces.map(row => [...row])` 进行深度响应式赋值，避免破坏响应式。3. 清空 `moveHistory.value = []`、`winner.value = EMPTY`、`winningLine.value = []`、`hintMove.value = null`。4. 根据盘面黑白子数量正确计算并赋值 `currentPlayer.value`（黑子数≤白子数时轮到黑方）。5. 自动进入分析模式 `isAnalysisMode.value = true`。6. TypeScript 编译通过。 - 2026年04月26日
-BUGFIX-VISION-04-GameView-Mount: 完善五子棋页面挂载时的视觉数据消费与打谱模式切换。1. 验证 `onMounted` 钩子已正确调用 `useVisionBridge().consumeVisionBoard()` 并在返回棋子时调用 `loadBoardState()`。2. 修复 `loadBoardState` 函数，新增 `mode.value = 'pve'` 设置，确保分析模式按钮在控制面板中可见（PVE控件区域）。3. 用户现在可以正确切换出分析模式，AI不会自动落子。4. 通过TypeScript编译、184项单元测试、生产构建验证。 - 2026年04月26日
+
 BUGFIX-VISION-07-Hardcore-Prompt: 后端引入基于锚点与思维链的强力视觉Prompt。1. 重构 `VISION_SYSTEM_PROMPT`，采用四步骤思维链引导：定位棋盘区域→建立坐标系→逐行扫描→确认输出结果。2. 明确要求AI忽略顶部/底部UI界面，只锁定木质棋盘区域。3. 要求结果包裹在 ```json 代码块中。4. 新增 `validateAndParseJson()` 方法，优先从markdown代码块提取JSON，支持带思考过程的回复解析。5. TypeScript编译通过。 - 2026年04月26日
 BUGFIX-VISION-08-Constant-Mapping: 前端增加棋盘数据的常量映射适配。1. 在 `GameView.vue` 的 `loadBoardState(pieces)` 方法中新增双重循环映射转换。2. 后端传入值 1 映射为本地 BLACK 常量，2 映射为 WHITE 常量，0 映射为 EMPTY 常量。3. 使用 `mappedBoard` 数组存储转换结果后再赋值给 `board.value`，确保 Vue 响应式更新正确触发。4. TypeScript 编译通过。 - 2026年04月26日
+BUGFIX-VISION-09-Upload-Guidance: 前端增加图片上传的规范引导提示。1. 在 `AgentChatInput.vue` 的图片预览区域下方新增引导提示文字。2. 新增 i18n key `imageUploadGuidance`，中英文双语支持。3. 提示文字使用语义化 Tailwind 类名，支持深色/浅色主题。4. TypeScript 编译通过。 - 2026年04月26日

@@ -233,6 +233,7 @@ export interface Messages {
   visionParsingBoard: string;
   visionBoardLoaded: string;
   visionParseFailed: string;
+  imageUploadGuidance: string;
   close: string;
 }
 

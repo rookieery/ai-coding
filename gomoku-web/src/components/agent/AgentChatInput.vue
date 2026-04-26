@@ -178,6 +178,13 @@ defineExpose({
         >
           <X class="w-4 h-4" />
         </button>
+        <!-- 图片上传引导提示 -->
+        <p
+          class="text-xs mt-1 px-2 pb-1"
+          :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
+        >
+          {{ t('imageUploadGuidance') }}
+        </p>
       </div>
       <!-- 附件按钮 -->
       <button
