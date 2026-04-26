@@ -130,11 +130,51 @@ const resetGame = () => {
   winningLine.value = [];
 };
 
+const isValidMove = (r: number, c: number): boolean => {
+  if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) return false;
+  if (winner.value !== EMPTY) return false;
+  if (board.value[r][c] !== EMPTY) return false;
+  if (currentPlayer.value !== BLACK) return false;
+
+  if (ruleMode.value === 'renju' && currentPlayer.value === BLACK) {
+    const forbidden = getForbiddenType(board.value, r, c, BLACK);
+    if (forbidden) return false;
+  }
+
+  return true;
+};
+
+const placeUserPieceFromChat = (r: number, c: number): boolean => {
+  if (!isValidMove(r, c)) return false;
+
+  board.value[r][c] = BLACK;
+  moveHistory.value.push({ r, c, player: BLACK });
+
+  const winLine = checkWin(board.value, r, c, BLACK, ruleMode.value);
+  if (winLine) {
+    winner.value = BLACK;
+    winningLine.value = winLine;
+    emit('userMove', r, c);
+    return true;
+  }
+  if (checkDraw(board.value)) {
+    winner.value = 3;
+    emit('userMove', r, c);
+    return true;
+  }
+
+  currentPlayer.value = WHITE;
+  emit('userMove', r, c);
+  return true;
+};
+
 defineExpose({
   placeAiPiece,
   resetGame,
   getBoard: () => board.value,
   getMoveHistory: () => moveHistory.value,
+  isValidMove,
+  placeUserPieceFromChat,
 });
 </script>
 
