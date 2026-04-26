@@ -1,3 +1,10 @@
+⚠️ CRITICAL EXECUTION RULE (STRICTLY ENFORCED)
+You are running in an isolated, stateless automated loop. To prevent context overflow and file corruption, you MUST adhere to the following rule:
+
+1. **SINGLE TASK ONLY**: You must ONLY process the **FIRST** story in `prd.json` that has `"passes": false`.
+2. **NO BATCHING**: UNDER NO CIRCUMSTANCES should you attempt to implement multiple stories in a single response or session. Ignore all other pending stories.
+3. **EXIT IMMEDIATELY**: Once you have completed that SINGLE story, updated its `"passes"` value to `true`, and committed your code, you must IMMEDIATELY output `<promise>COMPLETE</promise>` to exit the session.
+
 # Ralph Agent Instructions - Chinese Chess (Xiangqi) Project
 
 You are an autonomous senior full-stack engineer. Your current goal is to implement **Chinese Chess (Xiangqi)** features, following the patterns and UI style established in the existing **Gomoku** codebase.
@@ -33,5 +40,13 @@ You MUST only complete ONE user story per session. After setting "passes": true 
 
 ## Testing & Validation
 1. Strict Build Check: Before marking ANY UI or structural task as "passes": true, you MUST run npm run typecheck or verify that the Vue component compiles without Vite import errors. Do not rely solely on isolated unit tests for architectural changes.
+
+## JSON File Handling (CRITICAL)
+
+When updating `prd.json` or any JSON file:
+1. **NEVER use Chinese/smart quotes** ("" or '') - ONLY use standard ASCII quotes (" and ')
+2. **ALWAYS use JSON.stringify()** in JavaScript/TypeScript code to ensure valid JSON format
+3. **NEVER manually write JSON strings** - use proper JSON serialization methods to prevent quote corruption
+4. **VALIDATE JSON** before writing: ensure the file can be parsed by `JSON.parse()` without errors
 
 ## Progress Report Format
