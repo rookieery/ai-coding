@@ -73,9 +73,9 @@ const pieceTextClass = (player: number) => {
 
 <template>
   <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
-    <!-- Left Coordinates (Numbers) -->
+    <!-- Left Coordinates (Numbers) - displayed from 15 (top) to 1 (bottom) -->
     <div class="flex flex-col mr-1 sm:mr-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
-      <div v-for="n in 15" :key="n" class="h-5 sm:h-6 md:h-7 lg:h-9 xl:h-10 flex items-center justify-center w-2.5 sm:w-3 md:w-3.5 lg:w-4.5 xl:w-5">{{ n }}</div>
+      <div v-for="n in 15" :key="n" class="h-5 sm:h-6 md:h-7 lg:h-9 xl:h-10 flex items-center justify-center w-2.5 sm:w-3 md:w-3.5 lg:w-4.5 xl:w-5">{{ 16 - n }}</div>
     </div>
     
     <div class="flex flex-col">
@@ -162,7 +162,7 @@ const pieceTextClass = (player: number) => {
       
       <!-- Bottom Coordinates (Letters) -->
       <div class="flex mt-1 sm:mt-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
-        <div v-for="l in 15" :key="l" class="w-5 sm:w-6 md:w-7 lg:w-9 xl:w-10 flex items-center justify-center">{{ String.fromCharCode(96 + l) }}</div>
+        <div v-for="l in 15" :key="l" class="w-5 sm:w-6 md:w-7 lg:w-9 xl:w-10 flex items-center justify-center">{{ String.fromCharCode(64 + l) }}</div>
       </div>
     </div>
   </div>

@@ -12,7 +12,7 @@ defineOptions({
 });
 
 const emit = defineEmits<{
-  (e: 'userMove', r: number, c: number): void;
+  (e: 'userMove', r: number, c: number, coord?: string): void;
   (e: 'surrender'): void;
 }>();
 
@@ -77,7 +77,11 @@ const placePiece = (r: number, c: number) => {
   }
 
   currentPlayer.value = WHITE;
-  emit('userMove', r, c);
+  // Generate coordinate for display
+  const colLetter = String.fromCharCode(65 + c);
+  const rowNumber = BOARD_SIZE - r;
+  const coord = `${colLetter}${rowNumber}`;
+  emit('userMove', r, c, coord);
 };
 
 const placeAiPiece = (r: number, c: number) => {
@@ -144,7 +148,7 @@ const isValidMove = (r: number, c: number): boolean => {
   return true;
 };
 
-const placeUserPieceFromChat = (r: number, c: number): boolean => {
+const placeUserPieceFromChat = (r: number, c: number, coord?: string): boolean => {
   if (!isValidMove(r, c)) return false;
 
   board.value[r][c] = BLACK;
@@ -154,17 +158,17 @@ const placeUserPieceFromChat = (r: number, c: number): boolean => {
   if (winLine) {
     winner.value = BLACK;
     winningLine.value = winLine;
-    emit('userMove', r, c);
+    emit('userMove', r, c, coord);
     return true;
   }
   if (checkDraw(board.value)) {
     winner.value = 3;
-    emit('userMove', r, c);
+    emit('userMove', r, c, coord);
     return true;
   }
 
   currentPlayer.value = WHITE;
-  emit('userMove', r, c);
+  emit('userMove', r, c, coord);
   return true;
 };
 

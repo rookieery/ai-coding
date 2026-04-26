@@ -78,10 +78,10 @@ const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
   chatMessagesRef.value?.scrollToBottom();
 };
 
-const handleUserMove = async (r: number, c: number) => {
+const handleUserMove = async (r: number, c: number, userCoord?: string) => {
   const colLetter = String.fromCharCode(65 + c);
   const rowNumber = BOARD_SIZE - r;
-  const moveCoord = `${colLetter}${rowNumber}`;
+  const moveCoord = userCoord || `${colLetter}${rowNumber}`;
 
   messages.value.push({
     role: 'user',
@@ -182,18 +182,12 @@ const handleSend = () => {
 
       // Validate the move
       if (gomokuPanelRef.value?.isValidMove(r, c)) {
-        // Show user message on screen
-        messages.value.push({
-          role: 'user',
-          text: t('agentUserMoveNotification', coord)
-        });
-
         // Clear input
         query.value = '';
         chatInputRef.value?.resetTextareaHeight();
 
-        // Execute the move
-        gomokuPanelRef.value.placeUserPieceFromChat(r, c);
+        // Execute the move (handleUserMove will add the notification message)
+        gomokuPanelRef.value.placeUserPieceFromChat(r, c, coord);
       } else {
         // Invalid move - show error message
         messages.value.push({
