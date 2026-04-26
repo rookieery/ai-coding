@@ -244,22 +244,25 @@ const handleSend = () => {
       <!-- 欢迎页 -->
       <AgentWelcomeScreen
         v-if="messages.length === 0"
+        :class="playMode === 'gomoku' ? 'flex-1' : 'w-full'"
       />
 
       <!-- 消息列表 -->
-      <AgentChatMessages
-        v-else
-        ref="chatMessagesRef"
-        :messages="messages"
-        :is-thinking="isThinking"
-        :thinking-content="thinkingContent"
-        :answer-content="answerContent"
-        :show-thinking-process="showThinkingProcess"
-        @regenerate="regenerateAnswer"
-        @toggle-thinking="(show: boolean) => showThinkingProcess = show"
-        @regenerate-streaming="regenerateStreamingAnswer"
-        @select-game="handleGameSelection"
-      />
+      <div :class="playMode === 'gomoku' ? 'flex-1 overflow-y-auto' : 'w-full'">
+        <AgentChatMessages
+          v-if="messages.length > 0"
+          ref="chatMessagesRef"
+          :messages="messages"
+          :is-thinking="isThinking"
+          :thinking-content="thinkingContent"
+          :answer-content="answerContent"
+          :show-thinking-process="showThinkingProcess"
+          @regenerate="regenerateAnswer"
+          @toggle-thinking="(show: boolean) => showThinkingProcess = show"
+          @regenerate-streaming="regenerateStreamingAnswer"
+          @select-game="handleGameSelection"
+        />
+      </div>
 
       <!-- 输入区域 -->
       <AgentChatInput
@@ -267,7 +270,10 @@ const handleSend = () => {
         v-model:query="query"
         :is-thinking="isThinking"
         @send="handleSend"
-        :class="playMode === 'gomoku' ? 'px-4 max-w-full' : 'max-w-3xl'"
+        :class="[
+          'shrink-0',
+          playMode === 'gomoku' ? 'px-4 max-w-full' : 'max-w-3xl'
+        ]"
       >
         <template #actions>
           <button
