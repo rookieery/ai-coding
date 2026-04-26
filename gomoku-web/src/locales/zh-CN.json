@@ -225,5 +225,9 @@
   "agentAiFirstMoveNotification": "AI执黑先行，落子 {0}。",
   "attachImage": "附加图片",
   "removeImage": "移除图片",
-  "selectedImagePreview": "已选图片预览"
+  "selectedImagePreview": "已选图片预览",
+  "visionImageSent": "[图片]",
+  "visionParsingBoard": "正在使用豆包视觉模型解析棋局截图...",
+  "visionBoardLoaded": "棋谱已载入！根据盘面推演，当前轮到{0}方落子，请继续。",
+  "visionParseFailed": "棋局解析失败"
 }

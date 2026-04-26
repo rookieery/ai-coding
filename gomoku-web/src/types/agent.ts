@@ -6,4 +6,5 @@ export interface AgentMessage {
   isGameSelector?: boolean;
   isGameSelectorDismissed?: boolean;
   isGameReasoning?: boolean;
+  hasImage?: boolean;
 }

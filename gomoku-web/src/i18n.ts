@@ -229,6 +229,10 @@ export interface Messages {
   attachImage: string;
   removeImage: string;
   selectedImagePreview: string;
+  visionImageSent: string;
+  visionParsingBoard: string;
+  visionBoardLoaded: string;
+  visionParseFailed: string;
 }
 
 export type MessageKey = keyof Messages;

@@ -3,10 +3,11 @@ import { ref, nextTick } from 'vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { gomokuAiApi } from '../api/gomoku-ai-api';
+import { visionApi } from '../api/vision-api';
 import { useGlobalAgentPlay } from '../composables/useAgentPlay';
 import { useAgentChat } from '../composables/useAgentChat';
 import { useSplitDrag } from '../composables/useSplitDrag';
-import { BOARD_SIZE } from '../games/gomoku/gameLogic';
+import { BOARD_SIZE, BLACK, WHITE } from '../games/gomoku/gameLogic';
 import { parseMoveText } from '../games/gomoku/moveParser';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
@@ -228,13 +229,78 @@ const cancelExit = () => {
   showExitConfirm.value = false;
 };
 
-const handleSend = (payload: { text: string; imageBase64: string | null }) => {
+const handleSend = async (payload: { text: string; imageBase64: string | null }) => {
   if (gameSelectorActive.value) {
     gameSelectorActive.value = false;
     const selectorMsg = messages.value.find(m => m.isGameSelector);
     if (selectorMsg) {
       selectorMsg.isGameSelectorDismissed = true;
     }
+  }
+
+  // Handle image input - vision recognition workflow
+  if (payload.imageBase64) {
+    // Add user message with image indicator
+    messages.value.push({
+      role: 'user',
+      text: payload.text || t('visionImageSent'),
+      hasImage: true,
+    });
+
+    isThinking.value = true;
+    thinkingContent.value = t('visionParsingBoard');
+    answerContent.value = '';
+    showThinkingProcess.value = true;
+
+    await nextTick();
+    chatMessagesRef.value?.scrollToBottom();
+
+    try {
+      const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
+
+      // Enter gomoku mode and load board state
+      enterGomokuMode();
+      gomokuPanelRef.value?.resetGame();
+      gomokuPanelRef.value?.loadBoardState(result.pieces);
+
+      // Determine current player based on board state
+      let blackCount = 0;
+      let whiteCount = 0;
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          if (result.pieces[r][c] === BLACK) blackCount++;
+          else if (result.pieces[r][c] === WHITE) whiteCount++;
+        }
+      }
+      const currentTurn = blackCount <= whiteCount ? t('black') : t('white');
+
+      isThinking.value = false;
+      thinkingContent.value = '';
+      answerContent.value = '';
+      showThinkingProcess.value = true;
+
+      messages.value.push({
+        role: 'agent',
+        text: t('visionBoardLoaded', currentTurn),
+      });
+
+      await nextTick();
+      chatMessagesRef.value?.scrollToBottom();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
+      messages.value.push({
+        role: 'agent',
+        text: `${t('genericErrorPrefix')}${errorMessage}`,
+      });
+      isThinking.value = false;
+      showThinkingProcess.value = true;
+      await nextTick();
+      chatMessagesRef.value?.scrollToBottom();
+    }
+
+    query.value = '';
+    chatInputRef.value?.resetTextareaHeight();
+    return;
   }
 
   // Intercept chess move commands in gomoku mode

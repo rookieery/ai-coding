@@ -225,5 +225,9 @@
   "agentAiFirstMoveNotification": "AI plays black first, moves to {0}.",
   "attachImage": "Attach image",
   "removeImage": "Remove image",
-  "selectedImagePreview": "Selected image preview"
+  "selectedImagePreview": "Selected image preview",
+  "visionImageSent": "[Image]",
+  "visionParsingBoard": "Parsing board screenshot with Doubao Vision model...",
+  "visionBoardLoaded": "Board loaded! Based on the position, it's {0}'s turn. Please continue.",
+  "visionParseFailed": "Failed to parse board"
 }

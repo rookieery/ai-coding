@@ -2,16 +2,10 @@
   "branchName": "feature/chess-board-recognition",
   "stories": [
     {
-      "id": "VISION-FINAL-04-Board-Override",
-      "title": "前端：引擎层增加强制覆盖残局的方法",
-      "description": "底层组件修改任务。请先阅读 `AgentGomokuPanel.vue` 及其依赖的五子棋状态逻辑。1. 增加 `loadBoardState(pieces: number[][])` 方法：强制将传入的二维数组覆盖当前的棋盘状态，并清空历史记录（`moveHistory`）。2. 核心逻辑：遍历 pieces 数组统计黑子(1)和白子(2)的数量。如果黑子数量 <= 白子数量，则推断下一步轮到黑棋（'black'）；如果黑子 > 白子，轮到白棋（'white'）。3. 确保该 `loadBoardState` 方法通过 `defineExpose` 暴露给外层的 `AgentView.vue` 调用。",
-      "passes": true
-    },
-    {
       "id": "VISION-FINAL-05-AgentView-Workflow",
       "title": "前端：AgentView 视觉解析工作流联动闭环",
       "description": "核心中枢联调任务。请阅读 `AgentView.vue` 中的发送消息及状态管理逻辑。1. 适配修改后的发送事件，接收 `imageBase64` 参数。2. 若包含图片，先在聊天流显示用户发出的信息，并开启 `isThinking`。3. 在聊天流新增一条 Agent 提示：'正在使用豆包视觉模型解析棋局截图...'。4. 调用 `vision-api.ts` 的解析方法。5. 解析成功后，调用 `useGlobalAgentPlay().enterGomokuMode()` 展开右侧棋盘。6. 紧接着调用 `gomokuPanelRef.value.loadBoardState(result.pieces)` 覆盖棋盘状态。7. 在聊天流回复：'棋谱已载入！根据盘面推演，当前轮到[黑/白]方落子，请继续。' 并关闭 `isThinking`。",
-      "passes": false
+      "passes": true
     }
   ]
 }
