@@ -215,8 +215,10 @@ const handleSend = () => {
 </script>
 
 <template>
-  <div class="flex w-full h-full transition-all duration-300 ease-in-out"
-       :class="playMode === 'gomoku' ? 'flex-row' : 'flex-col items-center justify-center'">
+  <div class="flex w-full transition-all duration-300 ease-in-out"
+       :class="[
+         playMode === 'gomoku' ? 'flex-row h-screen overflow-hidden' : 'flex-col items-center justify-center min-h-screen'
+       ]">
 
     <!-- 左侧聊天区域 -->
     <div class="flex flex-col h-full shrink-0"

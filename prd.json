@@ -1,4 +1,17 @@
 {
   "branchName": "feature/agent-split-screen",
-  "stories": []
+  "stories": [
+    {
+      "id": "UI-SCROLL-01-Root-Constraint",
+      "title": "锁定对弈模式下的全局视口高度",
+      "description": "这是解决内部滚动失效的绝对前提。请修改 `AgentView.vue` 的最外层根 `<div class=\"flex w-full...\">`：\n1. 移除静态的 `h-full`。\n2. 修改 `:class` 的动态绑定逻辑：当 `playMode === 'gomoku'` 时，强制添加 `h-screen overflow-hidden`（把总高度死死锁在屏幕视口内，掐断全局滚动的可能）；当为其它模式（聊天模式）时，保留原有的高度设定（如 `min-h-screen`）。",
+      "passes": true
+    },
+    {
+      "id": "UI-SCROLL-02-Flex-Layout-Fix",
+      "title": "实现左侧聊天列表内部独立滚动",
+      "description": "视图层修改任务。请在 `AgentView.vue` 的左侧面板（包含返回按钮、消息列表、输入框的那一栏）中进行以下修改：\n1. 找到 `<AgentChatMessages>` 组件，在它的外面**包裹一层新的 `<div>`**。\n2. 为这个新的包裹层绑定动态样式：`:class=\"playMode === 'gomoku' ? 'flex-1 overflow-y-auto' : 'w-full'\"`。这使得在对弈模式下，消息列表会撑满剩余空间并在内部生成滚动条。\n3. 找到底部的 `<AgentChatInput>` 组件，确保它的 class 中包含 `shrink-0`。这能保证输入框永远像钉子一样固定在最底部，绝对不会被上面的消息列表挤压变形或挤出屏幕外。",
+      "passes": false
+    }
+  ]
 }
