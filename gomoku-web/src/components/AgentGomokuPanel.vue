@@ -4,7 +4,6 @@ import { Undo2, Flag } from 'lucide-vue-next';
 import Board from '../games/gomoku/components/Board.vue';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE, checkWin, checkDraw, type RuleMode, getForbiddenType } from '../games/gomoku/gameLogic';
 import { t, currentTheme } from '../i18n';
-import type { ThemeKey } from '../common/theme';
 import { useGlobalSettings } from '../composables/useSettings';
 
 defineOptions({
@@ -14,6 +13,7 @@ defineOptions({
 const emit = defineEmits<{
   (e: 'userMove', r: number, c: number, coord?: string): void;
   (e: 'surrender'): void;
+  (e: 'aiFirstMove'): void;
 }>();
 
 const settings = useGlobalSettings();
@@ -26,6 +26,11 @@ const moveHistory = ref<{ r: number; c: number; player: number }[]>([]);
 const winningLine = ref<{ r: number; c: number }[]>([]);
 const ruleMode = ref<RuleMode>('standard');
 const showSteps = ref<boolean>(true);
+const aiFirst = ref<boolean>(false);
+
+const canToggleAiFirst = computed(() => moveHistory.value.length === 0 && winner.value === EMPTY);
+
+const aiPlayer = computed(() => aiFirst.value ? BLACK : WHITE);
 
 const forbiddenPoints = computed(() => {
   const points: { r: number; c: number }[] = [];
@@ -48,26 +53,30 @@ const statusText = computed(() => {
   if (winner.value === BLACK) return t('statusBlackWin');
   if (winner.value === WHITE) return t('statusWhiteWin');
   if (winner.value === 3) return t('statusDraw');
+  if (aiFirst.value && currentPlayer.value === BLACK) return t('agentAiThinkingMove');
   return currentPlayer.value === BLACK ? t('statusBlackTurn') : t('statusWhiteTurn');
 });
 
 const placePiece = (r: number, c: number) => {
   if (winner.value !== EMPTY || board.value[r][c] !== EMPTY) return;
-  if (currentPlayer.value !== BLACK) return;
+  if (aiFirst.value && currentPlayer.value === BLACK) return;
+  if (!aiFirst.value && currentPlayer.value === WHITE) return;
 
-  if (ruleMode.value === 'renju' && currentPlayer.value === BLACK) {
+  const playerToMove = aiFirst.value ? WHITE : BLACK;
+
+  if (ruleMode.value === 'renju' && playerToMove === BLACK) {
     const forbidden = getForbiddenType(board.value, r, c, BLACK);
     if (forbidden) {
       return;
     }
   }
 
-  board.value[r][c] = BLACK;
-  moveHistory.value.push({ r, c, player: BLACK });
+  board.value[r][c] = playerToMove;
+  moveHistory.value.push({ r, c, player: playerToMove });
 
-  const winLine = checkWin(board.value, r, c, BLACK, ruleMode.value);
+  const winLine = checkWin(board.value, r, c, playerToMove, ruleMode.value);
   if (winLine) {
-    winner.value = BLACK;
+    winner.value = playerToMove;
     winningLine.value = winLine;
     return;
   }
@@ -76,8 +85,7 @@ const placePiece = (r: number, c: number) => {
     return;
   }
 
-  currentPlayer.value = WHITE;
-  // Generate coordinate for display
+  currentPlayer.value = aiFirst.value ? BLACK : WHITE;
   const colLetter = String.fromCharCode(65 + c);
   const rowNumber = BOARD_SIZE - r;
   const coord = `${colLetter}${rowNumber}`;
@@ -87,12 +95,13 @@ const placePiece = (r: number, c: number) => {
 const placeAiPiece = (r: number, c: number) => {
   if (board.value[r][c] !== EMPTY) return;
 
-  board.value[r][c] = WHITE;
-  moveHistory.value.push({ r, c, player: WHITE });
+  const aiPiece = aiFirst.value ? BLACK : WHITE;
+  board.value[r][c] = aiPiece;
+  moveHistory.value.push({ r, c, player: aiPiece });
 
-  const winLine = checkWin(board.value, r, c, WHITE, ruleMode.value);
+  const winLine = checkWin(board.value, r, c, aiPiece, ruleMode.value);
   if (winLine) {
-    winner.value = WHITE;
+    winner.value = aiPiece;
     winningLine.value = winLine;
     return;
   }
@@ -101,7 +110,7 @@ const placeAiPiece = (r: number, c: number) => {
     return;
   }
 
-  currentPlayer.value = BLACK;
+  currentPlayer.value = aiFirst.value ? WHITE : BLACK;
 };
 
 const undo = () => {
@@ -118,11 +127,11 @@ const undo = () => {
     board.value[userMove.r][userMove.c] = EMPTY;
   }
 
-  currentPlayer.value = BLACK;
+  currentPlayer.value = aiFirst.value ? BLACK : WHITE;
 };
 
 const surrender = () => {
-  winner.value = WHITE;
+  winner.value = aiFirst.value ? BLACK : WHITE;
   emit('surrender');
 };
 
@@ -132,15 +141,20 @@ const resetGame = () => {
   winner.value = EMPTY;
   moveHistory.value = [];
   winningLine.value = [];
+  aiFirst.value = false;
 };
 
 const isValidMove = (r: number, c: number): boolean => {
   if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) return false;
   if (winner.value !== EMPTY) return false;
   if (board.value[r][c] !== EMPTY) return false;
-  if (currentPlayer.value !== BLACK) return false;
 
-  if (ruleMode.value === 'renju' && currentPlayer.value === BLACK) {
+  if (aiFirst.value && currentPlayer.value === BLACK) return false;
+  if (!aiFirst.value && currentPlayer.value === WHITE) return false;
+
+  const playerToMove = aiFirst.value ? WHITE : BLACK;
+
+  if (ruleMode.value === 'renju' && playerToMove === BLACK) {
     const forbidden = getForbiddenType(board.value, r, c, BLACK);
     if (forbidden) return false;
   }
@@ -151,12 +165,13 @@ const isValidMove = (r: number, c: number): boolean => {
 const placeUserPieceFromChat = (r: number, c: number, coord?: string): boolean => {
   if (!isValidMove(r, c)) return false;
 
-  board.value[r][c] = BLACK;
-  moveHistory.value.push({ r, c, player: BLACK });
+  const playerToMove = aiFirst.value ? WHITE : BLACK;
+  board.value[r][c] = playerToMove;
+  moveHistory.value.push({ r, c, player: playerToMove });
 
-  const winLine = checkWin(board.value, r, c, BLACK, ruleMode.value);
+  const winLine = checkWin(board.value, r, c, playerToMove, ruleMode.value);
   if (winLine) {
-    winner.value = BLACK;
+    winner.value = playerToMove;
     winningLine.value = winLine;
     emit('userMove', r, c, coord);
     return true;
@@ -167,9 +182,20 @@ const placeUserPieceFromChat = (r: number, c: number, coord?: string): boolean =
     return true;
   }
 
-  currentPlayer.value = WHITE;
+  currentPlayer.value = aiFirst.value ? BLACK : WHITE;
   emit('userMove', r, c, coord);
   return true;
+};
+
+const toggleAiFirst = () => {
+  if (!canToggleAiFirst.value) return;
+  aiFirst.value = !aiFirst.value;
+  if (aiFirst.value) {
+    currentPlayer.value = BLACK;
+    emit('aiFirstMove');
+  } else {
+    currentPlayer.value = BLACK;
+  }
 };
 
 defineExpose({
@@ -186,10 +212,45 @@ defineExpose({
   <div class="flex flex-col h-full w-full">
     <div class="flex items-center justify-between px-4 py-2 border-b shrink-0"
          :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
-      <span class="text-sm font-medium"
-            :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-600'">
-        {{ statusText }}
-      </span>
+      <div class="flex items-center gap-4">
+        <span class="text-sm font-medium"
+              :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-600'">
+          {{ statusText }}
+        </span>
+        <div class="flex items-center gap-2 px-2 py-1 rounded-md"
+             :class="currentTheme === 'dark' ? 'bg-stone-700/50' : 'bg-stone-100'">
+          <span class="text-xs"
+                :class="[
+                  currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500',
+                  !aiFirst && canToggleAiFirst ? 'font-medium' : ''
+                ]">
+            {{ t('agentAiSecond') }}
+          </span>
+          <button
+            @click="toggleAiFirst"
+            :disabled="!canToggleAiFirst"
+            class="relative w-9 h-5 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+            :class="[
+              aiFirst ? 'bg-indigo-600' : (currentTheme === 'dark' ? 'bg-stone-600' : 'bg-stone-300'),
+              !canToggleAiFirst ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            ]"
+          >
+            <span
+              class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full shadow transition-transform duration-200"
+              :class="[
+                aiFirst ? 'translate-x-4 bg-white' : 'bg-white'
+              ]"
+            ></span>
+          </button>
+          <span class="text-xs"
+                :class="[
+                  currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500',
+                  aiFirst && canToggleAiFirst ? 'font-medium' : ''
+                ]">
+            {{ t('agentAiFirst') }}
+          </span>
+        </div>
+      </div>
       <div class="flex gap-2">
         <button
           @click="undo"
@@ -225,7 +286,7 @@ defineExpose({
         :hintMove="null"
         :moveHistory="moveHistory"
         :winningLine="winningLine"
-        :aiPlayer="WHITE"
+        :aiPlayer="aiPlayer"
         :isAnalysisMode="false"
         :thinkingPath="[]"
         :forbiddenPoints="forbiddenPoints"

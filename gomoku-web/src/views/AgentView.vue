@@ -144,6 +144,69 @@ const handleUserMove = async (r: number, c: number, userCoord?: string) => {
   }
 };
 
+const handleAiFirstMove = async () => {
+  if (!gomokuPanelRef.value) return;
+
+  const board = gomokuPanelRef.value.getBoard();
+  const moveHistory = gomokuPanelRef.value.getMoveHistory();
+
+  isThinking.value = true;
+  thinkingContent.value = t('agentAiThinkingMove');
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await chatMessagesRef.value?.scrollToBottom();
+
+  try {
+    const response = await gomokuAiApi.generateMove({
+      board,
+      currentPlayer: 'black',
+      moveHistory,
+    });
+
+    if (response.success && response.data) {
+      const { x, y, reason, isFallback } = response.data;
+
+      gomokuPanelRef.value.placeAiPiece(y, x);
+
+      const colLetter = String.fromCharCode(65 + x);
+      const rowNumber = BOARD_SIZE - y;
+      const moveCoord = `${colLetter}${rowNumber}`;
+
+      if (isFallback) {
+        messages.value.push({
+          role: 'agent',
+          text: t('agentAiFirstMoveNotification', moveCoord)
+        });
+      } else {
+        thinkingContent.value = reason;
+        messages.value.push({
+          role: 'agent',
+          text: reason,
+          reasoningContent: reason,
+          isGameReasoning: true,
+        });
+      }
+
+      isThinking.value = false;
+      thinkingContent.value = '';
+      answerContent.value = '';
+      showThinkingProcess.value = true;
+
+      await chatMessagesRef.value?.scrollToBottom();
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
+    messages.value.push({
+      role: 'agent',
+      text: `${t('genericErrorPrefix')}${errorMessage}`,
+    });
+    isThinking.value = false;
+    showThinkingProcess.value = true;
+    await chatMessagesRef.value?.scrollToBottom();
+  }
+};
+
 const handleSurrender = () => {
   messages.value.push({
     role: 'agent',
@@ -310,6 +373,7 @@ const handleSend = () => {
         ref="gomokuPanelRef"
         @userMove="handleUserMove"
         @surrender="handleSurrender"
+        @aiFirstMove="handleAiFirstMove"
       />
     </div>
 

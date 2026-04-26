@@ -219,5 +219,8 @@
   "agentExitConfirmMessage": "Returning to home will clear the current game. Are you sure?",
   "agentExitConfirmWarning": "This action cannot be undone.",
   "agentStartNewGame": "Start New Game",
-  "agentInvalidMove": "Position {0} is invalid or already occupied. Please choose another position."
+  "agentInvalidMove": "Position {0} is invalid or already occupied. Please choose another position.",
+  "agentAiFirst": "AI First",
+  "agentAiSecond": "AI Second",
+  "agentAiFirstMoveNotification": "AI plays black first, moves to {0}."
 }

@@ -446,6 +446,57 @@ function generateReason(patterns: PatternMatch[]): string {
 }
 
 /**
+ * Check if the board is empty (no pieces placed)
+ */
+function isBoardEmpty(board: BoardState): boolean {
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c] !== '.') return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Generate opening moves for empty board
+ * Returns center area positions for first move
+ */
+function generateOpeningMoves(): CandidateMove[] {
+  // Center position is H8 (index 7,7)
+  const centerR = 7;
+  const centerC = 7;
+
+  // Generate center area positions (within 2 cells from center)
+  const positions: Array<{ r: number; c: number; priority: number }> = [];
+
+  for (let dr = -2; dr <= 2; dr++) {
+    for (let dc = -2; dc <= 2; dc++) {
+      const r = centerR + dr;
+      const c = centerC + dc;
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+        // Priority based on distance from center (lower is better)
+        const distance = Math.abs(dr) + Math.abs(dc);
+        positions.push({ r, c, priority: distance });
+      }
+    }
+  }
+
+  // Sort by priority (closest to center first)
+  positions.sort((a, b) => a.priority - b.priority);
+
+  // Return top positions as candidates
+  return positions.slice(0, 10).map((pos, idx) => ({
+    x: pos.c,
+    y: pos.r,
+    score: 100 - idx * 10,
+    attackScore: 100 - idx * 10,
+    defenseScore: 0,
+    patterns: [],
+    reason: idx === 0 ? '开局首选：天元位置' : `开局布局：中心区域第${idx + 1}候选`,
+  }));
+}
+
+/**
  * Generate top candidate moves for the current board state
  *
  * @param board - Current board state (ASCII format)
@@ -458,6 +509,11 @@ export function generateCandidateMoves(
   aiColor: 'black' | 'white',
   topN: number = 10
 ): CandidateMove[] {
+  // Special case: empty board - return opening moves
+  if (isBoardEmpty(board)) {
+    return generateOpeningMoves().slice(0, topN);
+  }
+
   const playerCell = playerToCell(aiColor);
   const candidates: CandidateMove[] = [];
 
