@@ -222,5 +222,8 @@
   "agentInvalidMove": "位置 {0} 不合法或已有棋子，请选择其他位置。",
   "agentAiFirst": "AI先手",
   "agentAiSecond": "AI后手",
-  "agentAiFirstMoveNotification": "AI执黑先行，落子 {0}。"
+  "agentAiFirstMoveNotification": "AI执黑先行，落子 {0}。",
+  "attachImage": "附加图片",
+  "removeImage": "移除图片",
+  "selectedImagePreview": "已选图片预览"
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Send } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { Send, Paperclip, X } from 'lucide-vue-next';
 import { currentTheme, t } from '../../i18n';
 import { useAutoResize } from '../../composables/useAutoResize';
 
@@ -16,21 +17,88 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:query': [value: string];
-  send: [];
+  send: [payload: { text: string; imageBase64: string | null }];
 }>();
 
 const { textareaRef, adjustTextareaHeight, resetTextareaHeight } = useAutoResize();
 
+const selectedImageBase64 = ref<string | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === 'string') {
+        resolve(result);
+      } else {
+        reject(new Error('Failed to read file as base64'));
+      }
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+};
+
+const handleFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file && file.type.startsWith('image/')) {
+    try {
+      selectedImageBase64.value = await fileToBase64(file);
+    } catch {
+      selectedImageBase64.value = null;
+    }
+  }
+  target.value = '';
+};
+
+const handlePaste = async (event: ClipboardEvent) => {
+  const items = event.clipboardData?.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      event.preventDefault();
+      const file = item.getAsFile();
+      if (file) {
+        try {
+          selectedImageBase64.value = await fileToBase64(file);
+        } catch {
+          selectedImageBase64.value = null;
+        }
+      }
+      break;
+    }
+  }
+};
+
+const clearSelectedImage = () => {
+  selectedImageBase64.value = null;
+};
+
+const triggerFileInput = () => {
+  fileInputRef.value?.click();
+};
+
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
-    emit('send');
+    handleSend();
   }
 };
 
 const handleSend = () => {
-  if (!props.query.trim() || props.isThinking) return;
-  emit('send');
+  const hasText = props.query.trim();
+  const hasImage = selectedImageBase64.value !== null;
+  if ((!hasText && !hasImage) || props.isThinking) return;
+
+  emit('send', {
+    text: props.query.trim(),
+    imageBase64: selectedImageBase64.value,
+  });
+  selectedImageBase64.value = null;
 };
 
 defineExpose({
@@ -44,14 +112,56 @@ defineExpose({
     <div v-if="$slots.actions" class="flex flex-wrap gap-3 mb-4">
       <slot name="actions" />
     </div>
-    <div class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
-         :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'">
+    <div
+      class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
+      :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'"
+      @paste="handlePaste"
+    >
+      <!-- 图片预览区域 -->
+      <div
+        v-if="selectedImageBase64"
+        class="w-full relative mb-2 rounded-lg overflow-hidden"
+        :class="currentTheme === 'dark' ? 'bg-stone-700' : 'bg-stone-100'"
+      >
+        <img
+          :src="selectedImageBase64"
+          :alt="t('selectedImagePreview')"
+          class="max-h-32 max-w-full object-contain mx-auto"
+        />
+        <button
+          type="button"
+          @click="clearSelectedImage"
+          class="absolute top-2 right-2 p-1 rounded-full transition-colors"
+          :class="currentTheme === 'dark' ? 'bg-stone-600 hover:bg-stone-500 text-stone-200' : 'bg-stone-200 hover:bg-stone-300 text-stone-700'"
+          :aria-label="t('removeImage')"
+        >
+          <X class="w-4 h-4" />
+        </button>
+      </div>
+      <!-- 附件按钮 -->
+      <button
+        type="button"
+        @click="triggerFileInput"
+        class="p-3 rounded-full transition-colors flex-shrink-0 self-end cursor-pointer"
+        :class="currentTheme === 'dark' ? 'hover:bg-stone-700 text-stone-400 hover:text-stone-200' : 'hover:bg-stone-100 text-stone-500 hover:text-stone-700'"
+        :aria-label="t('attachImage')"
+        :disabled="isThinking"
+      >
+        <Paperclip class="w-5 h-5" />
+      </button>
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept="image/*"
+        class="hidden"
+        @change="handleFileSelect"
+      />
       <textarea
         ref="textareaRef"
         :value="query"
         @input="emit('update:query', ($event.target as HTMLTextAreaElement).value); adjustTextareaHeight()"
         :placeholder="t('agentPlaceholder')"
-        class="w-full bg-transparent px-4 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
+        class="flex-1 bg-transparent px-2 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
         :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
         @keydown="handleKeydown"
         :disabled="isThinking"
@@ -61,11 +171,11 @@ defineExpose({
         @click="handleSend"
         class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
         :class="[
-          query.trim() && !isThinking
+          (query.trim() || selectedImageBase64) && !isThinking
             ? 'bg-indigo-600 text-white hover:bg-indigo-700'
             : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
         ]"
-        :disabled="!query.trim() || isThinking"
+        :disabled="(!query.trim() && !selectedImageBase64) || isThinking"
       >
         <Send class="w-5 h-5" />
       </button>

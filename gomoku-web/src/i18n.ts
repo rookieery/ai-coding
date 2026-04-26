@@ -226,6 +226,9 @@ export interface Messages {
   agentExitConfirmWarning: string;
   agentStartNewGame: string;
   agentInvalidMove: string;
+  attachImage: string;
+  removeImage: string;
+  selectedImagePreview: string;
 }
 
 export type MessageKey = keyof Messages;

@@ -228,7 +228,7 @@ const cancelExit = () => {
   showExitConfirm.value = false;
 };
 
-const handleSend = () => {
+const handleSend = (payload: { text: string; imageBase64: string | null }) => {
   if (gameSelectorActive.value) {
     gameSelectorActive.value = false;
     const selectorMsg = messages.value.find(m => m.isGameSelector);
@@ -239,7 +239,7 @@ const handleSend = () => {
 
   // Intercept chess move commands in gomoku mode
   if (playMode.value === 'gomoku') {
-    const parsed = parseMoveText(query.value);
+    const parsed = parseMoveText(payload.text);
     if (parsed) {
       const { r, c, coord } = parsed;
 
@@ -255,7 +255,7 @@ const handleSend = () => {
         // Invalid move - show error message
         messages.value.push({
           role: 'user',
-          text: query.value
+          text: payload.text
         });
         messages.value.push({
           role: 'agent',
@@ -270,7 +270,7 @@ const handleSend = () => {
   }
 
   // Default: regular chat message
-  sendMessage(query.value, () => {
+  sendMessage(payload.text, () => {
     query.value = '';
     chatInputRef.value?.resetTextareaHeight();
   });

@@ -222,5 +222,8 @@
   "agentInvalidMove": "Position {0} is invalid or already occupied. Please choose another position.",
   "agentAiFirst": "AI First",
   "agentAiSecond": "AI Second",
-  "agentAiFirstMoveNotification": "AI plays black first, moves to {0}."
+  "agentAiFirstMoveNotification": "AI plays black first, moves to {0}.",
+  "attachImage": "Attach image",
+  "removeImage": "Remove image",
+  "selectedImagePreview": "Selected image preview"
 }
