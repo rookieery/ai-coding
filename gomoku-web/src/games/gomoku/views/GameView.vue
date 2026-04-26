@@ -59,6 +59,13 @@ onMounted(() => {
   }
 });
 
+onActivated(() => {
+  const visionPieces = useVisionBridge().consumeVisionBoard();
+  if (visionPieces) {
+    loadBoardState(visionPieces);
+  }
+});
+
 const saveNameError = ref('');
 
 const openSaveModal = () => {

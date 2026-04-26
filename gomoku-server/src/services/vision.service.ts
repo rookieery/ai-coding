@@ -159,29 +159,33 @@ export class VisionService {
     try {
       const parsed = JSON.parse(jsonString);
 
-      if (typeof parsed.boardType !== 'string') {
-        logger.warn('Invalid boardType in vision response');
-        return null;
-      }
+      // Allow missing boardType, default to "gomoku"
+      const boardType = typeof parsed.boardType === 'string' ? parsed.boardType : 'gomoku';
 
-      if (!Array.isArray(parsed.pieces)) {
+      // Handle case where API returns the pieces array directly (not wrapped in an object)
+      let pieces: number[][];
+      if (Array.isArray(parsed) && parsed.length === 15) {
+        pieces = parsed;
+      } else if (Array.isArray(parsed.pieces)) {
+        pieces = parsed.pieces;
+      } else {
         logger.warn('Invalid pieces array in vision response');
         return null;
       }
 
-      if (parsed.pieces.length !== 15) {
-        logger.warn(`Invalid pieces dimensions: expected 15 rows, got ${parsed.pieces.length}`);
+      if (pieces.length !== 15) {
+        logger.warn(`Invalid pieces dimensions: expected 15 rows, got ${pieces.length}`);
         return null;
       }
 
-      for (let i = 0; i < parsed.pieces.length; i++) {
-        if (!Array.isArray(parsed.pieces[i]) || parsed.pieces[i].length !== 15) {
+      for (let i = 0; i < pieces.length; i++) {
+        if (!Array.isArray(pieces[i]) || pieces[i].length !== 15) {
           logger.warn(`Invalid pieces row ${i}: expected 15 columns`);
           return null;
         }
 
-        for (let j = 0; j < parsed.pieces[i].length; j++) {
-          const cell = parsed.pieces[i][j];
+        for (let j = 0; j < pieces[i].length; j++) {
+          const cell = pieces[i][j];
           if (cell !== 0 && cell !== 1 && cell !== 2) {
             logger.warn(`Invalid cell value at [${i}][${j}]: ${cell}`);
             return null;
@@ -190,8 +194,8 @@ export class VisionService {
       }
 
       return {
-        boardType: parsed.boardType,
-        pieces: parsed.pieces,
+        boardType,
+        pieces,
       };
     } catch (error) {
       logger.warn('JSON parse failed in validateAndParseJson:', error);
