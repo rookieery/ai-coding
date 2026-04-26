@@ -10,6 +10,7 @@ import { gameApi, type FrontendGame, type GameListItem, type GameType } from '..
 import { llmApi, type LLMPlayerColor } from '../api/llmApi';
 import { useGlobalAuth } from '../../../composables/useAuth';
 import { useGlobalSettings } from '../../../composables/useSettings';
+import { useVisionBridge } from '../../../composables/useVisionBridge';
 
 const GAME_TYPE: GameType = 'gomoku';
 
@@ -49,7 +50,14 @@ const fetchRecords = async () => {
   }
 };
 
-onMounted(fetchRecords);
+onMounted(() => {
+  fetchRecords();
+
+  const visionPieces = useVisionBridge().consumeVisionBoard();
+  if (visionPieces) {
+    loadBoardState(visionPieces);
+  }
+});
 
 const saveNameError = ref('');
 
@@ -489,6 +497,26 @@ const toggleThinking = () => {
   if (!showThinking.value) {
     thinkingPath.value = [];
   }
+};
+
+const loadBoardState = (pieces: number[][]) => {
+  board.value = pieces.map(row => [...row]);
+  moveHistory.value = [];
+  winner.value = EMPTY;
+  winningLine.value = [];
+  hintMove.value = null;
+  isAnalysisMode.value = true;
+
+  let blackCount = 0;
+  let whiteCount = 0;
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (pieces[r][c] === BLACK) blackCount++;
+      else if (pieces[r][c] === WHITE) whiteCount++;
+    }
+  }
+
+  currentPlayer.value = blackCount <= whiteCount ? BLACK : WHITE;
 };
 
 const executeMove = (r: number, c: number, player: number) => {

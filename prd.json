@@ -1,29 +1,17 @@
 {
-  "branchName": "feature/chess-board-recognition",
-  "stories": [
+  “branchName”: “feature/chess-board-recognition”,
+  “stories”: [
     {
-      "id": "BUGFIX-VISION-01-Global-Bridge",
-      "title": "创建跨页面的视觉解析数据桥梁",
-      "description": "状态管理任务。在 `src/composables/` 目录下新建 `useVisionBridge.ts`。导出一个极简的全局单例响应式状态：1. `pendingVisionBoard` (类型为 number[][] | null，默认 null)。2. 提供 `setVisionBoard(pieces)` 和 `consumeVisionBoard()` (返回当前值并清空为 null) 两个方法。这用于在 AgentView 和 GameView 之间传递 15x15 的棋盘数组。",
-      "passes": true
+      “id”: “BUGFIX-VISION-03-Reactivity-Fix”,
+      “title”: “修复引擎层的数组响应式覆盖逻辑”,
+      “description”: “响应式修复任务。找到五子棋底层逻辑文件（如 `useGomoku.ts` 或对应存放 `board` 状态的地方）。检查或修改 `loadBoardState(pieces)` 方法：1. 严禁直接使用 `board = pieces` 这种破坏响应式的写法。2. 必须使用 `board.value = pieces.map(row => [...row])` 进行深度响应式赋值。3. 清空 `moveHistory.value = []`。4. 确保根据盘面黑白子数量正确计算并赋值 `currentPlayer.value`。”,
+      “passes”: true
     },
     {
-      "id": "BUGFIX-VISION-02-AgentView-Route",
-      "title": "重构 AgentView 的解析成功跳转逻辑",
-      "description": "逻辑层修改任务。请仔细阅读 `AgentView.vue` 中调用视觉解析接口的代码。1. 修复数据提取 Bug：务必打印或检查接口返回层级，正确提取出 `pieces` 数组 (可能是 `res.data.pieces` 或 `res.data.data.pieces`)。2. 获取到合法的 `pieces` 后，不要再调用 `enterGomokuMode` 打开分屏。3. 改为：调用 `useVisionBridge().setVisionBoard(pieces)` 存入全局状态。4. 引入 `useRouter`，调用 `router.push(...)` 跳转到独立的五子棋对弈页面路由（请根据现有 router 配置文件查找正确的 path 或 name，通常是 '/gomoku' 或类似路径）。",
-      "passes": false
-    },
-    {
-      "id": "BUGFIX-VISION-03-Reactivity-Fix",
-      "title": "修复引擎层的数组响应式覆盖逻辑",
-      "description": "响应式修复任务。找到五子棋底层逻辑文件（如 `useGomoku.ts` 或对应存放 `board` 状态的地方）。检查或修改 `loadBoardState(pieces)` 方法：1. 严禁直接使用 `board = pieces` 这种破坏响应式的写法。2. 必须使用 `board.value = pieces.map(row => [...row])` 进行深度响应式赋值。3. 清空 `moveHistory.value = []`。4. 确保根据盘面黑白子数量正确计算并赋值 `currentPlayer.value`。",
-      "passes": false
-    },
-    {
-      "id": "BUGFIX-VISION-04-GameView-Mount",
-      "title": "五子棋页面挂载时消费视觉数据并进入打谱",
-      "description": "联调闭环任务。请修改五子棋的独立主页面组件（如 `views/GameView.vue` 或 `GomokuView.vue`）。1. 在 `onMounted` 钩子中，调用 `useVisionBridge().consumeVisionBoard()`。2. 如果返回了 `pieces` 数组，说明是携带着残局数据进来的。3. 立即调用底层的 `loadBoardState(pieces)` 渲染棋盘。4. 将当前对弈模式（如 `gameMode.value` 或相关状态）强制切换为“打谱模式”或“自由对弈模式”。5. 确保这一套操作下来，用户一进入页面就能看到截图二中的完美打谱状态。",
-      "passes": false
+      “id”: “BUGFIX-VISION-04-GameView-Mount”,
+      “title”: “五子棋页面挂载时消费视觉数据并进入打谱”,
+      “description”: “联调闭环任务。请修改五子棋的独立主页面组件（如 `views/GameView.vue` 或 `GomokuView.vue`）。1. 在 `onMounted` 钩子中，调用 `useVisionBridge().consumeVisionBoard()`。2. 如果返回了 `pieces` 数组，说明是携带着残局数据进来的。3. 立即调用底层的 `loadBoardState(pieces)` 渲染棋盘。4. 将当前对弈模式（如 `gameMode.value` 或相关状态）强制切换为”打谱模式”或”自由对弈模式”。5. 确保这一套操作下来，用户一进入页面就能看到截图二中的完美打谱状态。”,
+      “passes”: false
     }
   ]
 }

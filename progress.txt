@@ -30,7 +30,7 @@ Started: Fri Apr 10 19:52:09     2026
 
 
 
-BUGFIX-VISION-01-Express-Limit: 后端：解除Express的JSON Payload体积限制。1. 在 `gomoku-server/src/app.ts` 中将 `express.json()` 修改为 `express.json({ limit: '50mb' })`。2. 将 `express.urlencoded({ extended: true })` 修改为 `express.urlencoded({ limit: '50mb', extended: true })`。3. 确保几兆的Base64图片字符串能够顺利进入路由层。4. TypeScript编译通过。 - 2026年04月26日
-BUGFIX-VISION-02-Frontend-Image-Compress: 前端：添加图片压缩机制。1. 在 `AgentChatInput.vue` 中新增 `compressImage` 函数，使用 Canvas API 对图片进行等比缩放。2. 设置最大宽高限制为 1024px，JPEG 导出质量为 0.8。3. PNG 格式保持原格式导出。4. `fileToBase64` 方法改为调用 `compressImage`。5. 大幅减少 Base64 体积，从几MB降至几百KB，防止后端超载并提升 API 响应速度。6. TypeScript 编译通过。 - 2026年04月26日
 
 BUGFIX-VISION-01-Global-Bridge: 创建跨页面的视觉解析数据桥梁。1. 在 `src/composables/useVisionBridge.ts` 中新建全局单例 composable。2. 导出 `pendingVisionBoard` 响应式 ref (number[][] | null, 默认 null)。3. 提供 `setVisionBoard(pieces)` 方法，内部使用 `pieces.map(row => [...row])` 深拷贝赋值。4. 提供 `consumeVisionBoard()` 方法，返回当前值并清空为 null。5. TypeScript 编译通过。 - 2026年04月26日
+BUGFIX-VISION-02-AgentView-Route: 重构AgentView的解析成功跳转逻辑。1. 在 `AgentView.vue` 中引入 `useRouter` 和 `useVisionBridge`。2. 视觉解析成功后，不再调用 `enterGomokuMode()` 打开分屏，改为调用 `setVisionBoard(result.pieces)` 存入全局状态。3. 使用 `router.push({ name: 'game' })` 跳转到独立的五子棋对弈页面（路由 `/game`）。4. 移除了不再需要的 `BLACK`/`WHITE` 导入和棋子计数逻辑（该逻辑将在 GameView 挂载时处理）。5. TypeScript 编译通过，所有测试通过。 - 2026年04月26日
+BUGFIX-VISION-03-Reactivity-Fix: 修复引擎层的数组响应式覆盖逻辑。1. 在 `GameView.vue` 中新增 `loadBoardState(pieces)` 方法。2. 使用 `board.value = pieces.map(row => [...row])` 进行深度响应式赋值，避免破坏响应式。3. 清空 `moveHistory.value = []`、`winner.value = EMPTY`、`winningLine.value = []`、`hintMove.value = null`。4. 根据盘面黑白子数量正确计算并赋值 `currentPlayer.value`（黑子数≤白子数时轮到黑方）。5. 自动进入分析模式 `isAnalysisMode.value = true`。6. TypeScript 编译通过。 - 2026年04月26日
