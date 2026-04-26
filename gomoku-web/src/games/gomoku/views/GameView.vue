@@ -500,7 +500,21 @@ const toggleThinking = () => {
 };
 
 const loadBoardState = (pieces: number[][]) => {
-  board.value = pieces.map(row => [...row]);
+  const mappedBoard: number[][] = [];
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    mappedBoard[r] = [];
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const backendValue = pieces[r]?.[c] ?? 0;
+      if (backendValue === 1) {
+        mappedBoard[r][c] = BLACK;
+      } else if (backendValue === 2) {
+        mappedBoard[r][c] = WHITE;
+      } else {
+        mappedBoard[r][c] = EMPTY;
+      }
+    }
+  }
+  board.value = mappedBoard;
   moveHistory.value = [];
   winner.value = EMPTY;
   winningLine.value = [];
@@ -512,8 +526,8 @@ const loadBoardState = (pieces: number[][]) => {
   let whiteCount = 0;
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
-      if (pieces[r][c] === BLACK) blackCount++;
-      else if (pieces[r][c] === WHITE) whiteCount++;
+      if (board.value[r][c] === BLACK) blackCount++;
+      else if (board.value[r][c] === WHITE) whiteCount++;
     }
   }
 
