@@ -67,8 +67,8 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 200, // 兼容一些旧浏览器
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // 健康检查路由
 app.get('/health', (_req, res) => {
