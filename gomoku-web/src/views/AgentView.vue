@@ -7,6 +7,7 @@ import { useGlobalAgentPlay } from '../composables/useAgentPlay';
 import { useAgentChat } from '../composables/useAgentChat';
 import { useSplitDrag } from '../composables/useSplitDrag';
 import { BOARD_SIZE } from '../games/gomoku/gameLogic';
+import { parseMoveText } from '../games/gomoku/moveParser';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
 import AgentChatMessages from '../components/agent/AgentChatMessages.vue';
@@ -172,6 +173,46 @@ const handleSend = () => {
       selectorMsg.isGameSelectorDismissed = true;
     }
   }
+
+  // Intercept chess move commands in gomoku mode
+  if (playMode.value === 'gomoku') {
+    const parsed = parseMoveText(query.value);
+    if (parsed) {
+      const { r, c, coord } = parsed;
+
+      // Validate the move
+      if (gomokuPanelRef.value?.isValidMove(r, c)) {
+        // Show user message on screen
+        messages.value.push({
+          role: 'user',
+          text: t('agentUserMoveNotification', coord)
+        });
+
+        // Clear input
+        query.value = '';
+        chatInputRef.value?.resetTextareaHeight();
+
+        // Execute the move
+        gomokuPanelRef.value.placeUserPieceFromChat(r, c);
+      } else {
+        // Invalid move - show error message
+        messages.value.push({
+          role: 'user',
+          text: query.value
+        });
+        messages.value.push({
+          role: 'agent',
+          text: t('agentInvalidMove', coord)
+        });
+
+        query.value = '';
+        chatInputRef.value?.resetTextareaHeight();
+      }
+      return;
+    }
+  }
+
+  // Default: regular chat message
   sendMessage(query.value, () => {
     query.value = '';
     chatInputRef.value?.resetTextareaHeight();

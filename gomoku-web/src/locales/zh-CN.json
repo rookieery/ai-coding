@@ -218,5 +218,6 @@
   "agentExitConfirmTitle": "返回首页",
   "agentExitConfirmMessage": "返回首页后，当前对局将被清空。确定要返回吗？",
   "agentExitConfirmWarning": "此操作无法撤销。",
-  "agentStartNewGame": "开始新对局"
+  "agentStartNewGame": "开始新对局",
+  "agentInvalidMove": "位置 {0} 不合法或已有棋子，请选择其他位置。"
 }

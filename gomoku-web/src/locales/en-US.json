@@ -218,5 +218,6 @@
   "agentExitConfirmTitle": "Return to Home",
   "agentExitConfirmMessage": "Returning to home will clear the current game. Are you sure?",
   "agentExitConfirmWarning": "This action cannot be undone.",
-  "agentStartNewGame": "Start New Game"
+  "agentStartNewGame": "Start New Game",
+  "agentInvalidMove": "Position {0} is invalid or already occupied. Please choose another position."
 }

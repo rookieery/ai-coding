@@ -225,6 +225,7 @@ export interface Messages {
   agentExitConfirmMessage: string;
   agentExitConfirmWarning: string;
   agentStartNewGame: string;
+  agentInvalidMove: string;
 }
 
 export type MessageKey = keyof Messages;
