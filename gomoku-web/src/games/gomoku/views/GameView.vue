@@ -505,6 +505,7 @@ const loadBoardState = (pieces: number[][]) => {
   winner.value = EMPTY;
   winningLine.value = [];
   hintMove.value = null;
+  mode.value = 'pve';
   isAnalysisMode.value = true;
 
   let blackCount = 0;
