@@ -1,11 +1,4 @@
 {
   "branchName": "feature/chess-board-recognition",
-  "stories": [
-    {
-      "id": "BUGFIX-VISION-09-Upload-Guidance",
-      "title": "前端：增加图片上传的规范引导提示",
-      "description": "用户体验优化。修改 AgentChatInput.vue。在用户选中图片并显示缩略图预览区域时，在缩略图旁边或下方补充一行微小的提示文字：'💡 提示：尽量截取仅包含棋盘网格的图片，去掉多余的 UI 界面，识别会更精准！'，以此来帮助用户主动裁剪掉干扰 AI 视线的无关像素。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }

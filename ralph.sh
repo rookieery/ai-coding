@@ -115,10 +115,8 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   
   # Check for completion signal
   if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
-    echo ""
-    echo "Ralph completed all tasks!"
-    echo "Completed at iteration $i of $MAX_ITERATIONS"
-    exit 0
+    echo "✅ 截获单项任务完成信号，准备触发自动归档并开启下一轮..."
+    continue # 跳过 sleep，直接进入下一次循环
   fi
   
   echo "Iteration $i complete. Continuing..."

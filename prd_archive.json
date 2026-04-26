@@ -712,6 +712,24 @@
         "title": "五子棋页面挂载时消费视觉数据并进入打谱",
         "description": "联调闭环任务。请修改五子棋的独立主页面组件（如 `views/GameView.vue` 或 `GomokuView.vue`）。1. 在 `onMounted` 钩子中，调用 `useVisionBridge().consumeVisionBoard()`。2. 如果返回了 `pieces` 数组，说明是携带着残局数据进来的。3. 立即调用底层的 `loadBoardState(pieces)` 渲染棋盘。4. 将当前对弈模式（如 `gameMode.value` 或相关状态）强制切换为'打谱模式'或'自由对弈模式'。5. 确保这一套操作下来，用户一进入页面就能看到截图二中的完美打谱状态。",
         "passes": true
+      },
+      {
+        "id": "BUGFIX-VISION-07-Hardcore-Prompt",
+        "title": "后端：引入基于锚点与思维链的强力视觉 Prompt",
+        "description": "核心算法优化。修改 vision.service.ts 的 System Prompt。必须严格要求 AI 按步骤思考：1. 忽略图片顶部和底部的UI界面，只锁定包含交叉线的木质棋盘区域。2. 识别出棋盘四个角和中心的特殊标记点（星位），以此为基准建立坐标系（行0-14，列0-14）。3. 逐行扫描，在思考过程中写下每一个发现的棋子坐标。4. 确认所有棋子坐标无误后，提取最终结果。要求结果必须包裹在 json 代码块中，格式严格为：{\"boardType\":\"gomoku\", \"pieces\": [[...], ...]}。0代表空，1代表黑，2代表白。同时请修改解析代码，支持从带有思考过程的回复中提取该 JSON。",
+        "passes": true
+      },
+      {
+        "id": "BUGFIX-VISION-08-Constant-Mapping",
+        "title": "前端：增加棋盘数据的常量映射适配",
+        "description": "前端渲染修复。请阅读五子棋的底层逻辑文件（如 gameLogic.ts 或 useGomoku.ts），找出代码中代表空、黑子、白子的真实引擎常量（如 EMPTY, BLACK, WHITE）。修改对应处理 loadBoardState(pieces) 的方法：在将后端传来的 pieces 赋值给 board 之前，必须进行一次双重循环的映射转换。如果传入的值为 1，映射为本地的 BLACK 常量；如果为 2，映射为 WHITE 常量；如果为 0，映射为 EMPTY。转换完成后，再赋值以触发 Vue 响应式更新。",
+        "passes": true
+      },
+      {
+        "id": "BUGFIX-VISION-09-Upload-Guidance",
+        "title": "前端：增加图片上传的规范引导提示",
+        "description": "用户体验优化。修改 AgentChatInput.vue。在用户选中图片并显示缩略图预览区域时，在缩略图旁边或下方补充一行微小的提示文字：'💡 提示：尽量截取仅包含棋盘网格的图片，去掉多余的 UI 界面，识别会更精准！'，以此来帮助用户主动裁剪掉干扰 AI 视线的无关像素。",
+        "passes": true
       }
     ]
   }
