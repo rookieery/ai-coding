@@ -25,20 +25,61 @@ const { textareaRef, adjustTextareaHeight, resetTextareaHeight } = useAutoResize
 const selectedImageBase64 = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-const fileToBase64 = (file: File): Promise<string> => {
+const MAX_IMAGE_WIDTH = 1024;
+const MAX_IMAGE_HEIGHT = 1024;
+const IMAGE_QUALITY = 0.8;
+
+const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === 'string') {
-        resolve(result);
-      } else {
-        reject(new Error('Failed to read file as base64'));
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+      const aspectRatio = width / height;
+
+      if (width > MAX_IMAGE_WIDTH) {
+        width = MAX_IMAGE_WIDTH;
+        height = width / aspectRatio;
       }
+      if (height > MAX_IMAGE_HEIGHT) {
+        height = MAX_IMAGE_HEIGHT;
+        width = height * aspectRatio;
+      }
+
+      width = Math.round(width);
+      height = Math.round(height);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const base64 = canvas.toDataURL(mimeType, IMAGE_QUALITY);
+      resolve(base64);
     };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image'));
+    };
+
+    img.src = objectUrl;
   });
+};
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return compressImage(file);
 };
 
 const handleFileSelect = async (event: Event) => {
