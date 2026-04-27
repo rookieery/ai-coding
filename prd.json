@@ -1,4 +1,25 @@
 {
   "branchName": "feature/chess-board-recognition",
-  "stories": []
+  "stories": [
+    {
+      "id": "BUGFIX-VISION-16-Backend-Multi-Candidates",
+      "title": "后端：修改 API 参数与 Prompt 生成 3 组候选方案",
+      "description": "API 层优化。修改 vision.service.ts。1. 将调用大模型 API 的 temperature 设为 0.4，top_p 设为 0.9，以允许产生合理的空间偏移变体。2. 修改 System Prompt：告知 AI 网格识别存在 1-2 格的物理偏移风险。要求它输出 3 组最可能的 pieces 矩阵，分别考虑原图位置、整体平移 1 格等可能性。3. JSON 格式严格返回为：{\"boardType\":\"gomoku\", \"candidates\": [matrix1, matrix2, matrix3]}。"
+    },
+    {
+      "id": "BUGFIX-VISION-17-Frontend-Types-Bridge",
+      "title": "前端：更新接口定义与跨页面数据传递逻辑",
+      "description": "数据流改造。1. 在 vision-api.ts 和相关类型文件中，将 RecognitionResult 的 pieces 字段替换为 candidates (类型为 number[][][])。2. 修改 useVisionBridge.ts，将存储状态更新为 pendingVisionCandidates，并同步修改 set 和 consume 方法，确保 3 个矩阵能完整传递到对弈页面。"
+    },
+    {
+      "id": "BUGFIX-VISION-18-Selector-And-Editor-UI",
+      "title": "前端：实现『方案选择 + 手动微调』集成控制面板",
+      "description": "核心 UI 交互任务。修改五子棋主页面（如 GameView.vue）。1. 在接收到 candidates 时，在棋盘下方弹出『识别结果确认』悬浮窗。2. 面板上半部分提供『方案 1/2/3』切换按钮，点击即调用 loadBoardState 刷新棋盘。3. 面板下半部分增加『进入手动微调』开关。4. 当开关开启时，显示微调工具栏：[落黑子、落白子、橡皮擦]。5. 实现微调逻辑：用户点击棋盘交叉点时，根据当前选中的工具更新 board 数组对应位置的值（0, 1 或 2）。6. 底部提供『确认无误，进入打谱』按钮，点击后清除所有临时状态并正式开始对弈。"
+    },
+    {
+      "id": "BUGFIX-VISION-19-Edit-Mode-Interactions",
+      "title": "前端：优化微调模式下的棋盘交互体验",
+      "description": "体验优化任务。1. 在微调模式下，鼠标悬浮在棋盘网格上时，应显示当前工具的虚拟预览（例如选中落黑子工具，则悬浮点显示半透明黑子）。2. 橡皮擦工具悬浮时，目标格子的既有棋子应呈现红色高亮提示。3. 确保微调操作不触发任何 AI 思考或自动落子逻辑，仅仅是纯粹的棋盘数据编辑。"
+    }
+  ]
 }
