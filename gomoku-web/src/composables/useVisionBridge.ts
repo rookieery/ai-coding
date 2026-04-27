@@ -1,19 +1,21 @@
 import { ref } from 'vue';
 
-const pendingVisionBoard = ref<number[][] | null>(null);
+const pendingVisionCandidates = ref<number[][][] | null>(null);
 
-const setVisionBoard = (pieces: number[][]) => {
-  pendingVisionBoard.value = pieces.map(row => [...row]);
+const setVisionCandidates = (candidates: number[][][]) => {
+  pendingVisionCandidates.value = candidates.map(matrix =>
+    matrix.map(row => [...row])
+  );
 };
 
-const consumeVisionBoard = (): number[][] | null => {
-  const current = pendingVisionBoard.value;
-  pendingVisionBoard.value = null;
+const consumeVisionCandidates = (): number[][][] | null => {
+  const current = pendingVisionCandidates.value;
+  pendingVisionCandidates.value = null;
   return current;
 };
 
 export const useVisionBridge = () => ({
-  pendingVisionBoard,
-  setVisionBoard,
-  consumeVisionBoard,
+  pendingVisionCandidates,
+  setVisionCandidates,
+  consumeVisionCandidates,
 });

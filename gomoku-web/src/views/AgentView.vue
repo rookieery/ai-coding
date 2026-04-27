@@ -30,7 +30,7 @@ const gameSelectorActive = ref(false);
 
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
 const router = useRouter();
-const { setVisionBoard } = useVisionBridge();
+const { setVisionCandidates } = useVisionBridge();
 
 const {
   messages,
@@ -263,8 +263,8 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     try {
       const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
 
-      // Store board data in global bridge and navigate to standalone game page
-      setVisionBoard(result.pieces);
+      // Store candidates data in global bridge and navigate to standalone game page
+      setVisionCandidates(result.candidates);
 
       isThinking.value = false;
       thinkingContent.value = '';

@@ -2,7 +2,7 @@ import { API_BASE_URL } from '../config';
 
 export interface RecognitionResult {
   boardType: string;
-  pieces: number[][];
+  candidates: number[][][];
 }
 
 interface VisionApiResponse<T = unknown> {

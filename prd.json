@@ -2,16 +2,10 @@
   "branchName": "feature/chess-board-recognition",
   "stories": [
     {
-      "id": "BUGFIX-VISION-16-Backend-Multi-Candidates",
-      "title": "后端：修改 API 参数与 Prompt 生成 3 组候选方案",
-      "description": "API 层优化。修改 vision.service.ts。1. 将调用大模型 API 的 temperature 设为 0.4，top_p 设为 0.9，以允许产生合理的空间偏移变体。2. 修改 System Prompt：告知 AI 网格识别存在 1-2 格的物理偏移风险。要求它输出 3 组最可能的 pieces 矩阵，分别考虑原图位置、整体平移 1 格等可能性。3. JSON 格式严格返回为：{\"boardType\":\"gomoku\", \"candidates\": [matrix1, matrix2, matrix3]}。",
-      "passes": true
-    },
-    {
       "id": "BUGFIX-VISION-17-Frontend-Types-Bridge",
       "title": "前端：更新接口定义与跨页面数据传递逻辑",
       "description": "数据流改造。1. 在 vision-api.ts 和相关类型文件中，将 RecognitionResult 的 pieces 字段替换为 candidates (类型为 number[][][])。2. 修改 useVisionBridge.ts，将存储状态更新为 pendingVisionCandidates，并同步修改 set 和 consume 方法，确保 3 个矩阵能完整传递到对弈页面。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "BUGFIX-VISION-18-Selector-And-Editor-UI",

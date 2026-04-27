@@ -201,11 +201,11 @@ const handleSaveEdit = async () => {
 
 onMounted(() => {
   gameRecords.fetchRecords();
-  gameState.loadVisionBoard();
+  gameState.loadVisionCandidates();
 });
 
 onActivated(() => {
-  gameState.loadVisionBoard();
+  gameState.loadVisionCandidates();
 });
 
 onUnmounted(() => {

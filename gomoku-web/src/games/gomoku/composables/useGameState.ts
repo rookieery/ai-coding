@@ -214,12 +214,12 @@ export function useGameState() {
     currentPlayer.value = blackCount <= whiteCount ? BLACK : WHITE;
   };
 
-  const loadVisionBoard = () => {
-    const visionPieces = useVisionBridge().consumeVisionBoard();
-    if (visionPieces) {
-      loadBoardState(visionPieces);
+  const loadVisionCandidates = () => {
+    const visionCandidates = useVisionBridge().consumeVisionCandidates();
+    if (visionCandidates && visionCandidates.length > 0) {
+      loadBoardState(visionCandidates[0]);
     }
-    return visionPieces;
+    return visionCandidates;
   };
 
   const importGame = (game: FrontendGame, terminateWorker: () => void) => {
@@ -295,7 +295,7 @@ export function useGameState() {
     toggleAnalysisMode,
     toggleSteps,
     loadBoardState,
-    loadVisionBoard,
+    loadVisionCandidates,
     importGame,
     toFrontendGame,
   };
