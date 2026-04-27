@@ -1,11 +1,4 @@
 {
   "branchName": "feature/chess-board-recognition",
-  "stories": [
-    {
-      "id": "BUGFIX-VISION-19-Edit-Mode-Interactions",
-      "title": "前端：优化微调模式下的棋盘交互体验",
-      "description": "体验优化任务。1. 在微调模式下，鼠标悬浮在棋盘网格上时，应显示当前工具的虚拟预览（例如选中落黑子工具，则悬浮点显示半透明黑子）。2. 橡皮擦工具悬浮时，目标格子的既有棋子应呈现红色高亮提示。3. 确保微调操作不触发任何 AI 思考或自动落子逻辑，仅仅是纯粹的棋盘数据编辑。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
