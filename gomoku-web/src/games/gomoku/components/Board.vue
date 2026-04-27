@@ -69,6 +69,25 @@ const pieceTextClass = (player: number) => {
   // 其他主题：黑棋用pieceTextSecondary，白棋用pieceTextPrimary
   return player === BLACK ? colors.pieceTextSecondary : colors.pieceTextPrimary;
 };
+
+// 棋子边框颜色类
+const pieceBorderClass = (player: number) => {
+  const theme = props.theme || 'default';
+  if (theme === 'cyber') {
+    // cyber主题：黑棋用红色边框，白棋用青色边框
+    return player === BLACK ? 'border-[#F43F5E]/50' : 'border-[#2DD4BF]/50';
+  }
+  if (theme === 'zen') {
+    // zen主题：白棋用淡灰色边框
+    return player === WHITE ? 'border-[#D1D5DB]' : '';
+  }
+  if (theme === 'minimal') {
+    // minimal主题：白棋用灰色边框
+    return player === WHITE ? 'border-gray-300 dark:border-gray-400' : '';
+  }
+  // default主题：白棋用灰色边框
+  return player === WHITE ? 'border-gray-300 dark:border-gray-600' : '';
+};
 </script>
 
 <template>
@@ -106,7 +125,7 @@ const pieceTextClass = (player: number) => {
               class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2"
               :class="[
                 cell === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary,
-                cell === WHITE ? 'border-gray-300 dark:border-gray-600' : '',
+                pieceBorderClass(cell),
                 isWinningPiece(r, c) ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-[#DEB887] animate-pulse z-20' : ''
               ]"
             >
@@ -130,12 +149,12 @@ const pieceTextClass = (player: number) => {
             ></div>
 
             <!-- Thinking Path Indicator -->
-            <div 
+            <div
               v-else-if="thinkingMap.has(`${r},${c}`)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm border-2"
               :class="[
                 thinkingMap.get(`${r},${c}`)!.player === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary,
-                thinkingMap.get(`${r},${c}`)!.player === WHITE ? 'border-gray-300 dark:border-gray-600' : '',
+                pieceBorderClass(thinkingMap.get(`${r},${c}`)!.player),
                 showSteps ? (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-blue-400' : 'text-blue-600') : pieceTextClass(thinkingMap.get(`${r},${c}`)!.player)
               ]"
             >
