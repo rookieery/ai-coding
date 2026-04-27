@@ -105,6 +105,8 @@ export class VisionService {
           },
         ],
         max_tokens: 2000,
+        temperature: 0.0,
+        top_p: 0.01,
       });
 
       const content = response.choices[0]?.message?.content;
