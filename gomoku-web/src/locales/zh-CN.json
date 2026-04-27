@@ -239,5 +239,10 @@
   "visionToolBlack": "落黑子",
   "visionToolWhite": "落白子",
   "visionToolEraser": "橡皮擦",
-  "visionConfirmStart": "确认无误，进入打谱"
+  "visionConfirmStart": "确认无误，进入打谱",
+  "visionBatchMove": "批量移动",
+  "visionBatchMoveHint": "在棋盘上拖动框选区域，然后使用方向键批量移动选中棋子",
+  "visionMoveOffset": "移动格数",
+  "visionClearSelection": "清除选择",
+  "visionSelectionActive": "已选中区域，可批量移动"
 }

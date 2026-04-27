@@ -239,5 +239,10 @@
   "visionToolBlack": "Place Black",
   "visionToolWhite": "Place White",
   "visionToolEraser": "Eraser",
-  "visionConfirmStart": "Confirm and Start Analysis"
+  "visionConfirmStart": "Confirm and Start Analysis",
+  "visionBatchMove": "Batch Move",
+  "visionBatchMoveHint": "Drag on the board to select an area, then use arrow keys to move selected pieces",
+  "visionMoveOffset": "Move Offset",
+  "visionClearSelection": "Clear Selection",
+  "visionSelectionActive": "Area selected, ready for batch move"
 }

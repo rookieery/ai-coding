@@ -10,6 +10,13 @@ import type { FrontendGame } from '../../../api/game-api';
 
 export type EditTool = 'black' | 'white' | 'eraser';
 
+export interface SelectionArea {
+  startR: number;
+  startC: number;
+  endR: number;
+  endC: number;
+}
+
 export function useGameState() {
   const board = ref<number[][]>(
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY))
@@ -33,6 +40,13 @@ export function useGameState() {
   const isVisionEditMode = ref<boolean>(false);
   const editTool = ref<EditTool>('black');
   const isVisionConfirming = ref<boolean>(false);
+
+  // Selection and batch move state
+  const isSelecting = ref<boolean>(false);
+  const selectionStart = ref<{r: number, c: number} | null>(null);
+  const selectionEnd = ref<{r: number, c: number} | null>(null);
+  const selectedArea = ref<SelectionArea | null>(null);
+  const batchMoveOffset = ref<number>(1);
 
   const aiPlayer = computed(() => aiRole.value === 'first' ? BLACK : WHITE);
 
@@ -277,6 +291,11 @@ export function useGameState() {
     isVisionConfirming.value = false;
     isVisionEditMode.value = false;
     selectedCandidateIndex.value = 0;
+    // Clear selection state
+    isSelecting.value = false;
+    selectionStart.value = null;
+    selectionEnd.value = null;
+    selectedArea.value = null;
   };
 
   const cancelVisionBoard = (terminateWorker: () => void, onAiTurn: () => void) => {
@@ -284,7 +303,168 @@ export function useGameState() {
     isVisionConfirming.value = false;
     isVisionEditMode.value = false;
     selectedCandidateIndex.value = 0;
+    // Clear selection state
+    isSelecting.value = false;
+    selectionStart.value = null;
+    selectionEnd.value = null;
+    selectedArea.value = null;
     resetGame(terminateWorker, onAiTurn);
+  };
+
+  // Selection and batch move methods
+  const startSelection = (r: number, c: number) => {
+    isSelecting.value = true;
+    selectionStart.value = { r, c };
+    selectionEnd.value = { r, c };
+    selectedArea.value = null;
+  };
+
+  const updateSelection = (r: number, c: number) => {
+    if (!isSelecting.value || !selectionStart.value) return;
+    selectionEnd.value = { r, c };
+  };
+
+  const endSelection = () => {
+    if (!selectionStart.value || !selectionEnd.value) {
+      isSelecting.value = false;
+      return;
+    }
+
+    const minR = Math.min(selectionStart.value.r, selectionEnd.value.r);
+    const maxR = Math.max(selectionStart.value.r, selectionEnd.value.r);
+    const minC = Math.min(selectionStart.value.c, selectionEnd.value.c);
+    const maxC = Math.max(selectionStart.value.c, selectionEnd.value.c);
+
+    // Only set selected area if it has content
+    let hasContent = false;
+    for (let r = minR; r <= maxR; r++) {
+      for (let c = minC; c <= maxC; c++) {
+        if (board.value[r][c] !== EMPTY) {
+          hasContent = true;
+          break;
+        }
+      }
+      if (hasContent) break;
+    }
+
+    if (hasContent) {
+      selectedArea.value = {
+        startR: minR,
+        startC: minC,
+        endR: maxR,
+        endC: maxC
+      };
+    } else {
+      selectedArea.value = null;
+    }
+
+    isSelecting.value = false;
+  };
+
+  const clearSelection = () => {
+    isSelecting.value = false;
+    selectionStart.value = null;
+    selectionEnd.value = null;
+    selectedArea.value = null;
+  };
+
+  const setBatchMoveOffset = (offset: number) => {
+    batchMoveOffset.value = Math.max(1, Math.min(BOARD_SIZE - 1, offset));
+  };
+
+  const batchMoveArea = (direction: 'up' | 'down' | 'left' | 'right'): boolean => {
+    if (!selectedArea.value) return false;
+
+    const { startR, startC, endR, endC } = selectedArea.value;
+    const offset = batchMoveOffset.value;
+
+    // Calculate new position
+    let newStartR = startR;
+    let newStartC = startC;
+    let newEndR = endR;
+    let newEndC = endC;
+
+    switch (direction) {
+      case 'up':
+        newStartR = startR - offset;
+        newEndR = endR - offset;
+        break;
+      case 'down':
+        newStartR = startR + offset;
+        newEndR = endR + offset;
+        break;
+      case 'left':
+        newStartC = startC - offset;
+        newEndC = endC - offset;
+        break;
+      case 'right':
+        newStartC = startC + offset;
+        newEndC = endC + offset;
+        break;
+    }
+
+    // Validate bounds
+    if (newStartR < 0 || newEndR >= BOARD_SIZE ||
+        newStartC < 0 || newEndC >= BOARD_SIZE) {
+      return false;
+    }
+
+    // Extract pieces from selected area
+    const pieces: { r: number; c: number; value: number }[] = [];
+    for (let r = startR; r <= endR; r++) {
+      for (let c = startC; c <= endC; c++) {
+        if (board.value[r][c] !== EMPTY) {
+          pieces.push({ r, c, value: board.value[r][c] });
+        }
+      }
+    }
+
+    // Check if target positions are empty (no overlap with existing pieces outside selection)
+    for (const piece of pieces) {
+      const newR = piece.r + (direction === 'up' ? -offset : direction === 'down' ? offset : 0);
+      const newC = piece.c + (direction === 'left' ? -offset : direction === 'right' ? offset : 0);
+
+      // Skip if target is within original selection (will be moved)
+      if (newR >= startR && newR <= endR && newC >= startC && newC <= endC) continue;
+
+      // Check if target position has a piece
+      if (board.value[newR][newC] !== EMPTY) {
+        return false;
+      }
+    }
+
+    // Clear original positions
+    for (const piece of pieces) {
+      board.value[piece.r][piece.c] = EMPTY;
+    }
+
+    // Place pieces in new positions
+    for (const piece of pieces) {
+      const newR = piece.r + (direction === 'up' ? -offset : direction === 'down' ? offset : 0);
+      const newC = piece.c + (direction === 'left' ? -offset : direction === 'right' ? offset : 0);
+      board.value[newR][newC] = piece.value;
+    }
+
+    // Update selection area
+    selectedArea.value = {
+      startR: newStartR,
+      startC: newStartC,
+      endR: newEndR,
+      endC: newEndC
+    };
+
+    // Update current player based on piece counts
+    let blackCount = 0;
+    let whiteCount = 0;
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        if (board.value[r][c] === BLACK) blackCount++;
+        else if (board.value[r][c] === WHITE) whiteCount++;
+      }
+    }
+    currentPlayer.value = blackCount <= whiteCount ? BLACK : WHITE;
+
+    return true;
   };
 
   const importGame = (game: FrontendGame, terminateWorker: () => void) => {
@@ -356,6 +536,13 @@ export function useGameState() {
     editTool,
     isVisionConfirming,
 
+    // Selection and batch move state
+    isSelecting,
+    selectionStart,
+    selectionEnd,
+    selectedArea,
+    batchMoveOffset,
+
     placePiece,
     executeMove,
     undo,
@@ -378,5 +565,13 @@ export function useGameState() {
     editBoardCell,
     confirmVisionBoard,
     cancelVisionBoard,
+
+    // Selection and batch move methods
+    startSelection,
+    updateSelection,
+    endSelection,
+    clearSelection,
+    setBatchMoveOffset,
+    batchMoveArea,
   };
 }

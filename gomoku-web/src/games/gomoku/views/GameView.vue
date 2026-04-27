@@ -225,6 +225,31 @@ const handleCancelVisionBoard = () => {
   gameState.cancelVisionBoard(gameAI.terminateWorker, triggerAiMove);
 };
 
+// Selection and batch move handlers
+const handleStartSelection = (r: number, c: number) => {
+  gameState.startSelection(r, c);
+};
+
+const handleUpdateSelection = (r: number, c: number) => {
+  gameState.updateSelection(r, c);
+};
+
+const handleEndSelection = () => {
+  gameState.endSelection();
+};
+
+const handleBatchMove = (direction: 'up' | 'down' | 'left' | 'right') => {
+  gameState.batchMoveArea(direction);
+};
+
+const handleSetBatchMoveOffset = (offset: number) => {
+  gameState.setBatchMoveOffset(offset);
+};
+
+const handleClearSelection = () => {
+  gameState.clearSelection();
+};
+
 onMounted(() => {
   gameRecords.fetchRecords();
   gameState.loadVisionCandidates();
@@ -308,8 +333,15 @@ onDeactivated(() => {
           :theme="theme"
           :isVisionEditMode="gameState.isVisionEditMode.value"
           :editTool="gameState.editTool.value"
+          :isSelecting="gameState.isSelecting.value"
+          :selectionStart="gameState.selectionStart.value"
+          :selectionEnd="gameState.selectionEnd.value"
+          :selectedArea="gameState.selectedArea.value"
           @placePiece="handlePlacePiece"
           @editBoardCell="handleEditBoardCell"
+          @startSelection="handleStartSelection"
+          @updateSelection="handleUpdateSelection"
+          @endSelection="handleEndSelection"
         />
       </div>
 
@@ -387,11 +419,16 @@ onDeactivated(() => {
       :selectedCandidateIndex="gameState.selectedCandidateIndex.value"
       :editMode="gameState.isVisionEditMode.value"
       :editTool="gameState.editTool.value"
+      :selectedArea="gameState.selectedArea.value"
+      :batchMoveOffset="gameState.batchMoveOffset.value"
       @selectCandidate="handleSelectCandidate"
       @toggleEditMode="handleToggleEditMode"
       @setEditTool="handleSetEditTool"
       @confirm="handleConfirmVisionBoard"
       @close="handleCancelVisionBoard"
+      @batchMove="handleBatchMove"
+      @setBatchMoveOffset="handleSetBatchMoveOffset"
+      @clearSelection="handleClearSelection"
     />
   </div>
 </template>

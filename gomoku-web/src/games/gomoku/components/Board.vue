@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE, isStarPoint } from '../gameLogic';
 import type { ThemeKey } from '../../../common/theme';
 import { getThemeColors } from '../../../common/theme';
-import type { EditTool } from '../composables/useGameState';
+import type { EditTool, SelectionArea } from '../composables/useGameState';
 
 const props = defineProps<{
   board: number[][];
@@ -21,11 +21,18 @@ const props = defineProps<{
   theme?: ThemeKey;
   isVisionEditMode?: boolean;
   editTool?: EditTool;
+  isSelecting?: boolean;
+  selectionStart?: {r: number, c: number} | null;
+  selectionEnd?: {r: number, c: number} | null;
+  selectedArea?: SelectionArea | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'placePiece', r: number, c: number): void;
   (e: 'editBoardCell', r: number, c: number): void;
+  (e: 'startSelection', r: number, c: number): void;
+  (e: 'updateSelection', r: number, c: number): void;
+  (e: 'endSelection'): void;
 }>();
 
 const isWinningPiece = (r: number, c: number) => {
@@ -35,6 +42,23 @@ const isWinningPiece = (r: number, c: number) => {
 const isForbidden = (r: number, c: number) => {
   if (!props.forbiddenPoints) return false;
   return props.forbiddenPoints.some(p => p.r === r && p.c === c);
+};
+
+const isInSelection = (r: number, c: number) => {
+  if (!props.selectedArea) return false;
+  return r >= props.selectedArea.startR &&
+         r <= props.selectedArea.endR &&
+         c >= props.selectedArea.startC &&
+         c <= props.selectedArea.endC;
+};
+
+const isInCurrentSelection = (r: number, c: number) => {
+  if (!props.isSelecting || !props.selectionStart || !props.selectionEnd) return false;
+  const minR = Math.min(props.selectionStart.r, props.selectionEnd.r);
+  const maxR = Math.max(props.selectionStart.r, props.selectionEnd.r);
+  const minC = Math.min(props.selectionStart.c, props.selectionEnd.c);
+  const maxC = Math.max(props.selectionStart.c, props.selectionEnd.c);
+  return r >= minR && r <= maxR && c >= minC && c <= maxC;
 };
 
 const stepMap = computed(() => {
@@ -92,15 +116,38 @@ const pieceBorderClass = (player: number) => {
   // default主题：白棋用灰色边框
   return player === WHITE ? 'border-gray-300 dark:border-gray-600' : '';
 };
+
+const handleCellMouseDown = (r: number, c: number) => {
+  if (props.isVisionEditMode) {
+    emit('startSelection', r, c);
+  }
+};
+
+const handleCellMouseEnter = (r: number, c: number) => {
+  if (props.isVisionEditMode && props.isSelecting) {
+    emit('updateSelection', r, c);
+  }
+};
+
+const handleCellMouseUp = () => {
+  if (props.isVisionEditMode && props.isSelecting) {
+    emit('endSelection');
+  }
+};
 </script>
 
 <template>
-  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex" :class="[themeColors.boardBackground, themeColors.lineColor]">
+  <div
+    class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md shadow-2xl border-[3px] flex"
+    :class="[themeColors.boardBackground, themeColors.lineColor]"
+    @mouseup="handleCellMouseUp"
+    @mouseleave="handleCellMouseUp"
+  >
     <!-- Left Coordinates (Numbers) - displayed from 15 (top) to 1 (bottom) -->
     <div class="flex flex-col mr-1 sm:mr-2 font-bold text-xs sm:text-sm select-none opacity-70" :class="themeColors.textPrimary">
       <div v-for="n in 15" :key="n" class="h-5 sm:h-6 md:h-7 lg:h-9 xl:h-10 flex items-center justify-center w-2.5 sm:w-3 md:w-3.5 lg:w-4.5 xl:w-5">{{ 16 - n }}</div>
     </div>
-    
+
     <div class="flex flex-col">
       <!-- Interactive Cells -->
       <div class="relative z-10 grid" :style="{ gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))` }">
@@ -109,7 +156,13 @@ const pieceBorderClass = (player: number) => {
             v-for="(cell, c) in row"
             :key="`${r}-${c}`"
             class="relative w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex items-center justify-center cursor-pointer group"
+            :class="[
+              isInSelection(r, c) ? 'ring-2 ring-indigo-500 ring-inset' : '',
+              isInCurrentSelection(r, c) ? 'bg-indigo-500/20' : ''
+            ]"
             @click="props.isVisionEditMode ? emit('editBoardCell', r, c) : emit('placePiece', r, c)"
+            @mousedown="handleCellMouseDown(r, c)"
+            @mouseenter="handleCellMouseEnter(r, c)"
           >
             <!-- Cross lines -->
             <div class="absolute inset-0 pointer-events-none">
