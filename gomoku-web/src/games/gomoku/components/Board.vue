@@ -165,9 +165,9 @@ const pieceBorderClass = (player: number) => {
               {{ thinkingMap.get(`${r},${c}`)!.index }}
             </div>
 
-            <!-- Hover Indicator -->
+            <!-- Hover Indicator (only in non-edit mode) -->
             <div
-              v-else-if="winner === EMPTY && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
+              v-else-if="!isVisionEditMode && winner === EMPTY && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
               :class="currentPlayer === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary"
             ></div>
@@ -177,13 +177,16 @@ const pieceBorderClass = (player: number) => {
               <!-- Black/White tool preview on empty cells -->
               <div
                 v-if="cell === EMPTY && editTool !== 'eraser'"
-                class="absolute z-30 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-50 transition-opacity pointer-events-none"
-                :class="editTool === 'black' ? themeColors.piecePrimary : themeColors.pieceSecondary"
+                class="absolute z-30 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-50 transition-opacity pointer-events-none border-2"
+                :class="[
+                  editTool === 'black' ? themeColors.piecePrimary : themeColors.pieceSecondary,
+                  editTool === 'white' ? 'border-stone-400' : ''
+                ]"
               ></div>
               <!-- Eraser tool: red highlight on existing pieces -->
               <div
                 v-if="cell !== EMPTY && editTool === 'eraser'"
-                class="absolute z-30 inset-0 rounded-full opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none ring-4 ring-red-500"
+                class="absolute z-30 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-70 transition-opacity pointer-events-none ring-4 ring-red-500 bg-red-500/30"
               ></div>
             </template>
 
