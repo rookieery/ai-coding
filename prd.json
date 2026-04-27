@@ -2,16 +2,10 @@
   "branchName": "feature/chess-board-recognition",
   "stories": [
     {
-      "id": "BUGFIX-VISION-14-Smart-Auto-Crop",
-      "title": "前端：增加针对竖屏截图的智能居中裁切算法",
-      "description": "前端图像预处理任务。请修改 AgentChatInput.vue 中的 fileToBase64 函数。在将 File 转为 Base64 之前，先使用 HTML5 Canvas 对图片进行处理：1. 加载图片获取其自然宽高。2. 判断长宽比：如果图片是明显的竖屏截图（例如 height / width > 1.2）。3. 触发智能裁切：以图片的 width 为边长，截取图片正中间的方形区域（这通常是五子棋盘所在的精确位置）。4. 将裁切后的正方形 Canvas 转换为 Base64。如果不是竖屏截图，则按原图按比例缩小到 max-width 1024 即可。这一步能物理级消除多余 UI 对 AI 的干扰，将网格分辨率放大一倍！",
-      "passes": true
-    },
-    {
       "id": "BUGFIX-VISION-15-Mathematical-Anchors",
       "title": "后端：在 Prompt 中注入绝对数学坐标锚点",
       "description": "思维链升维任务。修改 vision.service.ts 的 System Prompt。在【坐标系画图】步骤中，提供极其明确的数学指导：'你必须使用棋盘上的 5 个定位黑点（星位）作为绝对参考系！在 15x15（行0-14，列0-14）的标准棋盘中，它们的绝对坐标是：左上角[3, 3]、右上角[3, 11]、天元(正中心)[7, 7]、左下角[11, 3]、右下角[11, 11]。你在扫描任何一颗棋子时，必须先寻找离它最近的星位，然后通过计算与该星位的相对行数和列数（偏移量）来得出最终的绝对坐标！千万不要从边缘强行数格子。'",
-      "passes": false
+      "passes": true
     }
   ]
 }
