@@ -29,57 +29,77 @@ const MAX_IMAGE_WIDTH = 1024;
 const MAX_IMAGE_HEIGHT = 1024;
 const IMAGE_QUALITY = 0.8;
 
-const compressImage = (file: File): Promise<string> => {
+const PORTRAIT_RATIO_THRESHOLD = 1.2;
+
+const loadImage = (file: File): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
-
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
-
-      let { width, height } = img;
-      const aspectRatio = width / height;
-
-      if (width > MAX_IMAGE_WIDTH) {
-        width = MAX_IMAGE_WIDTH;
-        height = width / aspectRatio;
-      }
-      if (height > MAX_IMAGE_HEIGHT) {
-        height = MAX_IMAGE_HEIGHT;
-        width = height * aspectRatio;
-      }
-
-      width = Math.round(width);
-      height = Math.round(height);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      const base64 = canvas.toDataURL(mimeType, IMAGE_QUALITY);
-      resolve(base64);
+      resolve(img);
     };
-
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
       reject(new Error('Failed to load image'));
     };
-
     img.src = objectUrl;
   });
 };
 
+const smartCropAndCompress = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    loadImage(file)
+      .then((img) => {
+        let srcX = 0;
+        let srcY = 0;
+        let srcW = img.naturalWidth;
+        let srcH = img.naturalHeight;
+
+        const isPortrait = srcH / srcW > PORTRAIT_RATIO_THRESHOLD;
+        if (isPortrait) {
+          const cropSize = srcW;
+          srcX = 0;
+          srcY = Math.round((srcH - cropSize) / 2);
+          srcW = cropSize;
+          srcH = cropSize;
+        }
+
+        let dstW = srcW;
+        let dstH = srcH;
+        const aspectRatio = dstW / dstH;
+
+        if (dstW > MAX_IMAGE_WIDTH) {
+          dstW = MAX_IMAGE_WIDTH;
+          dstH = Math.round(dstW / aspectRatio);
+        }
+        if (dstH > MAX_IMAGE_HEIGHT) {
+          dstH = MAX_IMAGE_HEIGHT;
+          dstW = Math.round(dstH * aspectRatio);
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = dstW;
+        canvas.height = dstH;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, dstW, dstH);
+
+        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const base64 = canvas.toDataURL(mimeType, IMAGE_QUALITY);
+        resolve(base64);
+      })
+      .catch(reject);
+  });
+};
+
 const fileToBase64 = (file: File): Promise<string> => {
-  return compressImage(file);
+  return smartCropAndCompress(file);
 };
 
 const handleFileSelect = async (event: Event) => {
