@@ -168,7 +168,7 @@ onUnmounted(() => {
     <!-- Main Content -->
     <main class="flex-1 flex flex-col w-full">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
+        <transition name="page-transition" mode="out-in">
           <keep-alive :include="['AgentView', 'GameView', 'AdminView', 'ChineseChessView']">
             <component :is="Component" />
           </keep-alive>
@@ -182,14 +182,34 @@ onUnmounted(() => {
 </template>
 
 <style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+.page-transition-enter-active {
+  animation: page-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.page-transition-leave-active {
+  animation: page-leave 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes page-leave {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
 }
 </style>
 

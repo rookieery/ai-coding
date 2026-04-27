@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
@@ -27,10 +27,13 @@ const chatInputRef = ref<InstanceType<typeof AgentChatInput> | null>(null);
 const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
 const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
+const isExitingGomoku = ref(false);
 
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
 const router = useRouter();
 const { setVisionCandidates } = useVisionBridge();
+
+const isGomokuLayout = computed(() => playMode.value === 'gomoku' || isExitingGomoku.value);
 
 const {
   messages,
@@ -226,7 +229,11 @@ const handleExitClick = () => {
 const confirmExit = () => {
   showExitConfirm.value = false;
   gameSelectorActive.value = false;
+  isExitingGomoku.value = true;
   exitPlayMode();
+  setTimeout(() => {
+    isExitingGomoku.value = false;
+  }, 400);
 };
 
 const cancelExit = () => {
@@ -336,18 +343,17 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 </script>
 
 <template>
-  <div class="flex w-full transition-all duration-300 ease-in-out"
+  <div class="flex w-full"
        :class="[
-         playMode === 'gomoku' ? 'flex-row h-screen overflow-hidden' : 'flex-col items-center justify-center min-h-screen'
+         isGomokuLayout ? 'flex-row h-screen overflow-hidden' : 'flex-col items-center justify-center min-h-screen'
        ]">
 
     <!-- 左侧聊天区域 -->
     <div class="flex flex-col h-full shrink-0"
          :class="[
-           !isDragging ? 'transition-all duration-300 ease-in-out' : '',
-           playMode === 'gomoku' ? 'min-w-[320px] border-r' : 'max-w-4xl mx-auto min-h-[80vh] px-4'
+           isGomokuLayout ? 'min-w-[320px] border-r panel-split' : 'max-w-4xl mx-auto min-h-[80vh] px-4 panel-full'
          ]"
-         :style="playMode === 'gomoku' ? `width: ${leftPanelWidth}%` : 'width: 100%'">
+         :style="isGomokuLayout ? `width: ${leftPanelWidth}%` : 'width: 100%'">
 
       <!-- 返回按钮（仅分屏模式显示） -->
       <div v-if="playMode === 'gomoku'" class="flex items-center px-4 py-3 border-b shrink-0"
@@ -409,7 +415,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     </div>
 
     <!-- 分割线（仅分屏模式显示） -->
-    <div v-if="playMode === 'gomoku'"
+    <div v-if="isGomokuLayout"
          @mousedown="startDrag"
          class="w-1 self-stretch cursor-col-resize group transition-colors duration-200 z-50 relative"
          :class="isDragging
@@ -425,15 +431,17 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     </div>
 
     <!-- 右侧对弈面板（仅分屏模式显示） -->
-    <div v-if="playMode === 'gomoku'" class="flex-1 h-full overflow-hidden"
-         :class="currentTheme === 'dark' ? 'bg-stone-900' : 'bg-stone-50'">
-      <AgentGomokuPanel
-        ref="gomokuPanelRef"
-        @userMove="handleUserMove"
-        @surrender="handleSurrender"
-        @aiFirstMove="handleAiFirstMove"
-      />
-    </div>
+    <transition name="slide-panel">
+      <div v-if="playMode === 'gomoku'" class="flex-1 h-full overflow-hidden panel-right"
+           :class="currentTheme === 'dark' ? 'bg-stone-900' : 'bg-stone-50'">
+        <AgentGomokuPanel
+          ref="gomokuPanelRef"
+          @userMove="handleUserMove"
+          @surrender="handleSurrender"
+          @aiFirstMove="handleAiFirstMove"
+        />
+      </div>
+    </transition>
 
     <!-- 退出确认弹窗 -->
     <div v-if="showExitConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -463,3 +471,47 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     </div>
   </div>
 </template>
+
+<style scoped>
+.panel-split {
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-full {
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+}
+
+.slide-panel-enter-active {
+  animation: slide-in 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-panel-leave-active {
+  animation: slide-out 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    opacity: 0.5;
+    transform: translateX(15px) scale(0.99);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.97);
+  }
+}
+</style>
