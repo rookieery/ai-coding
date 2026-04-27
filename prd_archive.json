@@ -730,6 +730,18 @@
         "title": "前端：增加图片上传的规范引导提示",
         "description": "用户体验优化。修改 AgentChatInput.vue。在用户选中图片并显示缩略图预览区域时，在缩略图旁边或下方补充一行微小的提示文字：'💡 提示：尽量截取仅包含棋盘网格的图片，去掉多余的 UI 界面，识别会更精准！'，以此来帮助用户主动裁剪掉干扰 AI 视线的无关像素。",
         "passes": true
+      },
+      {
+        "id": "BUGFIX-VISION-12-Zero-Temperature",
+        "title": "后端：锁死大模型采样随机性以保证输出稳定性",
+        "description": "API参数调优任务。请修改 vision.service.ts 中调用大模型 API 的代码 (client.chat.completions.create)。在传递的参数对象中，强制增加两个参数：temperature: 0.0 和 top_p: 0.01。这能剥夺大模型生成结果时的发散性和随机性，迫使它每次都选择概率绝对最高的坐标，从而彻底解决同一张图解析结果时好时坏的'抖动'问题。",
+        "passes": true
+      },
+      {
+        "id": "BUGFIX-VISION-13-Self-Correction-Prompt",
+        "title": "后端：引入'先盘点后定位'的自校验闭环 Prompt",
+        "description": "思维链重构任务。修改 vision.service.ts 中的 System Prompt。在原有的 ASCII 画图逻辑之上，增加极度严苛的自查步骤：'你是一个追求绝对零误差的五子棋视觉标定系统。你必须按以下严格顺序思考：1. 【全局盘点】：首先，用肉眼全局扫描，明确写出画面中【黑子总数】和【白子总数】。2. 【坐标系画图】：以星位为锚点，画出 15x15 的 ASCII 字符画。3. 【自我校验】：统计你画出的字符画中 B 和 W 的数量，必须与第 1 步的全局盘点总数绝对一致！如果不一致，说明你漏看或多看了，必须重新扫描纠正。4. 【输出JSON】：只有在校验通过后，才将字符画转换为 JSON 输出在 json 代码块中。'",
+        "passes": true
       }
     ]
   }
