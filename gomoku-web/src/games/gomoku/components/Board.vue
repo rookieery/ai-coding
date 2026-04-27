@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE, isStarPoint } from '../gameLogic';
 import type { ThemeKey } from '../../../common/theme';
 import { getThemeColors } from '../../../common/theme';
+import type { EditTool } from '../composables/useGameState';
 
 const props = defineProps<{
   board: number[][];
@@ -18,10 +19,13 @@ const props = defineProps<{
   forbiddenPoints?: {r: number, c: number}[];
   showSteps?: boolean;
   theme?: ThemeKey;
+  isVisionEditMode?: boolean;
+  editTool?: EditTool;
 }>();
 
 const emit = defineEmits<{
   (e: 'placePiece', r: number, c: number): void;
+  (e: 'editBoardCell', r: number, c: number): void;
 }>();
 
 const isWinningPiece = (r: number, c: number) => {
@@ -101,11 +105,11 @@ const pieceBorderClass = (player: number) => {
       <!-- Interactive Cells -->
       <div class="relative z-10 grid" :style="{ gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))` }">
         <template v-for="(row, r) in board" :key="r">
-          <div 
-            v-for="(cell, c) in row" 
-            :key="`${r}-${c}`" 
+          <div
+            v-for="(cell, c) in row"
+            :key="`${r}-${c}`"
             class="relative w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex items-center justify-center cursor-pointer group"
-            @click="emit('placePiece', r, c)"
+            @click="props.isVisionEditMode ? emit('editBoardCell', r, c) : emit('placePiece', r, c)"
           >
             <!-- Cross lines -->
             <div class="absolute inset-0 pointer-events-none">
@@ -162,11 +166,26 @@ const pieceBorderClass = (player: number) => {
             </div>
 
             <!-- Hover Indicator -->
-            <div 
+            <div
               v-else-if="winner === EMPTY && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
               :class="currentPlayer === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary"
             ></div>
+
+            <!-- Edit Mode Hover Preview -->
+            <template v-if="isVisionEditMode">
+              <!-- Black/White tool preview on empty cells -->
+              <div
+                v-if="cell === EMPTY && editTool !== 'eraser'"
+                class="absolute z-30 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-50 transition-opacity pointer-events-none"
+                :class="editTool === 'black' ? themeColors.piecePrimary : themeColors.pieceSecondary"
+              ></div>
+              <!-- Eraser tool: red highlight on existing pieces -->
+              <div
+                v-if="cell !== EMPTY && editTool === 'eraser'"
+                class="absolute z-30 inset-0 rounded-full opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none ring-4 ring-red-500"
+              ></div>
+            </template>
 
             <!-- Forbidden Point -->
             <div v-if="isForbidden(r, c)" class="absolute inset-0 flex items-center justify-center pointer-events-none z-20">

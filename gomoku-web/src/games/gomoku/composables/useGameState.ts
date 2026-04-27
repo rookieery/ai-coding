@@ -8,6 +8,8 @@ import { useVisionBridge } from '../../../composables/useVisionBridge';
 import { t } from '../../../i18n';
 import type { FrontendGame } from '../../../api/game-api';
 
+export type EditTool = 'black' | 'white' | 'eraser';
+
 export function useGameState() {
   const board = ref<number[][]>(
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(EMPTY))
@@ -24,6 +26,13 @@ export function useGameState() {
   const isAnalysisMode = ref<boolean>(false);
   const currentRecordId = ref<string | null>(null);
   const showSteps = ref<boolean>(false);
+
+  // Vision confirmation state
+  const visionCandidates = ref<number[][][] | null>(null);
+  const selectedCandidateIndex = ref<number>(0);
+  const isVisionEditMode = ref<boolean>(false);
+  const editTool = ref<EditTool>('black');
+  const isVisionConfirming = ref<boolean>(false);
 
   const aiPlayer = computed(() => aiRole.value === 'first' ? BLACK : WHITE);
 
@@ -215,11 +224,67 @@ export function useGameState() {
   };
 
   const loadVisionCandidates = () => {
-    const visionCandidates = useVisionBridge().consumeVisionCandidates();
-    if (visionCandidates && visionCandidates.length > 0) {
-      loadBoardState(visionCandidates[0]);
+    const candidates = useVisionBridge().consumeVisionCandidates();
+    if (candidates && candidates.length > 0) {
+      visionCandidates.value = candidates;
+      selectedCandidateIndex.value = 0;
+      isVisionConfirming.value = true;
+      isVisionEditMode.value = false;
+      editTool.value = 'black';
+      loadBoardState(candidates[0]);
     }
-    return visionCandidates;
+    return candidates;
+  };
+
+  const selectCandidate = (index: number) => {
+    if (!visionCandidates.value || index < 0 || index >= visionCandidates.value.length) return;
+    selectedCandidateIndex.value = index;
+    loadBoardState(visionCandidates.value[index]);
+  };
+
+  const toggleVisionEditMode = () => {
+    isVisionEditMode.value = !isVisionEditMode.value;
+  };
+
+  const setEditTool = (tool: EditTool) => {
+    editTool.value = tool;
+  };
+
+  const editBoardCell = (r: number, c: number) => {
+    if (!isVisionEditMode.value) return;
+
+    if (editTool.value === 'black') {
+      board.value[r][c] = BLACK;
+    } else if (editTool.value === 'white') {
+      board.value[r][c] = WHITE;
+    } else {
+      board.value[r][c] = EMPTY;
+    }
+
+    let blackCount = 0;
+    let whiteCount = 0;
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        if (board.value[row][col] === BLACK) blackCount++;
+        else if (board.value[row][col] === WHITE) whiteCount++;
+      }
+    }
+    currentPlayer.value = blackCount <= whiteCount ? BLACK : WHITE;
+  };
+
+  const confirmVisionBoard = () => {
+    visionCandidates.value = null;
+    isVisionConfirming.value = false;
+    isVisionEditMode.value = false;
+    selectedCandidateIndex.value = 0;
+  };
+
+  const cancelVisionBoard = (terminateWorker: () => void, onAiTurn: () => void) => {
+    visionCandidates.value = null;
+    isVisionConfirming.value = false;
+    isVisionEditMode.value = false;
+    selectedCandidateIndex.value = 0;
+    resetGame(terminateWorker, onAiTurn);
   };
 
   const importGame = (game: FrontendGame, terminateWorker: () => void) => {
@@ -284,6 +349,13 @@ export function useGameState() {
     aiPlayer,
     forbiddenPoints,
 
+    // Vision confirmation state
+    visionCandidates,
+    selectedCandidateIndex,
+    isVisionEditMode,
+    editTool,
+    isVisionConfirming,
+
     placePiece,
     executeMove,
     undo,
@@ -298,5 +370,13 @@ export function useGameState() {
     loadVisionCandidates,
     importGame,
     toFrontendGame,
+
+    // Vision confirmation methods
+    selectCandidate,
+    toggleVisionEditMode,
+    setEditTool,
+    editBoardCell,
+    confirmVisionBoard,
+    cancelVisionBoard,
   };
 }

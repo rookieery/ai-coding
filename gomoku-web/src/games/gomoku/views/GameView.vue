@@ -11,8 +11,9 @@ import SaveGameModal from '../components/SaveGameModal.vue';
 import GameRecordsModal from '../components/GameRecordsModal.vue';
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue';
 import NotificationToast from '../components/NotificationToast.vue';
+import VisionConfirmationPanel from '../components/VisionConfirmationPanel.vue';
 
-import { useGameState } from '../composables/useGameState';
+import { useGameState, type EditTool } from '../composables/useGameState';
 import { useGameAI } from '../composables/useGameAI';
 import { useGameRecords } from '../composables/useGameRecords';
 import { useGameUI } from '../composables/useGameUI';
@@ -199,6 +200,31 @@ const handleSaveEdit = async () => {
   await gameRecords.saveEdit(gameUI.notify);
 };
 
+// Vision confirmation handlers
+const handleSelectCandidate = (index: number) => {
+  gameState.selectCandidate(index);
+};
+
+const handleToggleEditMode = () => {
+  gameState.toggleVisionEditMode();
+};
+
+const handleSetEditTool = (tool: EditTool) => {
+  gameState.setEditTool(tool);
+};
+
+const handleEditBoardCell = (r: number, c: number) => {
+  gameState.editBoardCell(r, c);
+};
+
+const handleConfirmVisionBoard = () => {
+  gameState.confirmVisionBoard();
+};
+
+const handleCancelVisionBoard = () => {
+  gameState.cancelVisionBoard(gameAI.terminateWorker, triggerAiMove);
+};
+
 onMounted(() => {
   gameRecords.fetchRecords();
   gameState.loadVisionCandidates();
@@ -280,7 +306,10 @@ onDeactivated(() => {
           :forbiddenPoints="gameState.forbiddenPoints.value"
           :showSteps="gameState.showSteps.value"
           :theme="theme"
+          :isVisionEditMode="gameState.isVisionEditMode.value"
+          :editTool="gameState.editTool.value"
           @placePiece="handlePlacePiece"
+          @editBoardCell="handleEditBoardCell"
         />
       </div>
 
@@ -350,6 +379,19 @@ onDeactivated(() => {
       :isOpen="!!gameUI.gameToDelete.value"
       @confirm="handleConfirmDelete"
       @cancel="gameUI.closeDeleteConfirm"
+    />
+
+    <VisionConfirmationPanel
+      v-if="gameState.isVisionConfirming.value && gameState.visionCandidates.value"
+      :candidates="gameState.visionCandidates.value"
+      :selectedCandidateIndex="gameState.selectedCandidateIndex.value"
+      :editMode="gameState.isVisionEditMode.value"
+      :editTool="gameState.editTool.value"
+      @selectCandidate="handleSelectCandidate"
+      @toggleEditMode="handleToggleEditMode"
+      @setEditTool="handleSetEditTool"
+      @confirm="handleConfirmVisionBoard"
+      @close="handleCancelVisionBoard"
     />
   </div>
 </template>

@@ -235,6 +235,14 @@ export interface Messages {
   visionParseFailed: string;
   imageUploadGuidance: string;
   close: string;
+  visionConfirmTitle: string;
+  visionSelectCandidate: string;
+  visionCandidateN: string;
+  visionManualAdjust: string;
+  visionToolBlack: string;
+  visionToolWhite: string;
+  visionToolEraser: string;
+  visionConfirmStart: string;
 }
 
 export type MessageKey = keyof Messages;
