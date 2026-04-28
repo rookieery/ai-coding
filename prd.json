@@ -2,16 +2,10 @@
   "branchName": "feature/chess-board-recognition",
   "stories": [
     {
-      "id": "PORTAL-BG-01-Canvas-Grid",
-      "title": "新建棋盘粒子背景组件与基础网格系统",
-      "description": "基础组件任务。在 `src/components/` 目录下新建 `ChessParticleBackground.vue` 组件。1. 模板中包含一个充满父容器的 `<canvas>`。2. 在 `<script setup>` 中实现初始化逻辑：监听窗口大小变化（resize），动态调整 canvas 的 width 和 height。3. 建立无形网格系统：设定一个固定的格子大小（如 cellSize = 50px），根据屏幕宽高计算出最大行数(rows)和列数(cols)，并维护一个二维数组或 Map 存储当前网格中的棋子实例。",
-      "passes": true
-    },
-    {
-      "id": "PORTAL-BG-02-Lifecycle-Render",
-      "title": "实现棋子的随机生成、消亡与 3D 拟真渲染",
-      "description": "Canvas渲染任务。在 `ChessParticleBackground.vue` 中：1. 定义棋子类/接口：包含坐标(row, col)、颜色(black/white)、当前透明度(opacity)、生命周期(life, maxLife)、激活状态(isActive)。2. 实现 `requestAnimationFrame` 循环。3. 在每次循环中，以极低的概率在空闲网格上随机生成新棋子。棋子生命周期随时间递减，透明度呈现“淡入->保持->淡出”的效果。4. 渲染函数：黑子使用带有径向渐变的深灰色到纯黑；白子使用带有径向渐变的亮灰色到纯白，辅以轻微的阴影使其具有立体感。",
-      "passes": false
+      “id”: “PORTAL-BG-02-Lifecycle-Render”,
+      “title”: “实现棋子的随机生成、消亡与 3D 拟真渲染”,
+      “description”: “Canvas渲染任务。在 `ChessParticleBackground.vue` 中：1. 定义棋子类/接口：包含坐标(row, col)、颜色(black/white)、当前透明度(opacity)、生命周期(life, maxLife)、激活状态(isActive)。2. 实现 `requestAnimationFrame` 循环。3. 在每次循环中，以极低的概率在空闲网格上随机生成新棋子。棋子生命周期随时间递减，透明度呈现”淡入->保持->淡出”的效果。4. 渲染函数：黑子使用带有径向渐变的深灰色到纯黑；白子使用带有径向渐变的亮灰色到纯白，辅以轻微的阴影使其具有立体感。”,
+      “passes”: true
     },
     {
       "id": "PORTAL-BG-03-Flood-Fill-Algorithm",

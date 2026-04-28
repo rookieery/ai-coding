@@ -1,17 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, shallowRef } from 'vue';
 
 const CELL_SIZE = 50;
+const PIECE_RADIUS = 18;
+const SPAWN_PROBABILITY = 0.002;
+const MIN_LIFETIME = 300;
+const MAX_LIFETIME = 600;
+const FADE_DURATION = 60;
 
-interface GridCell {
+interface ChessPiece {
   row: number;
   col: number;
+  color: 'black' | 'white';
+  opacity: number;
+  life: number;
+  maxLife: number;
+  isActive: boolean;
 }
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const rows = ref(0);
 const cols = ref(0);
+const pieces = shallowRef<ChessPiece[]>([]);
 const gridMap = ref<Map<string, boolean>>(new Map());
+
+let animationId: number | null = null;
+let lastTime = 0;
 
 const calculateGridDimensions = (width: number, height: number): void => {
   rows.value = Math.floor(height / CELL_SIZE);
@@ -50,6 +64,180 @@ const setCellOccupied = (row: number, col: number, occupied: boolean): void => {
 
 const clearGrid = (): void => {
   gridMap.value.clear();
+  pieces.value = [];
+};
+
+const calculateOpacity = (piece: ChessPiece): number => {
+  const lifeRatio = piece.life / piece.maxLife;
+  const fadeOutStart = FADE_DURATION / piece.maxLife;
+
+  if (lifeRatio > 1 - fadeOutStart) {
+    const fadeProgress = (1 - lifeRatio) / fadeOutStart;
+    return Math.min(1, fadeProgress);
+  }
+
+  if (piece.life <= FADE_DURATION) {
+    return Math.max(0, piece.life / FADE_DURATION);
+  }
+
+  return 1;
+};
+
+const createPiece = (row: number, col: number): ChessPiece => {
+  const maxLife = MIN_LIFETIME + Math.random() * (MAX_LIFETIME - MIN_LIFETIME);
+  return {
+    row,
+    col,
+    color: Math.random() > 0.5 ? 'black' : 'white',
+    opacity: 0,
+    life: maxLife,
+    maxLife,
+    isActive: false,
+  };
+};
+
+const spawnRandomPiece = (): void => {
+  if (Math.random() > SPAWN_PROBABILITY) return;
+
+  const emptyCells: { row: number; col: number }[] = [];
+
+  for (let r = 0; r < rows.value; r++) {
+    for (let c = 0; c < cols.value; c++) {
+      if (!isCellOccupied(r, c)) {
+        emptyCells.push({ row: r, col: c });
+      }
+    }
+  }
+
+  if (emptyCells.length === 0) return;
+
+  const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  const newPiece = createPiece(randomCell.row, randomCell.col);
+
+  setCellOccupied(randomCell.row, randomCell.col, true);
+  pieces.value = [...pieces.value, newPiece];
+};
+
+const updatePieces = (): void => {
+  const updatedPieces: ChessPiece[] = [];
+
+  for (const piece of pieces.value) {
+    const newLife = piece.life - 1;
+
+    if (newLife <= 0) {
+      setCellOccupied(piece.row, piece.col, false);
+      continue;
+    }
+
+    const updatedPiece: ChessPiece = {
+      ...piece,
+      life: newLife,
+      opacity: calculateOpacity({ ...piece, life: newLife }),
+    };
+
+    updatedPieces.push(updatedPiece);
+  }
+
+  pieces.value = updatedPieces;
+};
+
+const drawPiece = (ctx: CanvasRenderingContext2D, piece: ChessPiece): void => {
+  const x = piece.col * CELL_SIZE + CELL_SIZE / 2;
+  const y = piece.row * CELL_SIZE + CELL_SIZE / 2;
+
+  ctx.save();
+  ctx.globalAlpha = piece.opacity;
+
+  if (piece.color === 'black') {
+    const gradient = ctx.createRadialGradient(
+      x - PIECE_RADIUS * 0.3,
+      y - PIECE_RADIUS * 0.3,
+      0,
+      x,
+      y,
+      PIECE_RADIUS
+    );
+    gradient.addColorStop(0, '#4a4a4a');
+    gradient.addColorStop(0.5, '#2a2a2a');
+    gradient.addColorStop(1, '#000000');
+
+    ctx.beginPath();
+    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(80, 80, 80, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  } else {
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+
+    const gradient = ctx.createRadialGradient(
+      x - PIECE_RADIUS * 0.3,
+      y - PIECE_RADIUS * 0.3,
+      0,
+      x,
+      y,
+      PIECE_RADIUS
+    );
+    gradient.addColorStop(0, '#ffffff');
+    gradient.addColorStop(0.5, '#f0f0f0');
+    gradient.addColorStop(1, '#d0d0d0');
+
+    ctx.beginPath();
+    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath();
+    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  if (piece.isActive) {
+    ctx.beginPath();
+    ctx.arc(x, y, PIECE_RADIUS + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 215, 0, ${0.5 + Math.sin(Date.now() / 200) * 0.3})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+};
+
+const render = (ctx: CanvasRenderingContext2D): void => {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const piece of pieces.value) {
+    drawPiece(ctx, piece);
+  }
+};
+
+const gameLoop = (currentTime: number): void => {
+  if (!canvasRef.value) return;
+
+  const ctx = canvasRef.value.getContext('2d');
+  if (!ctx) return;
+
+  if (currentTime - lastTime >= 16) {
+    spawnRandomPiece();
+    updatePieces();
+    render(ctx);
+    lastTime = currentTime;
+  }
+
+  animationId = requestAnimationFrame(gameLoop);
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -65,10 +253,18 @@ onMounted(() => {
   }
 
   window.addEventListener('resize', handleResize);
+
+  animationId = requestAnimationFrame(gameLoop);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+
+  if (animationId !== null) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+
   if (resizeObserver) {
     resizeObserver.disconnect();
   }
@@ -78,6 +274,7 @@ defineExpose({
   rows,
   cols,
   gridMap,
+  pieces,
   isCellOccupied,
   setCellOccupied,
   clearGrid,
