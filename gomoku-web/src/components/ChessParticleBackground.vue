@@ -26,6 +26,8 @@ const gridMap = ref<Map<string, boolean>>(new Map());
 
 let animationId: number | null = null;
 let lastTime = 0;
+let clickTimer: ReturnType<typeof setTimeout> | null = null;
+const CLICK_DELAY = 200;
 
 const calculateGridDimensions = (width: number, height: number): void => {
   rows.value = Math.floor(height / CELL_SIZE);
@@ -136,6 +138,51 @@ const floodFillActivate = (startRow: number, startCol: number): void => {
     }
     return p;
   });
+};
+
+const getGridPosition = (offsetX: number, offsetY: number): { row: number; col: number } => {
+  const col = Math.floor(offsetX / CELL_SIZE);
+  const row = Math.floor(offsetY / CELL_SIZE);
+  return { row, col };
+};
+
+const handleClick = (event: MouseEvent): void => {
+  if (clickTimer !== null) {
+    clearTimeout(clickTimer);
+    clickTimer = null;
+    return;
+  }
+
+  clickTimer = setTimeout(() => {
+    clickTimer = null;
+    const { row, col } = getGridPosition(event.offsetX, event.offsetY);
+
+    if (row < 0 || row >= rows.value || col < 0 || col >= cols.value) return;
+
+    const piece = getPieceAt(row, col);
+    if (piece) {
+      floodFillActivate(row, col);
+    }
+  }, CLICK_DELAY);
+};
+
+const handleDoubleClick = (event: MouseEvent): void => {
+  if (clickTimer !== null) {
+    clearTimeout(clickTimer);
+    clickTimer = null;
+  }
+
+  const { row, col } = getGridPosition(event.offsetX, event.offsetY);
+
+  if (row < 0 || row >= rows.value || col < 0 || col >= cols.value) return;
+
+  if (isCellOccupied(row, col)) return;
+
+  const newPiece = createPiece(row, col);
+  setCellOccupied(row, col, true);
+  pieces.value = [...pieces.value, newPiece];
+
+  floodFillActivate(row, col);
 };
 
 const calculateOpacity = (piece: ChessPiece): number => {
@@ -347,6 +394,11 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
 
+  if (clickTimer !== null) {
+    clearTimeout(clickTimer);
+    clickTimer = null;
+  }
+
   if (animationId !== null) {
     cancelAnimationFrame(animationId);
     animationId = null;
@@ -374,6 +426,8 @@ defineExpose({
 <template>
   <canvas
     ref="canvasRef"
-    class="absolute inset-0 w-full h-full"
+    class="absolute inset-0 w-full h-full cursor-pointer"
+    @click="handleClick"
+    @dblclick="handleDoubleClick"
   />
 </template>
