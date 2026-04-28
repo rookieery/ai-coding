@@ -1,29 +1,29 @@
 {
-  “branchName”: “feature/chess-board-recognition”,
-  “stories”: [
+  "branchName": "feature/chess-board-recognition",
+  "stories": [
     {
-      “id”: “PORTAL-BG-02-Lifecycle-Render”,
-      “title”: “实现棋子的随机生成、消亡与 3D 拟真渲染”,
-      “description”: “Canvas渲染任务。在 `ChessParticleBackground.vue` 中：1. 定义棋子类/接口：包含坐标(row, col)、颜色(black/white)、当前透明度(opacity)、生命周期(life, maxLife)、激活状态(isActive)。2. 实现 `requestAnimationFrame` 循环。3. 在每次循环中，以极低的概率在空闲网格上随机生成新棋子。棋子生命周期随时间递减，透明度呈现”淡入->保持->淡出”的效果。4. 渲染函数：黑子使用带有径向渐变的深灰色到纯黑；白子使用带有径向渐变的亮灰色到纯白，辅以轻微的阴影使其具有立体感。”,
-      “passes”: true
+      "id": "PORTAL-BG-02-Lifecycle-Render",
+      "title": "实现棋子的随机生成、消亡与 3D 拟真渲染",
+      "description": "Canvas渲染任务。在 `ChessParticleBackground.vue` 中：1. 定义棋子类/接口：包含坐标、颜色、当前透明度、生命周期、激活状态。2. 实现 `requestAnimationFrame` 循环。3. 在每次循环中，以极低的概率在空闲网格上随机生成新棋子。棋子生命周期随时间递减，透明度呈现"淡入->保持->淡出"的效果。4. 渲染函数：黑子使用带有径向渐变的深灰色到纯黑；白子使用带有径向渐变的亮灰色到纯白，辅以轻微的阴影使其具有立体感。",
+      "passes": true
     },
     {
-      “id”: “PORTAL-BG-03-Flood-Fill-Algorithm”,
-      “title”: “实现同色相邻棋子的激活算法 (Flood Fill)”,
-      “description”: “核心算法任务。在组件内编写激活逻辑：1. 编写一个基于 DFS (深度优先搜索) 或 BFS 的 Flood Fill（泛洪）算法函数：传入起始坐标(row, col)和颜色，在二维网格中递归/循环寻找上下左右四个方向相连的同色棋子。2. 将找到的同连通块内的所有棋子的 `isActive` 标记为 true，并重置它们的生命周期（防止突然消失）。3. 为 `isActive=true` 的棋子添加专属的高亮特效渲染（如：增加外发光 shadowBlur，或在棋子中心绘制一个呼吸效果的圆点）。”,
-      “passes”: true
+      "id": "PORTAL-BG-03-Flood-Fill-Algorithm",
+      "title": "实现同色相邻棋子的激活算法",
+      "description": "核心算法任务。在组件内编写激活逻辑：1. 编写一个基于 DFS (深度优先搜索) 或 BFS 的 Flood Fill（泛洪）算法函数：传入起始坐标和颜色，在二维网格中递归/循环寻找上下左右四个方向相连的同色棋子。2. 将找到的同连通块内的所有棋子的 `isActive` 标记为 true，并重置它们的生命周期（防止突然消失）。3. 为 `isActive=true` 的棋子添加专属的高亮特效渲染（如：增加外发光 shadowBlur，或在棋子中心绘制一个呼吸效果的圆点）。",
+      "passes": true
     },
     {
-      “id”: “PORTAL-BG-04-User-Interaction”,
-      “title”: “实现单击激活与双击生成事件的网格映射”,
-      “description”: “交互事件任务。给 canvas 绑定鼠标事件：1. `onClick`：获取鼠标坐标(offsetX, offsetY)，除以 cellSize 映射到网格坐标(row, col)。检查该位置是否有棋子，如果有，触发上一步的 Flood Fill 激活算法。2. `onDblclick`：同样映射到网格坐标。如果该位置为空，则强制在此处生成一颗随机颜色（黑或白）的新棋子，并立刻以该棋子为起点触发 Flood Fill 激活算法。”,
-      “passes”: false
+      "id": "PORTAL-BG-04-User-Interaction",
+      "title": "实现单击激活与双击生成事件的网格映射",
+      "description": "交互事件任务。给 canvas 绑定鼠标事件：1. `onClick`：获取鼠标坐标，除以 cellSize 映射到网格坐标。检查该位置是否有棋子，如果有，触发上一步的 Flood Fill 激活算法。2. `onDblclick`：同样映射到网格坐标。如果该位置为空，则强制在此处生成一颗随机颜色（黑或白）的新棋子，并立刻以该棋子为起点触发 Flood Fill 激活算法。",
+      "passes": true
     },
     {
-      “id”: “PORTAL-BG-05-View-Integration”,
-      “title”: “在登录注册页集成背景并优化层级”,
-      “description”: “视图集成任务。请修改登录页 (`LoginView.vue` 或对应组件) 和注册页 (`RegisterView.vue`)。1. 将 `<ChessParticleBackground />` 组件引入并放置在页面的最底层（使用 absolute/fixed 定位，z-index 设置为负数如 -1）。2. 确保原有的登录/注册卡片盒子拥有合适的背景色（如 `bg-stone-900/80` 或 `backdrop-blur-md` 磨砂玻璃效果），以保证表单内容清晰可见的同时，透出底部炫酷的棋盘粒子特效。”,
-      “passes”: false
+      "id": "PORTAL-BG-05-View-Integration",
+      "title": "在登录注册页集成背景并优化层级",
+      "description": "视图集成任务。请修改登录页 (`LoginView.vue` 或对应组件) 和注册页 (`RegisterView.vue`)。1. 将 `<ChessParticleBackground />` 组件引入并放置在页面的最底层（使用 absolute/fixed 定位，z-index 设置为负数如 -1）。2. 确保原有的登录/注册卡片盒子拥有合适的背景色（如 `bg-stone-900/80` 或 `backdrop-blur-md` 磨砂玻璃效果），以保证表单内容清晰可见的同时，透出底部炫酷的棋盘粒子特效。",
+      "passes": false
     }
   ]
 }
