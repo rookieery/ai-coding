@@ -67,6 +67,77 @@ const clearGrid = (): void => {
   pieces.value = [];
 };
 
+const getPieceAt = (row: number, col: number): ChessPiece | undefined => {
+  return pieces.value.find((p) => p.row === row && p.col === col);
+};
+
+const floodFillActivate = (startRow: number, startCol: number): void => {
+  const startPiece = getPieceAt(startRow, startCol);
+  if (!startPiece) return;
+
+  const targetColor = startPiece.color;
+  const visited = new Set<string>();
+  const connectedPieces: ChessPiece[] = [];
+  const stack: { row: number; col: number }[] = [{ row: startRow, col: startCol }];
+
+  const directions = [
+    { dr: -1, dc: 0 },
+    { dr: 1, dc: 0 },
+    { dr: 0, dc: -1 },
+    { dr: 0, dc: 1 },
+  ];
+
+  while (stack.length > 0) {
+    const { row, col } = stack.pop()!;
+    const key = getCellKey(row, col);
+
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    const piece = getPieceAt(row, col);
+    if (!piece || piece.color !== targetColor) continue;
+
+    connectedPieces.push(piece);
+
+    for (const { dr, dc } of directions) {
+      const newRow = row + dr;
+      const newCol = col + dc;
+      const newKey = getCellKey(newRow, newCol);
+
+      if (
+        newRow >= 0 &&
+        newRow < rows.value &&
+        newCol >= 0 &&
+        newCol < cols.value &&
+        !visited.has(newKey)
+      ) {
+        stack.push({ row: newRow, col: newCol });
+      }
+    }
+  }
+
+  if (connectedPieces.length === 0) return;
+
+  const newMaxLife = MIN_LIFETIME + Math.random() * (MAX_LIFETIME - MIN_LIFETIME);
+
+  pieces.value = pieces.value.map((p) => {
+    const isConnected = connectedPieces.some(
+      (cp) => cp.row === p.row && cp.col === p.col
+    );
+
+    if (isConnected) {
+      return {
+        ...p,
+        isActive: true,
+        life: newMaxLife,
+        maxLife: newMaxLife,
+        opacity: 1,
+      };
+    }
+    return p;
+  });
+};
+
 const calculateOpacity = (piece: ChessPiece): number => {
   const lifeRatio = piece.life / piece.maxLife;
   const fadeOutStart = FADE_DURATION / piece.maxLife;
@@ -203,11 +274,27 @@ const drawPiece = (ctx: CanvasRenderingContext2D, piece: ChessPiece): void => {
   }
 
   if (piece.isActive) {
+    const glowIntensity = 0.5 + Math.sin(Date.now() / 200) * 0.3;
+    const glowRadius = PIECE_RADIUS + 6 + Math.sin(Date.now() / 150) * 2;
+
     ctx.beginPath();
-    ctx.arc(x, y, PIECE_RADIUS + 4, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(255, 215, 0, ${0.5 + Math.sin(Date.now() / 200) * 0.3})`;
+    ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 215, 0, ${glowIntensity})`;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x, y, glowRadius + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 215, 0, ${glowIntensity * 0.5})`;
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    const innerGlowRadius = PIECE_RADIUS * 0.4;
+    const innerGlowIntensity = 0.6 + Math.sin(Date.now() / 100) * 0.2;
+    ctx.beginPath();
+    ctx.arc(x, y, innerGlowRadius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 215, 0, ${innerGlowIntensity})`;
+    ctx.fill();
   }
 
   ctx.restore();
@@ -278,6 +365,8 @@ defineExpose({
   isCellOccupied,
   setCellOccupied,
   clearGrid,
+  floodFillActivate,
+  getPieceAt,
   cellSize: CELL_SIZE,
 });
 </script>
