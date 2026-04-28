@@ -5,6 +5,7 @@ import { LogIn, UserPlus, Phone, Lock, User, Mail, Eye, EyeOff } from 'lucide-vu
 import { currentTheme, t } from '../i18n';
 import { useGlobalAuth } from '../composables/useAuth';
 import { validatePassword, isPasswordValid } from '../utils/password';
+import ChessParticleBackground from '../components/ChessParticleBackground.vue';
 
 const router = useRouter();
 const auth = useGlobalAuth();
@@ -191,8 +192,13 @@ const isFormValid = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-[80vh] px-4">
-    <div class="w-full max-w-md">
+  <div class="relative flex flex-col items-center justify-center min-h-[80vh] px-4 overflow-hidden">
+    <!-- Chess Particle Background - Bottom Layer -->
+    <div class="absolute inset-0 -z-10">
+      <ChessParticleBackground />
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
       <!-- Logo/标题 -->
       <div class="text-center mb-8">
         <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -207,8 +213,8 @@ const isFormValid = computed(() => {
       </div>
 
       <!-- 表单卡片 -->
-      <div class="rounded-2xl shadow-lg overflow-hidden transition-all duration-300"
-           :class="currentTheme === 'dark' ? 'bg-stone-800/50 border border-stone-700' : 'bg-white/50 border border-stone-200'">
+      <div class="rounded-2xl shadow-lg overflow-hidden transition-all duration-300 backdrop-blur-md"
+           :class="currentTheme === 'dark' ? 'bg-stone-900/80 border border-stone-700' : 'bg-white/80 border border-stone-200'">
         <div class="p-8">
           <!-- 错误/成功消息 -->
           <div v-if="errorMessage"
