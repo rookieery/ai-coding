@@ -1,11 +1,4 @@
 {
   "branchName": "feature/chess-board-recognition",
-  "stories": [
-    {
-      "id": "PORTAL-BG-05-View-Integration",
-      "title": "在登录注册页集成背景并优化层级",
-      "description": "视图集成任务。请修改登录页 (`LoginView.vue` 或对应组件) 和注册页 (`RegisterView.vue`)。1. 将 `<ChessParticleBackground />` 组件引入并放置在页面的最底层（使用 absolute/fixed 定位，z-index 设置为负数如 -1）。2. 确保原有的登录/注册卡片盒子拥有合适的背景色（如 `bg-stone-900/80` 或 `backdrop-blur-md` 磨砂玻璃效果），以保证表单内容清晰可见的同时，透出底部炫酷的棋盘粒子特效。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
