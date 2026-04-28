@@ -192,11 +192,9 @@ const isFormValid = computed(() => {
 </script>
 
 <template>
-  <div class="relative flex flex-col items-center justify-center min-h-[80vh] px-4 overflow-hidden">
+  <div class="relative flex flex-col items-center justify-center min-h-[80vh] h-[80vh] px-4 overflow-hidden">
     <!-- Chess Particle Background - Bottom Layer -->
-    <div class="absolute inset-0 -z-10">
-      <ChessParticleBackground />
-    </div>
+    <ChessParticleBackground />
 
     <div class="w-full max-w-md relative z-10">
       <!-- Logo/标题 -->

@@ -1,433 +1,331 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, shallowRef } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
-const CELL_SIZE = 50;
-const PIECE_RADIUS = 18;
-const SPAWN_PROBABILITY = 0.002;
-const MIN_LIFETIME = 300;
-const MAX_LIFETIME = 600;
-const FADE_DURATION = 60;
+interface Props {
+  cellSize?: number;     
+  spawnRate?: number;    
+  pieceLife?: number;    
+  connectRadius?: number; // 粒子连线的最大触发距离
+}
 
-interface ChessPiece {
+const props = withDefaults(defineProps<Props>(), {
+  cellSize: 45,          
+  spawnRate: 0.02,
+  pieceLife: 8000,
+  connectRadius: 400,    // 默认150px内触发连线
+});
+
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+let ctx: CanvasRenderingContext2D | null = null;
+let animationFrameId: number;
+
+interface Piece {
   row: number;
   col: number;
   color: 'black' | 'white';
-  opacity: number;
+  startTime: number;
   life: number;
-  maxLife: number;
+  opacity: number;
   isActive: boolean;
+  pulseScale: number;
 }
 
-const canvasRef = ref<HTMLCanvasElement | null>(null);
-const rows = ref(0);
-const cols = ref(0);
-const pieces = shallowRef<ChessPiece[]>([]);
-const gridMap = ref<Map<string, boolean>>(new Map());
+const grid = new Map<string, Piece>();
+const dimensions = { width: 0, height: 0, rows: 0, cols: 0 };
 
-let animationId: number | null = null;
-let lastTime = 0;
-let clickTimer: ReturnType<typeof setTimeout> | null = null;
-const CLICK_DELAY = 200;
-
-const calculateGridDimensions = (width: number, height: number): void => {
-  rows.value = Math.floor(height / CELL_SIZE);
-  cols.value = Math.floor(width / CELL_SIZE);
+// 拖拽状态中心
+const drag = {
+  isDragging: false,
+  key: '',
+  x: 0,
+  y: 0
 };
 
-const handleResize = (): void => {
+const initCanvas = () => {
   if (!canvasRef.value) return;
-
-  const parent = canvasRef.value.parentElement;
-  if (!parent) return;
-
-  const width = parent.clientWidth;
-  const height = parent.clientHeight;
-
-  canvasRef.value.width = width;
-  canvasRef.value.height = height;
-
-  calculateGridDimensions(width, height);
+  dimensions.width = window.innerWidth;
+  dimensions.height = window.innerHeight;
+  canvasRef.value.width = dimensions.width;
+  canvasRef.value.height = dimensions.height;
+  dimensions.cols = Math.ceil(dimensions.width / props.cellSize);
+  dimensions.rows = Math.ceil(dimensions.height / props.cellSize);
+  ctx = canvasRef.value.getContext('2d');
 };
 
-const getCellKey = (row: number, col: number): string => `${row},${col}`;
-
-const isCellOccupied = (row: number, col: number): boolean => {
-  return gridMap.value.has(getCellKey(row, col));
-};
-
-const setCellOccupied = (row: number, col: number, occupied: boolean): void => {
-  const key = getCellKey(row, col);
-  if (occupied) {
-    gridMap.value.set(key, true);
-  } else {
-    gridMap.value.delete(key);
+// 1. 按下鼠标：拾取棋子
+const handleMouseDown = (e: MouseEvent) => {
+  const col = Math.floor(e.clientX / props.cellSize);
+  const row = Math.floor(e.clientY / props.cellSize);
+  const key = `${row}-${col}`;
+  
+  if (grid.has(key)) {
+    drag.isDragging = true;
+    drag.key = key;
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    
+    // 刷新寿命，防止拖着拖着消失了
+    const piece = grid.get(key)!;
+    piece.startTime = performance.now();
   }
 };
 
-const clearGrid = (): void => {
-  gridMap.value.clear();
-  pieces.value = [];
+// 2. 拖拽移动：实时更新绝对坐标
+const handleMouseMove = (e: MouseEvent) => {
+  if (!drag.isDragging) return;
+  drag.x = e.clientX;
+  drag.y = e.clientY;
 };
 
-const getPieceAt = (row: number, col: number): ChessPiece | undefined => {
-  return pieces.value.find((p) => p.row === row && p.col === col);
-};
-
-const floodFillActivate = (startRow: number, startCol: number): void => {
-  const startPiece = getPieceAt(startRow, startCol);
-  if (!startPiece) return;
-
-  const targetColor = startPiece.color;
-  const visited = new Set<string>();
-  const connectedPieces: ChessPiece[] = [];
-  const stack: { row: number; col: number }[] = [{ row: startRow, col: startCol }];
-
-  const directions = [
-    { dr: -1, dc: 0 },
-    { dr: 1, dc: 0 },
-    { dr: 0, dc: -1 },
-    { dr: 0, dc: 1 },
-  ];
-
-  while (stack.length > 0) {
-    const { row, col } = stack.pop()!;
-    const key = getCellKey(row, col);
-
-    if (visited.has(key)) continue;
-    visited.add(key);
-
-    const piece = getPieceAt(row, col);
-    if (!piece || piece.color !== targetColor) continue;
-
-    connectedPieces.push(piece);
-
-    for (const { dr, dc } of directions) {
-      const newRow = row + dr;
-      const newCol = col + dc;
-      const newKey = getCellKey(newRow, newCol);
-
-      if (
-        newRow >= 0 &&
-        newRow < rows.value &&
-        newCol >= 0 &&
-        newCol < cols.value &&
-        !visited.has(newKey)
-      ) {
-        stack.push({ row: newRow, col: newCol });
-      }
-    }
-  }
-
-  if (connectedPieces.length === 0) return;
-
-  const newMaxLife = MIN_LIFETIME + Math.random() * (MAX_LIFETIME - MIN_LIFETIME);
-
-  pieces.value = pieces.value.map((p) => {
-    const isConnected = connectedPieces.some(
-      (cp) => cp.row === p.row && cp.col === p.col
-    );
-
-    if (isConnected) {
-      return {
-        ...p,
-        isActive: true,
-        life: newMaxLife,
-        maxLife: newMaxLife,
-        opacity: 1,
-      };
-    }
-    return p;
-  });
-};
-
-const getGridPosition = (offsetX: number, offsetY: number): { row: number; col: number } => {
-  const col = Math.floor(offsetX / CELL_SIZE);
-  const row = Math.floor(offsetY / CELL_SIZE);
-  return { row, col };
-};
-
-const handleClick = (event: MouseEvent): void => {
-  if (clickTimer !== null) {
-    clearTimeout(clickTimer);
-    clickTimer = null;
+// 3. 松开鼠标：吸附网格、触发全量脉冲
+const handleMouseUp = (e: MouseEvent) => {
+  if (!drag.isDragging) return;
+  
+  const draggedPiece = grid.get(drag.key);
+  if (!draggedPiece) {
+    drag.isDragging = false;
     return;
   }
 
-  clickTimer = setTimeout(() => {
-    clickTimer = null;
-    const { row, col } = getGridPosition(event.offsetX, event.offsetY);
-
-    if (row < 0 || row >= rows.value || col < 0 || col >= cols.value) return;
-
-    const piece = getPieceAt(row, col);
-    if (piece) {
-      floodFillActivate(row, col);
-    }
-  }, CLICK_DELAY);
-};
-
-const handleDoubleClick = (event: MouseEvent): void => {
-  if (clickTimer !== null) {
-    clearTimeout(clickTimer);
-    clickTimer = null;
-  }
-
-  const { row, col } = getGridPosition(event.offsetX, event.offsetY);
-
-  if (row < 0 || row >= rows.value || col < 0 || col >= cols.value) return;
-
-  if (isCellOccupied(row, col)) return;
-
-  const newPiece = createPiece(row, col);
-  setCellOccupied(row, col, true);
-  pieces.value = [...pieces.value, newPiece];
-
-  floodFillActivate(row, col);
-};
-
-const calculateOpacity = (piece: ChessPiece): number => {
-  const lifeRatio = piece.life / piece.maxLife;
-  const fadeOutStart = FADE_DURATION / piece.maxLife;
-
-  if (lifeRatio > 1 - fadeOutStart) {
-    const fadeProgress = (1 - lifeRatio) / fadeOutStart;
-    return Math.min(1, fadeProgress);
-  }
-
-  if (piece.life <= FADE_DURATION) {
-    return Math.max(0, piece.life / FADE_DURATION);
-  }
-
-  return 1;
-};
-
-const createPiece = (row: number, col: number): ChessPiece => {
-  const maxLife = MIN_LIFETIME + Math.random() * (MAX_LIFETIME - MIN_LIFETIME);
-  return {
-    row,
-    col,
-    color: Math.random() > 0.5 ? 'black' : 'white',
-    opacity: 0,
-    life: maxLife,
-    maxLife,
-    isActive: false,
-  };
-};
-
-const spawnRandomPiece = (): void => {
-  if (Math.random() > SPAWN_PROBABILITY) return;
-
-  const emptyCells: { row: number; col: number }[] = [];
-
-  for (let r = 0; r < rows.value; r++) {
-    for (let c = 0; c < cols.value; c++) {
-      if (!isCellOccupied(r, c)) {
-        emptyCells.push({ row: r, col: c });
+  const connectedKeys: string[] = [];
+  
+  // 找出此刻所有在连接半径内的同色棋子
+  grid.forEach((p, k) => {
+    if (k !== drag.key && p.color === draggedPiece.color) {
+      const px = p.col * props.cellSize + props.cellSize / 2;
+      const py = p.row * props.cellSize + props.cellSize / 2;
+      const dist = Math.hypot(px - drag.x, py - drag.y);
+      if (dist < props.connectRadius) {
+        connectedKeys.push(k);
       }
     }
-  }
+  });
 
-  if (emptyCells.length === 0) return;
+  // 吸附到新网格
+  const newCol = Math.floor(drag.x / props.cellSize);
+  const newRow = Math.floor(drag.y / props.cellSize);
+  const newKey = `${newRow}-${newCol}`;
 
-  const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-  const newPiece = createPiece(randomCell.row, randomCell.col);
+  grid.delete(drag.key);
+  draggedPiece.row = newRow;
+  draggedPiece.col = newCol;
+  grid.set(newKey, draggedPiece);
 
-  setCellOccupied(randomCell.row, randomCell.col, true);
-  pieces.value = [...pieces.value, newPiece];
-};
+  // 触发当前棋子的脉冲
+  draggedPiece.isActive = true;
+  draggedPiece.pulseScale = 1.6;
+  draggedPiece.startTime = performance.now();
 
-const updatePieces = (): void => {
-  const updatedPieces: ChessPiece[] = [];
-
-  for (const piece of pieces.value) {
-    const newLife = piece.life - 1;
-
-    if (newLife <= 0) {
-      setCellOccupied(piece.row, piece.col, false);
-      continue;
+  // 触发所有被连接棋子的脉冲
+  connectedKeys.forEach(k => {
+    const cp = grid.get(k);
+    if (cp) {
+      cp.isActive = true;
+      cp.pulseScale = 1.6;
+      cp.startTime = performance.now();
     }
+  });
 
-    const updatedPiece: ChessPiece = {
-      ...piece,
-      life: newLife,
-      opacity: calculateOpacity({ ...piece, life: newLife }),
+  drag.isDragging = false;
+  drag.key = '';
+};
+
+// 4. 离开画布保护机制
+const handleMouseLeave = () => {
+  if (drag.isDragging) handleMouseUp(new MouseEvent('mouseup'));
+};
+
+// 5. 双击生成
+const handleDblClick = (e: MouseEvent) => {
+  const col = Math.floor(e.clientX / props.cellSize);
+  const row = Math.floor(e.clientY / props.cellSize);
+  const key = `${row}-${col}`;
+  
+  if (!grid.has(key)) {
+    const color = Math.random() > 0.5 ? 'black' : 'white';
+    const newPiece: Piece = {
+      row, col, color,
+      startTime: performance.now(),
+      life: props.pieceLife,
+      opacity: 0,
+      isActive: true,
+      pulseScale: 1.6
     };
-
-    updatedPieces.push(updatedPiece);
-  }
-
-  pieces.value = updatedPieces;
-};
-
-const drawPiece = (ctx: CanvasRenderingContext2D, piece: ChessPiece): void => {
-  const x = piece.col * CELL_SIZE + CELL_SIZE / 2;
-  const y = piece.row * CELL_SIZE + CELL_SIZE / 2;
-
-  ctx.save();
-  ctx.globalAlpha = piece.opacity;
-
-  if (piece.color === 'black') {
-    const gradient = ctx.createRadialGradient(
-      x - PIECE_RADIUS * 0.3,
-      y - PIECE_RADIUS * 0.3,
-      0,
-      x,
-      y,
-      PIECE_RADIUS
-    );
-    gradient.addColorStop(0, '#4a4a4a');
-    gradient.addColorStop(0.5, '#2a2a2a');
-    gradient.addColorStop(1, '#000000');
-
-    ctx.beginPath();
-    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(80, 80, 80, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  } else {
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 3;
-    ctx.shadowOffsetY = 3;
-
-    const gradient = ctx.createRadialGradient(
-      x - PIECE_RADIUS * 0.3,
-      y - PIECE_RADIUS * 0.3,
-      0,
-      x,
-      y,
-      PIECE_RADIUS
-    );
-    gradient.addColorStop(0, '#ffffff');
-    gradient.addColorStop(0.5, '#f0f0f0');
-    gradient.addColorStop(1, '#d0d0d0');
-
-    ctx.beginPath();
-    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    ctx.shadowColor = 'transparent';
-    ctx.beginPath();
-    ctx.arc(x, y, PIECE_RADIUS, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  if (piece.isActive) {
-    const glowIntensity = 0.5 + Math.sin(Date.now() / 200) * 0.3;
-    const glowRadius = PIECE_RADIUS + 6 + Math.sin(Date.now() / 150) * 2;
-
-    ctx.beginPath();
-    ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(255, 215, 0, ${glowIntensity})`;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(x, y, glowRadius + 2, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(255, 215, 0, ${glowIntensity * 0.5})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    const innerGlowRadius = PIECE_RADIUS * 0.4;
-    const innerGlowIntensity = 0.6 + Math.sin(Date.now() / 100) * 0.2;
-    ctx.beginPath();
-    ctx.arc(x, y, innerGlowRadius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 215, 0, ${innerGlowIntensity})`;
-    ctx.fill();
-  }
-
-  ctx.restore();
-};
-
-const render = (ctx: CanvasRenderingContext2D): void => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  for (const piece of pieces.value) {
-    drawPiece(ctx, piece);
+    grid.set(key, newPiece);
   }
 };
 
-const gameLoop = (currentTime: number): void => {
-  if (!canvasRef.value) return;
-
-  const ctx = canvasRef.value.getContext('2d');
+// 渲染循环
+const render = (time: number) => {
   if (!ctx) return;
+  ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-  if (currentTime - lastTime >= 16) {
-    spawnRandomPiece();
-    updatePieces();
-    render(ctx);
-    lastTime = currentTime;
+  // 随机生成
+  if (Math.random() < props.spawnRate) {
+    const r = Math.floor(Math.random() * dimensions.rows);
+    const c = Math.floor(Math.random() * dimensions.cols);
+    const key = `${r}-${c}`;
+    if (!grid.has(key)) {
+      grid.set(key, {
+        row: r, col: c,
+        color: Math.random() > 0.5 ? 'black' : 'white',
+        startTime: time,
+        life: props.pieceLife,
+        opacity: 0,
+        isActive: false,
+        pulseScale: 1
+      });
+    }
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  // --- 阶段 A：绘制拖拽连线 (在棋子下方) ---
+  if (drag.isDragging && drag.key) {
+    const draggedPiece = grid.get(drag.key);
+    if (draggedPiece) {
+      grid.forEach((p, k) => {
+        if (k !== drag.key && p.color === draggedPiece.color) {
+          const px = p.col * props.cellSize + props.cellSize / 2;
+          const py = p.row * props.cellSize + props.cellSize / 2;
+          const dist = Math.hypot(px - drag.x, py - drag.y);
+          
+          if (dist < props.connectRadius) {
+            // 根据距离计算线段透明度 (越近越亮)
+            const lineOpacity = (1 - dist / props.connectRadius) * 0.8 * p.opacity;
+            ctx!.beginPath();
+            ctx!.moveTo(drag.x, drag.y);
+            ctx!.lineTo(px, py);
+            ctx!.strokeStyle = draggedPiece.color === 'black' 
+              ? `rgba(99, 102, 241, ${lineOpacity})`  // 靛蓝连线
+              : `rgba(244, 63, 94, ${lineOpacity})`;  // 玫瑰红连线
+            ctx!.lineWidth = 1.5;
+            ctx!.stroke();
+          }
+        }
+      });
+    }
+  }
+
+  // --- 阶段 B：绘制所有棋子实体 ---
+  let draggedPieceToRenderLast: Piece | null = null;
+
+  grid.forEach((p, key) => {
+    // 提取出当前被拖拽的棋子最后画，保证它浮在最顶层
+    if (drag.isDragging && key === drag.key) {
+      draggedPieceToRenderLast = p;
+      return; 
+    }
+    renderSinglePiece(p, time);
+  });
+
+  if (draggedPieceToRenderLast) {
+    renderSinglePiece(draggedPieceToRenderLast, time, true);
+  }
+
+  animationFrameId = requestAnimationFrame(render);
 };
 
-let resizeObserver: ResizeObserver | null = null;
+// 抽离单颗棋子的渲染逻辑
+const renderSinglePiece = (p: Piece, time: number, isDragged = false) => {
+  const elapsed = time - p.startTime;
+  const lifeRatio = elapsed / p.life;
+
+  // 拖拽时不计算寿命损耗
+  if (lifeRatio >= 1 && !isDragged) {
+    // 这里因为是在 forEach 外部调用的封装，直接使用引用删除需要注意，但我们在 Vue map里，等下次自然清理也可。
+    // 为了严谨，将其透明度直接归零
+    p.opacity = 0; 
+    return;
+  }
+
+  p.opacity = lifeRatio < 0.2 ? lifeRatio / 0.2 : (1 - lifeRatio) / 0.8;
+  if (isDragged) p.opacity = 1; // 拖拽时始终保持完全不透明
+
+  if (p.pulseScale > 1) {
+    p.pulseScale -= 0.015;
+  } else {
+    p.isActive = false;
+  }
+
+  // 判断是否是被拖拽的棋子，如果是，使用鼠标绝对坐标
+  const x = isDragged ? drag.x : p.col * props.cellSize + props.cellSize / 2;
+  const y = isDragged ? drag.y : p.row * props.cellSize + props.cellSize / 2;
+  const radius = props.cellSize * 0.32;
+
+  ctx!.save();
+  ctx!.globalAlpha = p.opacity;
+
+  // 1. 物理涟漪波纹
+  if (p.isActive && p.pulseScale > 1) {
+    const rippleExpand = (1.6 - p.pulseScale) * props.cellSize;
+    const rippleAlpha = Math.max(0, (p.pulseScale - 1) * 1.6);
+    
+    ctx!.beginPath();
+    ctx!.arc(x, y, radius + rippleExpand, 0, Math.PI * 2);
+    ctx!.strokeStyle = p.color === 'black' ? `rgba(99, 102, 241, ${rippleAlpha})` : `rgba(244, 63, 94, ${rippleAlpha})`;
+    ctx!.lineWidth = 2;
+    ctx!.stroke();
+  }
+
+  // 2. 实体棋子投影 (被拖拽时阴影加大，体现悬浮感)
+  ctx!.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx!.shadowBlur = isDragged ? 15 : 8;
+  ctx!.shadowOffsetY = isDragged ? 8 : 4;
+
+  // 3. 拟真材质渲染
+  const gradient = ctx!.createRadialGradient(
+    x - radius * 0.3, y - radius * 0.3, radius * 0.1, 
+    x, y, radius
+  );
+  
+  if (p.color === 'black') {
+    gradient.addColorStop(0, '#555555');
+    gradient.addColorStop(0.3, '#222222');
+    gradient.addColorStop(1, '#050505');
+  } else {
+    gradient.addColorStop(0, '#ffffff');
+    gradient.addColorStop(0.4, '#eeeeee');
+    gradient.addColorStop(1, '#cccccc');
+  }
+
+  ctx!.fillStyle = gradient;
+  ctx!.beginPath();
+  ctx!.arc(x, y, radius, 0, Math.PI * 2);
+  ctx!.fill();
+
+  ctx!.restore();
+};
+
+// 补丁：定期清理死去的粒子（因为上面的抽离，放在帧尾统一清理更安全）
+const gc = () => {
+  grid.forEach((p, k) => {
+    if (!drag.isDragging || k !== drag.key) {
+      if (performance.now() - p.startTime >= p.life) grid.delete(k);
+    }
+  });
+};
+setInterval(gc, 2000);
 
 onMounted(() => {
-  handleResize();
-
-  if (canvasRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      handleResize();
-    });
-    resizeObserver.observe(canvasRef.value.parentElement as Element);
-  }
-
-  window.addEventListener('resize', handleResize);
-
-  animationId = requestAnimationFrame(gameLoop);
+  initCanvas();
+  window.addEventListener('resize', initCanvas);
+  animationFrameId = requestAnimationFrame(render);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-
-  if (clickTimer !== null) {
-    clearTimeout(clickTimer);
-    clickTimer = null;
-  }
-
-  if (animationId !== null) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-  }
-});
-
-defineExpose({
-  rows,
-  cols,
-  gridMap,
-  pieces,
-  isCellOccupied,
-  setCellOccupied,
-  clearGrid,
-  floodFillActivate,
-  getPieceAt,
-  cellSize: CELL_SIZE,
+  window.removeEventListener('resize', initCanvas);
+  cancelAnimationFrame(animationFrameId);
 });
 </script>
 
 <template>
   <canvas
     ref="canvasRef"
-    class="absolute inset-0 w-full h-full cursor-pointer"
-    @click="handleClick"
-    @dblclick="handleDoubleClick"
+    class="fixed inset-0 pointer-events-auto cursor-crosshair z-0"
+    style="background: transparent;"
+    @mousedown="handleMouseDown"
+    @mousemove="handleMouseMove"
+    @mouseup="handleMouseUp"
+    @mouseleave="handleMouseLeave"
+    @dblclick="handleDblClick"
   />
 </template>

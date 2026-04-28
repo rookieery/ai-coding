@@ -61,7 +61,7 @@ onUnmounted(() => {
 <template>
   <div :class="currentTheme === 'dark' ? 'dark bg-stone-900 text-stone-100' : 'bg-stone-100 text-stone-800'" class="min-h-screen flex flex-col font-sans transition-colors duration-300">
     <!-- Top Navigation Bar -->
-    <header class="w-full px-6 py-4 flex items-center justify-between border-b transition-colors"
+    <header class="w-full px-6 py-4 flex items-center justify-between border-b transition-colors z-50"
             :class="currentTheme === 'dark' ? 'bg-stone-800/50 border-stone-700' : 'bg-white/50 border-stone-200'">
       <div class="flex items-center gap-6">
         <h1 class="text-xl font-bold tracking-tight" :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'">
