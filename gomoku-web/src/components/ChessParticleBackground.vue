@@ -433,11 +433,25 @@ setInterval(gc, 2000);
 onMounted(() => {
   initCanvas();
   window.addEventListener('resize', initCanvas);
+  
+  // 新增：将移动和松开事件挂载到 window，防止被上层 DOM 遮挡
+  window.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('mouseup', handleMouseUp);
+  
+  // 新增：只有当鼠标彻底离开浏览器可视区域时，才触发保护机制
+  document.addEventListener('mouseleave', handleMouseLeave);
+  
   animationFrameId = requestAnimationFrame(render);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', initCanvas);
+  
+  // 卸载全局事件，防止内存泄漏
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+  document.removeEventListener('mouseleave', handleMouseLeave);
+  
   cancelAnimationFrame(animationFrameId);
 });
 </script>
@@ -448,9 +462,6 @@ onUnmounted(() => {
     class="fixed inset-0 pointer-events-auto cursor-crosshair z-0"
     style="background: transparent;"
     @mousedown="handleMouseDown"
-    @mousemove="handleMouseMove"
-    @mouseup="handleMouseUp"
-    @mouseleave="handleMouseLeave"
     @dblclick="handleDblClick"
   />
 </template>
