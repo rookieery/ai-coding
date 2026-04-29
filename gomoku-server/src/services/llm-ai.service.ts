@@ -30,7 +30,7 @@ const DEFAULT_LLM_CONFIG: LLMConfig = {
   apiKey: process.env.DEEPSEEK_API_KEY || '',
   baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
   model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
-  maxTokens: 500,
+  maxTokens: 4000,
   temperature: 0.7,
 };
 

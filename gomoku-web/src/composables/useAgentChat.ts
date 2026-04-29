@@ -75,8 +75,8 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
             });
           }
 
-          if (messages.value.length > 20) {
-            messages.value = messages.value.slice(-20);
+          if (messages.value.length > 50) {
+            messages.value = messages.value.slice(-50);
           }
 
           thinkingContent.value = '';

@@ -54,11 +54,11 @@ export class ChatService {
     ];
 
     // 调用 DeepSeek Reasoner 模型
+    // 不设置 max_tokens，使用模型默认值 (8192)，避免长回复被截断
     const stream = await this.deepseekClient.chat.completions.create({
       model: 'deepseek-reasoner',
       messages,
       temperature: 0.7,
-      max_tokens: 1000,
       stream: true,
     });
 
@@ -110,7 +110,7 @@ export class ChatService {
       model: 'deepseek-reasoner',
       messages,
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 16000,
     });
 
     return completion.choices[0]?.message?.content || '抱歉，我没有收到回复';
