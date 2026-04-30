@@ -247,6 +247,8 @@ export interface Messages {
   visionToolWhite: string;
   visionToolEraser: string;
   visionConfirmStart: string;
+  exportSuccess: string;
+  exportFailed: string;
 }
 
 export type MessageKey = keyof Messages;
