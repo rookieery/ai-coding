@@ -405,6 +405,9 @@ onDeactivated(() => {
       :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
     >
       <p>{{ t('rules') }}</p>
+      <p v-if="gameState.ruleMode.value === 'renju'" class="mt-1">
+        {{ t('rulesRenju') }}
+      </p>
       <p v-if="gameState.mode.value === 'pve'" class="mt-1">
         {{ t('currentModePve', gameUI.getAiRoleText(gameState.aiRole.value), gameUI.getAiDifficultyText(gameState.aiDifficulty.value)) }}
       </p>

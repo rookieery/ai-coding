@@ -40,6 +40,7 @@ export interface Messages {
   statusBlackWinChess: string;
   noMoves: string;
   rules: string;
+  rulesRenju: string;
   chineseChessRules: string;
   currentModePve: string;
   statusBlackTurn: string;
