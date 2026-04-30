@@ -68,18 +68,23 @@ defineExpose({
 <template>
   <div ref="containerRef" class="flex flex-col w-full flex-1 overflow-y-auto mb-6 space-y-6 pr-2 custom-scrollbar mt-4 pb-4 px-4">
     <!-- 历史消息 -->
-    <div v-for="(msg, index) in messages" :key="index" class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
-      <div v-if="msg.role === 'user'" class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm bg-indigo-600 text-white rounded-br-sm">
-        <!-- 图片预览 -->
-        <div v-if="msg.hasImage && msg.imageBase64" class="mb-2">
+    <template v-for="(msg, index) in messages" :key="index">
+      <!-- 用户消息 -->
+      <div v-if="msg.role === 'user'" class="flex flex-col items-end gap-2 w-full">
+        <!-- 图片气泡 -->
+        <div v-if="msg.hasImage && msg.imageBase64" class="max-w-[80%]">
           <img
             :src="msg.imageBase64"
             :alt="t('selectedImagePreview')"
-            class="max-h-48 max-w-full object-contain rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            class="max-h-64 max-w-full object-contain rounded-2xl cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+            :class="currentTheme === 'dark' ? 'bg-stone-800/50' : 'bg-stone-50'"
             @click="openImagePreview(msg.imageBase64!)"
           />
         </div>
-        <div class="whitespace-pre-wrap">{{ msg.text }}</div>
+        <!-- 文本气泡 -->
+        <div v-if="msg.text.trim()" class="max-w-[80%] rounded-2xl px-6 py-4 shadow-sm bg-indigo-600 text-white rounded-br-sm">
+          <div class="whitespace-pre-wrap">{{ msg.text }}</div>
+        </div>
       </div>
 
       <!-- AI消息 -->
@@ -134,7 +139,7 @@ defineExpose({
           </div>
         </div>
       </div>
-    </div>
+    </template>
 
     <!-- 流式响应区域 -->
     <div v-if="isThinking" class="space-y-4">

@@ -135,8 +135,20 @@ const handlePaste = async (event: ClipboardEvent) => {
   }
 };
 
+const showInputPreview = ref(false);
+
 const clearSelectedImage = () => {
   selectedImageBase64.value = null;
+};
+
+const openInputPreview = () => {
+  if (selectedImageBase64.value) {
+    showInputPreview.value = true;
+  }
+};
+
+const closeInputPreview = () => {
+  showInputPreview.value = false;
 };
 
 const triggerFileInput = () => {
@@ -174,82 +186,120 @@ defineExpose({
       <slot name="actions" />
     </div>
     <div
-      class="flex flex-wrap items-end w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500 gap-2 p-2"
+      class="flex flex-col w-full rounded-2xl shadow-sm border transition-colors focus-within:ring-2 focus-within:ring-indigo-500"
       :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-300'"
       @paste="handlePaste"
     >
-      <!-- 图片预览区域 -->
-      <div
-        v-if="selectedImageBase64"
-        class="w-full relative mb-2 rounded-lg overflow-hidden"
-        :class="currentTheme === 'dark' ? 'bg-stone-700' : 'bg-stone-100'"
-      >
-        <img
-          :src="selectedImageBase64"
-          :alt="t('selectedImagePreview')"
-          class="max-h-32 max-w-full object-contain mx-auto"
-        />
+      <!-- 图片缩略图 -->
+      <div v-if="selectedImageBase64" class="flex gap-2 px-3 pt-3">
+        <div class="relative group flex-shrink-0">
+          <div
+            class="w-[72px] h-[72px] rounded-xl overflow-hidden"
+            :class="currentTheme === 'dark' ? 'bg-stone-700' : 'bg-stone-100'"
+          >
+            <img
+              :src="selectedImageBase64"
+              :alt="t('selectedImagePreview')"
+              class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+              @click="openInputPreview"
+            />
+          </div>
+          <button
+            type="button"
+            @click.stop="clearSelectedImage"
+            class="absolute -top-1.5 -right-1.5 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-sm"
+            :class="currentTheme === 'dark' ? 'bg-stone-600 text-stone-300 hover:bg-stone-500' : 'bg-white text-stone-600 hover:bg-stone-50 ring-1 ring-stone-200'"
+            :aria-label="t('removeImage')"
+          >
+            <X class="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+      <!-- 输入行 -->
+      <div class="flex items-end gap-2 p-2">
         <button
           type="button"
-          @click="clearSelectedImage"
-          class="absolute top-2 right-2 p-1 rounded-full transition-colors"
-          :class="currentTheme === 'dark' ? 'bg-stone-600 hover:bg-stone-500 text-stone-200' : 'bg-stone-200 hover:bg-stone-300 text-stone-700'"
-          :aria-label="t('removeImage')"
+          @click="triggerFileInput"
+          class="p-3 rounded-full transition-colors flex-shrink-0 self-end cursor-pointer"
+          :class="currentTheme === 'dark' ? 'hover:bg-stone-700 text-stone-400 hover:text-stone-200' : 'hover:bg-stone-100 text-stone-500 hover:text-stone-700'"
+          :aria-label="t('attachImage')"
+          :disabled="isThinking"
         >
-          <X class="w-4 h-4" />
+          <Paperclip class="w-5 h-5" />
         </button>
-        <!-- 图片上传引导提示 -->
-        <p
-          class="text-xs mt-1 px-2 pb-1"
-          :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
+        <input
+          ref="fileInputRef"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleFileSelect"
+        />
+        <textarea
+          ref="textareaRef"
+          :value="query"
+          @input="emit('update:query', ($event.target as HTMLTextAreaElement).value); adjustTextareaHeight()"
+          :placeholder="t('agentPlaceholder')"
+          class="flex-1 bg-transparent px-2 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
+          :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
+          @keydown="handleKeydown"
+          :disabled="isThinking"
+          rows="1"
+        />
+        <button
+          @click="handleSend"
+          class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
+          :class="[
+            (query.trim() || selectedImageBase64) && !isThinking
+              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+              : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
+          ]"
+          :disabled="(!query.trim() && !selectedImageBase64) || isThinking"
         >
-          {{ t('imageUploadGuidance') }}
-        </p>
+          <Send class="w-5 h-5" />
+        </button>
       </div>
-      <!-- 附件按钮 -->
-      <button
-        type="button"
-        @click="triggerFileInput"
-        class="p-3 rounded-full transition-colors flex-shrink-0 self-end cursor-pointer"
-        :class="currentTheme === 'dark' ? 'hover:bg-stone-700 text-stone-400 hover:text-stone-200' : 'hover:bg-stone-100 text-stone-500 hover:text-stone-700'"
-        :aria-label="t('attachImage')"
-        :disabled="isThinking"
-      >
-        <Paperclip class="w-5 h-5" />
-      </button>
-      <input
-        ref="fileInputRef"
-        type="file"
-        accept="image/*"
-        class="hidden"
-        @change="handleFileSelect"
-      />
-      <textarea
-        ref="textareaRef"
-        :value="query"
-        @input="emit('update:query', ($event.target as HTMLTextAreaElement).value); adjustTextareaHeight()"
-        :placeholder="t('agentPlaceholder')"
-        class="flex-1 bg-transparent px-2 py-3 outline-none resize-none min-h-[56px] max-h-[calc(1.5rem*7+1.5rem)] overflow-y-auto"
-        :class="currentTheme === 'dark' ? 'text-stone-100 placeholder-stone-500' : 'text-stone-900 placeholder-stone-400'"
-        @keydown="handleKeydown"
-        :disabled="isThinking"
-        rows="1"
-      />
-      <button
-        @click="handleSend"
-        class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
-        :class="[
-          (query.trim() || selectedImageBase64) && !isThinking
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
-        ]"
-        :disabled="(!query.trim() && !selectedImageBase64) || isThinking"
-      >
-        <Send class="w-5 h-5" />
-      </button>
     </div>
     <div class="text-center mt-3 text-xs" :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'">
       {{ t('agentDisclaimer') }}
     </div>
+
+    <!-- 图片预览弹窗 -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showInputPreview && selectedImageBase64"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          @click="closeInputPreview"
+        >
+          <img
+            :src="selectedImageBase64"
+            :alt="t('selectedImagePreview')"
+            class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            @click.stop
+          />
+          <button
+            class="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            :aria-label="t('close')"
+            @click="closeInputPreview"
+          >
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

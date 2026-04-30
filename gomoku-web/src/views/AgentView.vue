@@ -254,7 +254,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     // Add user message with image
     messages.value.push({
       role: 'user',
-      text: payload.text || t('visionImageSent'),
+      text: payload.text || '',
       hasImage: true,
       imageBase64: payload.imageBase64,
     });
