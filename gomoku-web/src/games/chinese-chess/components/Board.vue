@@ -8,7 +8,6 @@ import {
   GameMode,
   MoveHistory,
 } from '../types';
-import { t } from '../../../i18n';
 import type { ThemeKey } from '../../../common/theme';
 import { getThemeColors } from '../../../common/theme';
 
@@ -121,27 +120,26 @@ const handleCellClick = (coord: BoardCoord) => {
 const BOARD_COLS = 9;
 const BOARD_ROWS = 10;
 
-// 棋子 Unicode 字符映射（通过 i18n 获取）
-const pieceChars = computed(() => ({
+const pieceChars: Record<PlayerSide, Record<PieceType, string>> = {
   [PlayerSide.RED]: {
-    [PieceType.KING]: t('pieceRedKing'),
-    [PieceType.ADVISOR]: t('pieceRedAdvisor'),
-    [PieceType.ELEPHANT]: t('pieceRedElephant'),
-    [PieceType.KNIGHT]: t('pieceRedKnight'),
-    [PieceType.ROOK]: t('pieceRedRook'),
-    [PieceType.CANNON]: t('pieceRedCannon'),
-    [PieceType.PAWN]: t('pieceRedPawn'),
+    [PieceType.KING]: '帅',
+    [PieceType.ADVISOR]: '仕',
+    [PieceType.ELEPHANT]: '相',
+    [PieceType.KNIGHT]: '马',
+    [PieceType.ROOK]: '车',
+    [PieceType.CANNON]: '炮',
+    [PieceType.PAWN]: '兵',
   },
   [PlayerSide.BLACK]: {
-    [PieceType.KING]: t('pieceBlackKing'),
-    [PieceType.ADVISOR]: t('pieceBlackAdvisor'),
-    [PieceType.ELEPHANT]: t('pieceBlackElephant'),
-    [PieceType.KNIGHT]: t('pieceBlackKnight'),
-    [PieceType.ROOK]: t('pieceBlackRook'),
-    [PieceType.CANNON]: t('pieceBlackCannon'),
-    [PieceType.PAWN]: t('pieceBlackPawn'),
+    [PieceType.KING]: '将',
+    [PieceType.ADVISOR]: '士',
+    [PieceType.ELEPHANT]: '象',
+    [PieceType.KNIGHT]: '马',
+    [PieceType.ROOK]: '车',
+    [PieceType.CANNON]: '炮',
+    [PieceType.PAWN]: '卒',
   },
-}));
+};
 
 
 // 棋子背景颜色类（红方用 piecePrimary，黑方用 pieceSecondary）
@@ -236,6 +234,40 @@ const palaceDiagonals = computed(() => {
   return diagonals;
 });
 
+// 星位标记数据（炮和兵/卒位置的传统标记）
+const starMarkers = computed(() => {
+  const markers: { d: string; hasLeft: boolean; hasRight: boolean }[] = [];
+  const PADDING = 50;
+  const CELL = 100;
+  const GAP = 5;
+  const ARM = 12;
+
+  const starPositions = [
+    { col: 1, row: 2 }, { col: 7, row: 2 },
+    { col: 1, row: 7 }, { col: 7, row: 7 },
+    { col: 0, row: 3 }, { col: 2, row: 3 }, { col: 4, row: 3 }, { col: 6, row: 3 }, { col: 8, row: 3 },
+    { col: 0, row: 6 }, { col: 2, row: 6 }, { col: 4, row: 6 }, { col: 6, row: 6 }, { col: 8, row: 6 },
+  ];
+
+  for (const pos of starPositions) {
+    const x = PADDING + pos.col * CELL;
+    const y = PADDING + pos.row * CELL;
+    const hasLeft = pos.col > 0;
+    const hasRight = pos.col < 8;
+
+    if (hasLeft) {
+      markers.push({ d: `M ${x - GAP - ARM} ${y - GAP} L ${x - GAP} ${y - GAP} L ${x - GAP} ${y - GAP - ARM}`, hasLeft, hasRight });
+      markers.push({ d: `M ${x - GAP - ARM} ${y + GAP} L ${x - GAP} ${y + GAP} L ${x - GAP} ${y + GAP + ARM}`, hasLeft, hasRight });
+    }
+    if (hasRight) {
+      markers.push({ d: `M ${x + GAP + ARM} ${y - GAP} L ${x + GAP} ${y - GAP} L ${x + GAP} ${y - GAP - ARM}`, hasLeft, hasRight });
+      markers.push({ d: `M ${x + GAP + ARM} ${y + GAP} L ${x + GAP} ${y + GAP} L ${x + GAP} ${y + GAP + ARM}`, hasLeft, hasRight });
+    }
+  }
+
+  return markers;
+});
+
 // 是否被将军的高亮（暂时简化）
 const isCheckHighlight = computed(() => {
   // 可以根据 winner 或 game status 高亮将/帅
@@ -296,25 +328,33 @@ const isCheckHighlight = computed(() => {
             stroke-width="2"
             stroke-linecap="square"
           />
-          <!-- 河流文字 -->
-          <text
-            x="250"
-            y="500"
-            text-anchor="middle"
-            dominant-baseline="middle"
-            font-size="45"
-            font-weight="bold"
-            :fill="riverTextFillColor"
-          >{{ t('riverChu') }}</text>
-          <text
-            x="650"
-            y="500"
-            text-anchor="middle"
-            dominant-baseline="middle"
-            font-size="45"
-            font-weight="bold"
-            :fill="riverTextFillColor"
-          >{{ t('riverHan') }}</text>
+          <!-- 楚河汉界 -->
+          <text x="191" y="500" text-anchor="middle" dominant-baseline="middle"
+            font-size="58" :fill="riverTextFillColor"
+            font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+          >楚</text>
+          <text x="289" y="500" text-anchor="middle" dominant-baseline="middle"
+            font-size="58" :fill="riverTextFillColor"
+            font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+          >河</text>
+          <text x="611" y="500" text-anchor="middle" dominant-baseline="middle"
+            font-size="58" :fill="riverTextFillColor"
+            font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+          >汉</text>
+          <text x="709" y="500" text-anchor="middle" dominant-baseline="middle"
+            font-size="58" :fill="riverTextFillColor"
+            font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+          >界</text>
+          <!-- 星位标记（炮和兵/卒位置） -->
+          <path
+            v-for="(marker, index) in starMarkers"
+            :key="`star-${index}`"
+            :d="marker.d"
+            fill="none"
+            :stroke="lineStrokeColor"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
         </svg>
 
         <template v-for="(row, rowIndex) in board" :key="rowIndex">
