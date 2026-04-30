@@ -234,7 +234,7 @@
   "visionParsingBoard": "Parsing board screenshot with Doubao Vision model...",
   "visionBoardLoaded": "Board loaded! Based on the position, it's {0}'s turn. Please continue.",
   "visionParseFailed": "Failed to parse board",
-  "imageUploadGuidance": "Tip: Crop the image to show only the board grid, excluding extra UI elements for better recognition accuracy!",
+  "imageUploadGuidance": "Tip: Upload an image containing the board, and the system will automatically recognize the position!",
   "close": "Close",
   "visionConfirmTitle": "Recognition Result Confirmation",
   "visionSelectCandidate": "Select a recognition candidate:",
