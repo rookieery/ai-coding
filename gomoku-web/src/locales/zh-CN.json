@@ -248,5 +248,8 @@
   "visionBatchMoveHint": "在棋盘上拖动框选区域，然后使用方向键批量移动选中棋子",
   "visionMoveOffset": "移动格数",
   "visionClearSelection": "清除选择",
-  "visionSelectionActive": "已选中区域，可批量移动"
+  "visionSelectionActive": "已选中区域，可批量移动",
+  "exportBoard": "导出棋盘",
+  "exportSuccess": "棋盘已导出为图片！",
+  "exportFailed": "导出失败，请重试"
 }

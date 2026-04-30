@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onUnmounted, onActivated, onDeactivated, onMounted } from 'vue';
+import { computed, onUnmounted, onActivated, onDeactivated, onMounted, ref } from 'vue';
+import html2canvas from 'html2canvas-pro';
 import { t, currentTheme } from '../../../i18n';
 import { type GameType } from '../../../api/game-api';
 import { EMPTY } from '../gameLogic';
@@ -21,6 +22,8 @@ import { useGlobalSettings } from '../../../composables/useSettings';
 import { useGlobalAuth } from '../../../composables/useAuth';
 
 const GAME_TYPE: GameType = 'gomoku';
+
+const boardRef = ref<InstanceType<typeof Board> | null>(null);
 
 defineOptions({
   name: 'GameView'
@@ -187,6 +190,30 @@ const handleConfirmDelete = async () => {
   }
 };
 
+const handleExportBoard = async () => {
+  const el = boardRef.value?.$el as HTMLElement | undefined;
+  if (!el) {
+    gameUI.notify(t('exportFailed'));
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(el, {
+      backgroundColor: null,
+      scale: 2,
+    });
+
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+    link.download = `gomoku-${timestamp}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    gameUI.notify(t('exportSuccess'));
+  } catch {
+    gameUI.notify(t('exportFailed'));
+  }
+};
+
 const handleOpenRecords = async () => {
   await gameRecords.fetchRecords();
   gameUI.openRecordsModal();
@@ -309,6 +336,7 @@ onDeactivated(() => {
       @toggleThinking="gameAI.toggleThinking"
       @toggleSteps="gameState.toggleSteps"
       @saveGame="gameUI.openSaveModal"
+      @exportBoard="handleExportBoard"
       @showRecords="handleOpenRecords"
       @updateTheme="settings.setGomokuTheme"
     />
@@ -318,6 +346,7 @@ onDeactivated(() => {
 
       <div class="flex justify-center shrink-0">
         <Board
+          ref="boardRef"
           :board="gameState.board.value"
           :currentPlayer="gameState.currentPlayer.value"
           :winner="gameState.winner.value"

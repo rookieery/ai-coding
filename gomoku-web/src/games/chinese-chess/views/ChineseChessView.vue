@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted, onMounted, onActivated, onDeactivated } from 'vue';
 import { Download, Trash2, X, RefreshCw } from 'lucide-vue-next';
+import html2canvas from 'html2canvas-pro';
 import {
   PlayerSide,
   PieceType,
@@ -35,6 +36,8 @@ import { useGlobalAuth } from '../../../composables/useAuth';
 import { useGlobalSettings } from '../../../composables/useSettings';
 
 const GAME_TYPE: GameType = 'chinese_chess';
+
+const boardRef = ref<InstanceType<typeof Board> | null>(null);
 
 defineOptions({
   name: 'ChineseChessView'
@@ -675,6 +678,30 @@ const undo = () => {
   }
 };
 
+const handleExportBoard = async () => {
+  const el = boardRef.value?.$el as HTMLElement | undefined;
+  if (!el) {
+    notify(t('exportFailed'));
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(el, {
+      backgroundColor: null,
+      scale: 2,
+    });
+
+    const link = document.createElement('a');
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+    link.download = `chinese-chess-${timestamp}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    notify(t('exportSuccess'));
+  } catch {
+    notify(t('exportFailed'));
+  }
+};
+
 const showHint = () => {
   if (winner.value !== undefined || isAiThinking.value) return;
   if (mode.value === 'pve' && currentPlayer.value === aiPlayer.value && !isAnalysisMode.value) return;
@@ -744,6 +771,7 @@ const showHint = () => {
       @toggleThinking="toggleThinking"
       @toggleSteps="showSteps = !showSteps"
       @saveGame="openSaveModal"
+      @exportBoard="handleExportBoard"
       @showRecords="openRecordsModal"
       @updateTheme="settings.setChessTheme"
     />
@@ -754,6 +782,7 @@ const showHint = () => {
 
       <div class="flex justify-center shrink-0">
         <Board
+          ref="boardRef"
           :board="board"
           :currentPlayer="currentPlayer"
           :winner="winner"

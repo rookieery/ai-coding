@@ -248,5 +248,8 @@
   "visionBatchMoveHint": "Drag on the board to select an area, then use arrow keys to move selected pieces",
   "visionMoveOffset": "Move Offset",
   "visionClearSelection": "Clear Selection",
-  "visionSelectionActive": "Area selected, ready for batch move"
+  "visionSelectionActive": "Area selected, ready for batch move",
+  "exportBoard": "Export Board",
+  "exportSuccess": "Board exported as image!",
+  "exportFailed": "Export failed, please try again"
 }
