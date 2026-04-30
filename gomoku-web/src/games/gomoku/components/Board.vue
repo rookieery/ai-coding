@@ -88,14 +88,8 @@ const themeColors = computed(() => {
 
 // 棋子文字颜色类
 const pieceTextClass = (player: number) => {
-  const theme = props.theme || 'default';
-  const colors = getThemeColors(theme);
-  if (theme === 'cyber') {
-    // cyber主题：棋子文字都用白色
-    return '!text-white';
-  }
-  // 其他主题：黑棋用pieceTextSecondary，白棋用pieceTextPrimary
-  return player === BLACK ? colors.pieceTextSecondary : colors.pieceTextPrimary;
+  const colors = themeColors.value;
+  return player === BLACK ? colors.gomokuBlackText : colors.gomokuWhiteText;
 };
 
 // 棋子边框颜色类
@@ -173,15 +167,15 @@ const handleCellMouseUp = () => {
             </div>
 
             <!-- Star point -->
-            <div v-if="isStarPoint(r, c)" 
-                 class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full pointer-events-none" :class="themeColors.piecePrimary"></div>
+            <div v-if="isStarPoint(r, c)"
+                 class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full pointer-events-none" :class="themeColors.lineColor.replace('border-', 'bg-')"></div>
 
             <!-- Piece -->
             <div
               v-if="cell !== EMPTY"
               class="relative z-10 w-[85%] h-[85%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2"
               :class="[
-                cell === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary,
+                cell === BLACK ? themeColors.gomokuBlack : themeColors.gomokuWhite,
                 pieceBorderClass(cell),
                 isWinningPiece(r, c) ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-[#DEB887] animate-pulse z-20' : ''
               ]"
@@ -195,7 +189,7 @@ const handleCellMouseUp = () => {
               <!-- Last move indicator -->
               <div v-else-if="moveHistory.length > 0 && moveHistory[moveHistory.length - 1].r === r && moveHistory[moveHistory.length - 1].c === c"
                    class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full opacity-70"
-                   :class="themeColors.pieceBackground">
+                   :class="cell === BLACK ? themeColors.gomokuWhite : themeColors.gomokuBlack">
               </div>
             </div>
             
@@ -210,7 +204,7 @@ const handleCellMouseUp = () => {
               v-else-if="thinkingMap.has(`${r},${c}`)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm border-2"
               :class="[
-                thinkingMap.get(`${r},${c}`)!.player === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary,
+                thinkingMap.get(`${r},${c}`)!.player === BLACK ? themeColors.gomokuBlack : themeColors.gomokuWhite,
                 pieceBorderClass(thinkingMap.get(`${r},${c}`)!.player),
                 showSteps ? (thinkingMap.get(`${r},${c}`)!.player === BLACK ? 'text-blue-400' : 'text-blue-600') : pieceTextClass(thinkingMap.get(`${r},${c}`)!.player)
               ]"
@@ -222,7 +216,7 @@ const handleCellMouseUp = () => {
             <div
               v-else-if="!isVisionEditMode && winner === EMPTY && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
-              :class="currentPlayer === BLACK ? themeColors.piecePrimary : themeColors.pieceSecondary"
+              :class="currentPlayer === BLACK ? themeColors.gomokuBlack : themeColors.gomokuWhite"
             ></div>
 
             <!-- Edit Mode Hover Preview -->
@@ -232,7 +226,7 @@ const handleCellMouseUp = () => {
                 v-if="cell === EMPTY && editTool !== 'eraser'"
                 class="absolute z-30 w-[85%] h-[85%] rounded-full opacity-0 group-hover:opacity-50 transition-opacity pointer-events-none border-2"
                 :class="[
-                  editTool === 'black' ? themeColors.piecePrimary : themeColors.pieceSecondary,
+                  editTool === 'black' ? themeColors.gomokuBlack : themeColors.gomokuWhite,
                   editTool === 'white' ? 'border-stone-400' : ''
                 ]"
               ></div>
