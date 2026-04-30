@@ -361,7 +361,7 @@ const isCheckHighlight = computed(() => {
           <div
             v-for="(cell, colIndex) in row"
             :key="`${rowIndex}-${colIndex}`"
-            class="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 flex items-center justify-center cursor-pointer group"
+            class="relative w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 xl:w-14 xl:h-14 flex items-center justify-center cursor-pointer group"
             @click="handleCellClick({ col: colIndex, row: rowIndex })"
           >
 
@@ -385,7 +385,7 @@ const isCheckHighlight = computed(() => {
                 class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
               ></div>
               <!-- 棋子字符 -->
-              <span class="relative z-10 text-xl sm:text-2xl font-bold" :class="pieceTextClass(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-2xl sm:text-3xl font-bold" :class="pieceTextClass(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"

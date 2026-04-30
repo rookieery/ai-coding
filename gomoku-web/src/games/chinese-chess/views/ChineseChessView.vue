@@ -330,7 +330,7 @@ onDeactivated(() => {
         />
       </div>
 
-      <div class="w-full lg:w-64 shrink-0 flex flex-col justify-start gap-4 self-stretch h-[320px] sm:h-[400px] lg:h-[694px]">
+      <div class="w-full lg:w-64 shrink-0 flex flex-col justify-start gap-4 self-stretch h-[360px] sm:h-[440px] lg:h-[600px]">
         <div
           class="text-lg sm:text-xl font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-sm border text-center w-full transition-colors shrink-0"
           :class="[
