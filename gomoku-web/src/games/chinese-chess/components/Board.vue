@@ -144,6 +144,11 @@ const pieceChars = computed(() => ({
 }));
 
 
+// 棋子背景颜色类（红方用 piecePrimary，黑方用 pieceSecondary）
+const pieceBackgroundClass = (side: PlayerSide) => {
+  return side === PlayerSide.RED ? themeColors.value.piecePrimary : themeColors.value.pieceSecondary;
+};
+
 // 棋子文字颜色类
 const pieceTextClass = (side: PlayerSide) => {
   return side === PlayerSide.RED ? themeColors.value.pieceTextPrimary : themeColors.value.pieceTextSecondary;
@@ -327,7 +332,7 @@ const isCheckHighlight = computed(() => {
               v-if="cell"
               class="relative z-10 w-[90%] h-[90%] rounded-full shadow-md transition-all duration-300 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600"
               :class="[
-                themeColors.pieceBackground,
+                pieceBackgroundClass(cell.side),
                 selectedCoord?.col === colIndex && selectedCoord?.row === rowIndex
                   ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-amber-100 dark:ring-offset-amber-900 scale-105'
                   : '',
