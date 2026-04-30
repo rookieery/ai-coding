@@ -168,7 +168,7 @@ const handleCellMouseUp = () => {
 
             <!-- Star point -->
             <div v-if="isStarPoint(r, c)"
-                 class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full pointer-events-none" :class="themeColors.lineColor.replace('border-', 'bg-')"></div>
+                 class="absolute top-1/2 left-1/2 w-2 h-2 -mt-1 -ml-1 rounded-full pointer-events-none" :class="themeColors.gomokuBlack"></div>
 
             <!-- Piece -->
             <div
