@@ -20,7 +20,7 @@ const copyHistory = async () => {
   const text = props.moveHistory.map((move, index) => {
     const step = index + 1;
     const player = move.player === BLACK ? t('black') : t('white');
-    const coord = `${String.fromCharCode(97 + move.c)}${move.r + 1}`;
+    const coord = `${String.fromCharCode(65 + move.c)}${move.r + 1}`;
     return `第${step}步${player}落子${coord}`;
   }).join('；') + '。';
 
@@ -75,7 +75,7 @@ watch(() => props.moveHistory.length, async () => {
         </div>
         <span class="font-mono font-medium px-2 py-0.5 rounded transition-colors"
               :class="currentTheme === 'dark' ? 'bg-stone-700 text-stone-300' : 'bg-stone-100 text-stone-600'">
-          {{ String.fromCharCode(97 + move.c) }}{{ move.r + 1 }}
+          {{ String.fromCharCode(65 + move.c) }}{{ move.r + 1 }}
         </span>
       </div>
       <div v-if="moveHistory.length === 0" class="text-center py-8 text-sm transition-colors"

@@ -402,22 +402,22 @@ const aiPlayer = computed(() => aiRole.value === 'red' ? PlayerSide.RED : Player
 
 const statusText = computed(() => {
   if (winner.value === PlayerSide.RED) return t('statusRedWin');
-  if (winner.value === PlayerSide.BLACK) return t('statusBlackWin');
+  if (winner.value === PlayerSide.BLACK) return t('statusBlackWinChess');
   if (gameStatus.value === GameStatus.CHECKMATE) {
-    return winner.value === PlayerSide.RED ? t('statusRedWin') : t('statusBlackWin');
+    return winner.value === PlayerSide.RED ? t('statusRedWin') : t('statusBlackWinChess');
   }
   if (gameStatus.value === GameStatus.STALEMATE) return t('statusStalemate');
   if (gameStatus.value === GameStatus.DRAW) return t('statusDraw');
   if (gameStatus.value === GameStatus.CHECK) return t('statusCheck');
 
-  const turnText = currentPlayer.value === PlayerSide.RED ? t('statusRedTurn') : t('statusBlackTurn');
+  const turnText = currentPlayer.value === PlayerSide.RED ? t('statusRedTurn') : t('statusBlackTurnChess');
   const thinkingText = isAiThinking.value ? ` (${t('aiThinking')})` : '';
 
   if (isAnalysisMode.value) return `${t('analysisMode')} - ${turnText}${thinkingText}`;
   return `${turnText}${thinkingText}`;
 });
 
-const aiRoleText = computed(() => aiRole.value === 'red' ? t('red') : t('black'));
+const aiRoleText = computed(() => aiRole.value === 'red' ? t('chessRed') : t('chessBlack'));
 const aiDifficultyText = computed(() => {
   switch (aiDifficulty.value) {
     case 'beginner': return t('difficultyBeginner');

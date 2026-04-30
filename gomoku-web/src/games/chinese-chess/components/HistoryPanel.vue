@@ -25,7 +25,7 @@ const copyHistory = async () => {
 
   const text = props.moveHistory.map((move, index) => {
     const step = index + 1;
-    const player = move.side === PlayerSide.RED ? i18nT('red') : i18nT('black');
+    const player = move.side === PlayerSide.RED ? i18nT('chessRed') : i18nT('chessBlack');
     const notation = moveToDisplayNotation(move, i18nT);
     return `第${step}步${player}${notation}`;
   }).join('；') + '。';
@@ -77,7 +77,7 @@ watch(() => props.moveHistory.length, async () => {
         <div class="flex items-center gap-2">
           <span class="w-6 text-right transition-colors" :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'">{{ index + 1 }}.</span>
           <span class="w-3 h-3 rounded-full inline-block shadow-sm" :class="move.side === PlayerSide.RED ? 'bg-red-500 border border-red-700' : 'bg-stone-800 border border-stone-900'"></span>
-          <span class="transition-colors" :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">{{ move.side === PlayerSide.RED ? i18nT('red') : i18nT('black') }}</span>
+          <span class="transition-colors" :class="currentTheme === 'dark' ? 'text-stone-300' : 'text-stone-700'">{{ move.side === PlayerSide.RED ? i18nT('chessRed') : i18nT('chessBlack') }}</span>
         </div>
         <span class="font-medium px-2 py-0.5 rounded transition-colors"
               :class="currentTheme === 'dark' ? 'bg-stone-700 text-stone-300' : 'bg-stone-100 text-stone-600'">

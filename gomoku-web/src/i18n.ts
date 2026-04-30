@@ -34,6 +34,10 @@ export interface Messages {
   black: string;
   red: string;
   white: string;
+  chessBlack: string;
+  chessRed: string;
+  statusBlackTurnChess: string;
+  statusBlackWinChess: string;
   noMoves: string;
   rules: string;
   chineseChessRules: string;
