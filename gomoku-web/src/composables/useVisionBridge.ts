@@ -6,12 +6,19 @@ const resolveConfirmation = ref<((pieces: number[][]) => void) | null>(null);
 const pendingQuestion = ref<string | null>(null);
 const pendingImageBase64 = ref<string | null>(null);
 
+/**
+ * @deprecated The new AgentVisionPanel flow handles AI analysis directly in AgentView.
+ * Kept for backward compatibility with the old GameView → AgentView redirect flow.
+ */
 export interface PendingAnalysis {
   pieces: number[][];
   question: string;
   imageBase64: string;
 }
 
+/**
+ * @deprecated See PendingAnalysis.
+ */
 const pendingAnalysis = ref<PendingAnalysis | null>(null);
 
 const setVisionCandidates = (candidates: number[][][]) => {
@@ -32,6 +39,7 @@ const consumeVisionCandidates = (): number[][][] | null => {
   return current;
 };
 
+/** Legacy: only for GameView direct-jump flow. The new AgentVisionPanel flow no longer calls this. */
 const requestBoardConfirmation = (candidates: number[][][]): Promise<number[][]> => {
   setVisionCandidates(candidates);
 
@@ -68,10 +76,12 @@ const consumePendingQuestion = (): { question: string; imageBase64: string } | n
   return result;
 };
 
+/** @deprecated See PendingAnalysis. */
 const setPendingAnalysis = (analysis: PendingAnalysis) => {
   pendingAnalysis.value = analysis;
 };
 
+/** @deprecated See PendingAnalysis. */
 const consumePendingAnalysis = (): PendingAnalysis | null => {
   const current = pendingAnalysis.value;
   pendingAnalysis.value = null;
@@ -79,6 +89,7 @@ const consumePendingAnalysis = (): PendingAnalysis | null => {
 };
 
 const clearPendingRequest = () => {
+  pendingVisionCandidates.value = null;
   pendingQuestion.value = null;
   pendingImageBase64.value = null;
   pendingAnalysis.value = null;
