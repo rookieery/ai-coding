@@ -32,7 +32,7 @@ const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
 const { playMode, enterGomokuMode, enterVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
-const { consumePendingAnalysis, setVisionCandidatesForReplay } = useVisionBridge();
+const { consumePendingAnalysis, setVisionCandidatesForReplay, clearPendingRequest } = useVisionBridge();
 const router = useRouter();
 
 const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || isExitingGomoku.value);
@@ -286,7 +286,22 @@ const handleConfirmAnalysis = async (pieces: number[][]) => {
 };
 
 const handleVisionConfirmClose = () => {
-  // Will be implemented in AGENT-VISION-06
+  isExitingGomoku.value = true;
+  exitPlayMode();
+  clearPendingRequest();
+
+  messages.value.push({
+    role: 'agent',
+    text: t('agentVisionConfirmCancelled'),
+  });
+
+  nextTick(() => {
+    chatMessagesRef.value?.scrollToBottom();
+  });
+
+  setTimeout(() => {
+    isExitingGomoku.value = false;
+  }, 400);
 };
 
 const confirmExit = () => {

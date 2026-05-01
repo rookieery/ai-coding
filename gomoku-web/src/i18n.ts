@@ -263,6 +263,7 @@ export interface Messages {
   agentVisionConfirmAnalysis: string;
   agentVisionAnalysisSummary: string;
   agentVisionDefaultAnalysis: string;
+  agentVisionConfirmCancelled: string;
 }
 
 export type MessageKey = keyof Messages;

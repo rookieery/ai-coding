@@ -2,16 +2,10 @@
   "branchName": "feature/agent-intent-routing",
   "stories": [
     {
-      "id": "AGENT-VISION-05",
-      "title": "实现「AI 战术分析」分支：确认后留在智能体页面进行 LLM 对话分析",
-      "description": "闭环联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n1. 实现 `handleConfirmAnalysis(pieces: number[][])` 方法，绑定到 AgentVisionPanel 的 `@confirm-analysis` 事件。\n2. 方法逻辑：\n   a. 从 useGlobalAgentPlay 中读取 pendingImageBase64 和 pendingQuestion，然后调用 `exitPlayMode()` 退出分屏，playMode 回归 'chat'，界面回到单列聊天布局。\n   b. 在聊天流中追加一条 Agent 消息，包含：用户原始上传的截图（使用 pendingImageBase64 渲染为 img 标签），以及一段自动生成的棋盘概况文本（例如「棋局已确认：黑子 X 颗，白子 Y 颗，当前轮到 Z 方落子」）。\n   c. 构造增强 Prompt：将 pieces 二维数组序列化为 JSON 字符串。如果用户有附带提问（pendingQuestion 不为空），拼接为「这是当前15x15棋盘的精确数据：${boardJson}，请结合数据回答：${question}」；如果用户没有附带提问，使用默认分析 Prompt：「这是当前15x15棋盘的精确数据：${boardJson}，请分析当前棋局的攻防态势，指出双方的优劣势和关键位置，给出后续推荐的落子方向」。\n   d. 调用 `executeStreamingChat(combinedPrompt)` 将棋盘数据和分析请求发送给 LLM。\n   e. LLM 的流式响应在左侧聊天界面正常渲染（复用现有的流式消息渲染逻辑）。\n3. 确保退出分屏时有平滑的过渡动画（复用现有的 isExitingGomoku 延迟机制，将适用范围扩展到 vision-confirm 模式）。\n4. i18n 新增 key：`agentVisionAnalysisSummary`（棋盘概况模板）、`agentVisionDefaultAnalysis`（默认分析提问）。",
-      "passes": true
-    },
-    {
       "id": "AGENT-VISION-06",
       "title": "实现视觉确认面板关闭与取消流程",
       "description": "交互完善任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n1. 实现 `handleVisionConfirmClose()` 方法，绑定到 AgentVisionPanel 的 `@close` 事件。\n2. 方法逻辑：\n   a. 调用 `exitPlayMode()` 退出分屏，playMode 回归 'chat'。\n   b. 在聊天流中追加一条 Agent 系统消息，使用 i18n key `agentVisionConfirmCancelled`（内容类似「棋谱确认已取消」）。\n   c. 确保退出动画平滑过渡。\n3. 同时处理 AgentVisionPanel 在编辑模式中用户误操作的健壮性：确保在关闭面板时，useGlobalAgentPlay 中的所有视觉确认相关状态（visionCandidates、pendingImageBase64、pendingQuestion）被完全清空。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AGENT-VISION-07",
