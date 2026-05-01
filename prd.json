@@ -1,11 +1,4 @@
 {
   "branchName": "feature/agent-intent-routing",
-  "stories": [
-    {
-      "id": "AGENT-VISION-08",
-      "title": "添加 i18n 翻译键与全链路冒烟测试",
-      "description": "收尾任务。分为两部分：\n\n**第一部分：i18n 翻译键**\n在 `gomoku-web/src/i18n.ts`（或对应的翻译文件）中新增以下 key 的中英文翻译：\n- `agentVisionConfirmEntered`：「棋局截图已解析，请在右侧面板中微调并确认棋谱」\n- `agentVisionConfirmCancelled`：「棋谱确认已取消」\n- `agentVisionAnalysisSummary`：「棋局已确认：黑子 {blackCount} 颗，白子 {whiteCount} 颗，当前轮到 {currentPlayer} 方落子」\n- `agentVisionDefaultAnalysis`：「请分析当前棋局的攻防态势，指出双方的优劣势和关键位置，给出后续推荐的落子方向」\n- `agentVisionPanelTitle`：「棋谱微调」\n- `agentVisionCandidateLabel`：「方案 {index}」\n- `agentVisionEditBlack`：「落黑子」\n- `agentVisionEditWhite`：「落白子」\n- `agentVisionEraser`：「橡皮擦」\n- `agentVisionEditMode`：「编辑模式」\n- `agentVisionBatchMove`：「批量移动」\n- `agentVisionConfirmReplay`：「进入打谱模式」\n- `agentVisionConfirmAnalysis`：「AI 战术分析」\n\n**第二部分：全链路冒烟测试**\n启动前端开发服务器，手动验证以下三条路径：\n1. **打谱分支**：在智能体页面上传一张五子棋截图 → 等待解析 → 右侧出现微调面板 → 切换候选方案 → 确认进入打谱 → 跳转到五子棋独立页面 → 棋盘显示微调后的状态。\n2. **AI 分析分支**：上传截图附带提问文本 → 解析后微调 → 点击「AI 战术分析」→ 退回单列聊天 → 聊天流展示截图和棋盘概况 → LLM 流式输出战术分析。\n3. **取消流程**：上传截图 → 解析后点击面板关闭按钮 → 平滑退回单列聊天 → 状态完全清理。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }
