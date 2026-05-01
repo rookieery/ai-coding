@@ -251,6 +251,15 @@ export interface Messages {
   visionConfirmStart: string;
   exportSuccess: string;
   exportFailed: string;
+  agentVisionPanelTitle: string;
+  agentVisionCandidateLabel: string;
+  agentVisionEditBlack: string;
+  agentVisionEditWhite: string;
+  agentVisionEraser: string;
+  agentVisionEditMode: string;
+  agentVisionBatchMove: string;
+  agentVisionConfirmReplay: string;
+  agentVisionConfirmAnalysis: string;
 }
 
 export type MessageKey = keyof Messages;

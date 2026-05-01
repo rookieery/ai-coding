@@ -253,5 +253,14 @@
   "visionSelectionActive": "已选中区域，可批量移动",
   "exportBoard": "导出棋盘",
   "exportSuccess": "棋盘已导出为图片！",
-  "exportFailed": "导出失败，请重试"
+  "exportFailed": "导出失败，请重试",
+  "agentVisionPanelTitle": "棋谱微调",
+  "agentVisionCandidateLabel": "方案 {0}",
+  "agentVisionEditBlack": "落黑子",
+  "agentVisionEditWhite": "落白子",
+  "agentVisionEraser": "橡皮擦",
+  "agentVisionEditMode": "编辑模式",
+  "agentVisionBatchMove": "批量移动",
+  "agentVisionConfirmReplay": "进入打谱模式",
+  "agentVisionConfirmAnalysis": "AI 战术分析"
 }

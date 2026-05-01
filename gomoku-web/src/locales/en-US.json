@@ -253,5 +253,14 @@
   "visionSelectionActive": "Area selected, ready for batch move",
   "exportBoard": "Export Board",
   "exportSuccess": "Board exported as image!",
-  "exportFailed": "Export failed, please try again"
+  "exportFailed": "Export failed, please try again",
+  "agentVisionPanelTitle": "Board Fine-tuning",
+  "agentVisionCandidateLabel": "Candidate {0}",
+  "agentVisionEditBlack": "Place Black",
+  "agentVisionEditWhite": "Place White",
+  "agentVisionEraser": "Eraser",
+  "agentVisionEditMode": "Edit Mode",
+  "agentVisionBatchMove": "Batch Move",
+  "agentVisionConfirmReplay": "Enter Replay Mode",
+  "agentVisionConfirmAnalysis": "AI Tactical Analysis"
 }

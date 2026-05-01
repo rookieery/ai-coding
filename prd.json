@@ -2,16 +2,10 @@
   "branchName": "feature/agent-intent-routing",
   "stories": [
     {
-      "id": "AGENT-VISION-01",
-      "title": "扩展对弈模式枚举与视觉确认状态管理",
-      "description": "状态管理层改造。修改 `gomoku-web/src/composables/useAgentPlay.ts`。1. 将 PlayMode 联合类型从 `'chat' | 'gomoku'` 扩展为 `'chat' | 'gomoku' | 'vision-confirm'`。2. 新增响应式状态 `visionCandidates: ref<number[][][] | null>` 用于存储豆包返回的3组候选棋盘矩阵，默认 null。3. 新增 `pendingImageBase64: ref<string | null>` 保存用户上传的原始图片。4. 新增 `pendingQuestion: ref<string | null>` 保存用户附带的提问文本。5. 新增方法 `enterVisionConfirmMode(candidates: number[][][], imageBase64: string, question?: string)`：将 playMode 设为 'vision-confirm'，同时写入上述三个状态。6. 修改 `exitPlayMode()` 方法，在重置 playMode 为 'chat' 的同时，清空 visionCandidates、pendingImageBase64 和 pendingQuestion。确保 useGlobalAgentPlay() 单例模式不受影响。",
-      "passes": true
-    },
-    {
       "id": "AGENT-VISION-02",
       "title": "创建 AgentVisionPanel.vue 视觉确认分屏面板",
       "description": "组件开发任务。在 `gomoku-web/src/components/agent/` 下新建 `AgentVisionPanel.vue`。该组件在分屏模式的右侧渲染，提供棋谱微调功能。要求：\n1. **棋盘渲染区**：引入五子棋 Board 组件（来自 `src/games/gomoku/components/Board.vue`），渲染 15x15 棋盘。初始化时加载 candidates[0] 的棋盘数据。维护内部 board 状态（二维数组），微调操作直接修改此状态。\n2. **候选方案切换**：在棋盘上方渲染一行紧凑的切换按钮（「方案 1」「方案 2」「方案 3」），点击即切换当前棋盘加载对应候选矩阵。高亮当前选中的方案。\n3. **微调工具栏**：棋盘下方渲染工具条。包含编辑模式开关（Switch），以及三个工具按钮：落黑子、落白子、橡皮擦。当编辑模式开启时，用户点击棋盘交叉点执行对应操作（放置或移除棋子）。关闭编辑模式时棋盘不可点击编辑。\n4. **批量移动**：工具条内增加「批量移动」折叠区，包含选区功能（在棋盘上按住拖选矩形区域）和方向按钮（上下左右偏移），以及偏移格数选择（1-3格）。功能逻辑参考现有 VisionConfirmationPanel.vue 的 batchMoveArea 实现。\n5. **底部操作栏**：固定在面板底部，包含两个主按钮：左侧「进入打谱模式」（primary 实心样式）和右侧「AI 战术分析」（outline 描边样式）。点击任一按钮时，将当前棋盘的 pieces 二维数组通过对应的 emit 事件抛出。\n6. **顶部信息栏**：显示「棋谱微调」标题和关闭按钮（X图标），点击关闭按钮 emit close 事件取消整个流程。\n\nProps：`candidates: number[][][]`、`imageBase64: string`。\nEmits：`confirm-replay(pieces: number[][])`、`confirm-analysis(pieces: number[][])`、`close`。\nDefineExpose：`getCurrentBoard(): number[][]`、`loadCandidate(index: number): void`。\n所有UI文本必须使用 i18n。预估代码约 300 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AGENT-VISION-03",
