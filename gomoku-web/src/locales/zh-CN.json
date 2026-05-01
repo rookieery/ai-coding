@@ -267,5 +267,7 @@
   "agentVisionAnalysisSummary": "棋局已确认：黑子 {0} 颗，白子 {1} 颗，当前轮到 {2} 方落子",
   "agentVisionDefaultAnalysis": "请分析当前棋局的攻防态势，指出双方的优劣势和关键位置，给出后续推荐的落子方向",
   "agentVisionConfirmCancelled": "棋谱确认已取消",
-  "agentVisionBoardConfirmed": "棋盘已确定"
+  "agentVisionBoardConfirmed": "棋盘已确定",
+  "aiTacticalAnalysis": "AI 战术分析",
+  "aiAnalysisEmptyBoard": "请先落子后再使用AI战术分析"
 }

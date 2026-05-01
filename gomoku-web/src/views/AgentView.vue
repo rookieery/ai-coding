@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, computed, onMounted } from 'vue';
+import { ref, nextTick, computed, onMounted, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
@@ -304,7 +304,7 @@ const cancelExit = () => {
   showExitConfirm.value = false;
 };
 
-onMounted(async () => {
+const processPendingAnalysis = async () => {
   const analysis = consumePendingAnalysis();
   if (!analysis) return;
 
@@ -330,7 +330,10 @@ onMounted(async () => {
   const combinedPrompt = `这是当前15x15棋盘的精确数据：${boardJson}，请结合数据回答：${analysis.question}`;
 
   executeStreamingChat(combinedPrompt);
-});
+};
+
+onMounted(processPendingAnalysis);
+onActivated(processPendingAnalysis);
 
 const handleSend = async (payload: { text: string; imageBase64: string | null }) => {
   if (gameSelectorActive.value) {

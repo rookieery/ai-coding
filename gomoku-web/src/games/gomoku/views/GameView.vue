@@ -218,6 +218,34 @@ const handleExportBoard = async () => {
   }
 };
 
+const handleRequestAiAnalysis = async () => {
+  if (gameState.moveHistory.value.length === 0) return;
+
+  const el = boardRef.value?.$el as HTMLElement | undefined;
+  if (!el) {
+    gameUI.notify(t('exportFailed'));
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(el, {
+      backgroundColor: null,
+      scale: 2,
+    });
+    const imageBase64 = canvas.toDataURL('image/png');
+
+    bridge.setPendingAnalysis({
+      pieces: gameState.board.value,
+      question: t('agentVisionDefaultAnalysis'),
+      imageBase64,
+    });
+
+    router.push({ name: 'agent' });
+  } catch {
+    gameUI.notify(t('exportFailed'));
+  }
+};
+
 const handleOpenRecords = async () => {
   await gameRecords.fetchRecords();
   gameUI.openRecordsModal();
@@ -345,6 +373,7 @@ onDeactivated(() => {
       @toggleSteps="gameState.toggleSteps"
       @saveGame="gameUI.openSaveModal"
       @exportBoard="handleExportBoard"
+      @requestAiAnalysis="handleRequestAiAnalysis"
       @showRecords="handleOpenRecords"
       @updateTheme="settings.setGomokuTheme"
     />

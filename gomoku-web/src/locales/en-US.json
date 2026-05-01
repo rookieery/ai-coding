@@ -267,5 +267,7 @@
   "agentVisionAnalysisSummary": "Board confirmed: {0} black pieces, {1} white pieces. It is {2}'s turn.",
   "agentVisionDefaultAnalysis": "Please analyze the current tactical situation, point out each side's advantages and disadvantages, identify key positions, and suggest recommended moves.",
   "agentVisionConfirmCancelled": "Board confirmation has been cancelled.",
-  "agentVisionBoardConfirmed": "Board confirmed"
+  "agentVisionBoardConfirmed": "Board confirmed",
+  "aiTacticalAnalysis": "AI Tactical Analysis",
+  "aiAnalysisEmptyBoard": "Place at least one piece to use AI analysis"
 }

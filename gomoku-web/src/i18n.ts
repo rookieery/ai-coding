@@ -275,6 +275,8 @@ export interface Messages {
   agentVisionDefaultAnalysis: string;
   agentVisionConfirmCancelled: string;
   agentVisionBoardConfirmed: string;
+  aiTacticalAnalysis: string;
+  aiAnalysisEmptyBoard: string;
 }
 
 export type MessageKey = keyof Messages;
