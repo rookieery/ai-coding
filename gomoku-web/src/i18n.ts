@@ -231,6 +231,10 @@ export interface Messages {
   agentExitConfirmWarning: string;
   agentStartNewGame: string;
   agentInvalidMove: string;
+  agentAiFirst: string;
+  agentAiSecond: string;
+  agentAiFirstMoveNotification: string;
+  agentChatReasoningSummary: string;
   attachImage: string;
   removeImage: string;
   selectedImagePreview: string;
@@ -249,6 +253,12 @@ export interface Messages {
   visionToolWhite: string;
   visionToolEraser: string;
   visionConfirmStart: string;
+  visionBatchMove: string;
+  visionBatchMoveHint: string;
+  visionMoveOffset: string;
+  visionClearSelection: string;
+  visionSelectionActive: string;
+  exportBoard: string;
   exportSuccess: string;
   exportFailed: string;
   agentVisionPanelTitle: string;
