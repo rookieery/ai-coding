@@ -287,11 +287,17 @@ export function useGameState() {
   };
 
   const confirmVisionBoard = () => {
+    const bridge = useVisionBridge();
+
+    // HITL path: resolve pending Promise with user-adjusted board data
+    if (bridge.hasPendingConfirmation()) {
+      bridge.confirmBoard(board.value);
+    }
+
     visionCandidates.value = null;
     isVisionConfirming.value = false;
     isVisionEditMode.value = false;
     selectedCandidateIndex.value = 0;
-    // Clear selection state
     isSelecting.value = false;
     selectionStart.value = null;
     selectionEnd.value = null;
