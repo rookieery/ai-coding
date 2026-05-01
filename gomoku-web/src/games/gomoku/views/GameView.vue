@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, onActivated, onDeactivated, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import html2canvas from 'html2canvas-pro';
 import { t, currentTheme } from '../../../i18n';
 import { type GameType } from '../../../api/game-api';
@@ -20,10 +21,13 @@ import { useGameRecords } from '../composables/useGameRecords';
 import { useGameUI } from '../composables/useGameUI';
 import { useGlobalSettings } from '../../../composables/useSettings';
 import { useGlobalAuth } from '../../../composables/useAuth';
+import { useVisionBridge } from '../../../composables/useVisionBridge';
 
 const GAME_TYPE: GameType = 'gomoku';
 
 const boardRef = ref<InstanceType<typeof Board> | null>(null);
+const router = useRouter();
+const bridge = useVisionBridge();
 
 defineOptions({
   name: 'GameView'
@@ -246,10 +250,14 @@ const handleEditBoardCell = (r: number, c: number) => {
 
 const handleConfirmVisionBoard = () => {
   gameState.confirmVisionBoard();
+  if (bridge.pendingAnalysis.value) {
+    router.push({ name: 'agent' });
+  }
 };
 
 const handleCancelVisionBoard = () => {
   gameState.cancelVisionBoard(gameAI.terminateWorker, triggerAiMove);
+  bridge.clearPendingRequest();
 };
 
 // Selection and batch move handlers

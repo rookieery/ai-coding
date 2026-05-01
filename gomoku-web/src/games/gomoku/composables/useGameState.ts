@@ -289,9 +289,18 @@ export function useGameState() {
   const confirmVisionBoard = () => {
     const bridge = useVisionBridge();
 
-    // HITL path: resolve pending Promise with user-adjusted board data
     if (bridge.hasPendingConfirmation()) {
       bridge.confirmBoard(board.value);
+
+      const pending = bridge.consumePendingQuestion();
+      if (pending) {
+        const boardData = board.value.map(row => [...row]);
+        bridge.setPendingAnalysis({
+          pieces: boardData,
+          question: pending.question,
+          imageBase64: pending.imageBase64,
+        });
+      }
     }
 
     visionCandidates.value = null;

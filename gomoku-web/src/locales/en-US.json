@@ -235,6 +235,7 @@
   "visionParsingBoard": "Parsing board screenshot with Doubao Vision model...",
   "visionBoardLoaded": "Board loaded! Based on the position, it's {0}'s turn. Please continue.",
   "visionParseFailed": "Failed to parse board",
+  "visionAnalyzingPosition": "Performing tactical analysis with board data...",
   "imageUploadGuidance": "Tip: Upload an image containing the board, and the system will automatically recognize the position!",
   "close": "Close",
   "visionConfirmTitle": "Recognition Result Confirmation",

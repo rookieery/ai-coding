@@ -2,16 +2,16 @@
   "branchName": "feature/agent-intent-routing",
   "stories": [
     {
-      “id”: “AGENT-ROUTE-02-HITL-UI-Adaptation”,
-      “title”: “修改微调面板：解绑路由，接入异步确认回调”,
-      “description”: “UI交互层改造。找到打谱微调面板组件（点击”确认无误”按钮的地方）。重构确认逻辑：点击确认时，检查 useVisionBridge 中是否存在等待中的 resolveConfirmation。如果有，则调用 confirmBoard(pieces) 将用户微调后的数据交还给上层，并销毁当前微调面板，【绝对不要】进行路由跳转；如果没有，则保留原有逻辑跳转到打谱页面。这使得面板从”跳转器”变成了纯粹的”数据清洗器”。”,
-      “passes”: true
+      "id": "AGENT-ROUTE-02-HITL-UI-Adaptation",
+      "title": "修改微调面板：解绑路由，接入异步确认回调",
+      "description": "UI交互层改造。找到打谱微调面板组件（点击“确认无误”按钮的地方）。重构确认逻辑：点击确认时，检查 useVisionBridge 中是否存在等待中的 resolveConfirmation。如果有，则调用 confirmBoard(pieces) 将用户微调后的数据交还给上层，并销毁当前微调面板，【绝对不要】进行路由跳转；如果没有，则保留原有逻辑跳转到打谱页面。这使得面板从“跳转器”变成了纯粹的“数据清洗器”。",
+      "passes": true
     },
     {
       "id": "AGENT-ROUTE-03-Intent-Routing",
       "title": "聊天逻辑层：实现图文混合的意图路由与战术推演",
       "description": "核心业务串联。修改 AgentView.vue 或处理对话发送的核心逻辑。根据输入内容分流：情况 A【仅图片】：调用 vision 接口 -> requestBoardConfirmation(candidates) -> await 拿到结果 -> router.push 跳转打谱。情况 B【图片+提问文本】：调用 vision 接口 -> requestBoardConfirmation(candidates) -> await 拿到精准的 pieces 数组 -> 将数组转为 JSON 字符串并与用户的提问拼接（例如：'这是当前15x15棋盘的精确数据：[json]，请结合数据回答：用户提问'） -> 将这段隐式 Prompt 发送给大语言模型（LLM） -> 在界面上渲染输出战术分析文本。",
-      "passes": false
+      "passes": true
     }
   ]
 }

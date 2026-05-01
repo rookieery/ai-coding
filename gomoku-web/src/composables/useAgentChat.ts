@@ -155,6 +155,7 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
     currentUserQuery,
     getChatHistory,
     sendMessage,
+    executeStreamingChat,
     regenerateStreamingAnswer,
     regenerateAnswer,
   };

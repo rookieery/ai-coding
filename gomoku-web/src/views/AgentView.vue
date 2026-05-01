@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue';
+import { ref, nextTick, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
@@ -31,7 +31,7 @@ const isExitingGomoku = ref(false);
 
 const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
 const router = useRouter();
-const { setVisionCandidates } = useVisionBridge();
+const { setVisionCandidates, requestBoardConfirmation, setPendingQuestion, consumePendingAnalysis } = useVisionBridge();
 
 const isGomokuLayout = computed(() => playMode.value === 'gomoku' || isExitingGomoku.value);
 
@@ -41,7 +41,9 @@ const {
   thinkingContent,
   answerContent,
   showThinkingProcess,
+  currentUserQuery,
   sendMessage,
+  executeStreamingChat,
   regenerateStreamingAnswer,
   regenerateAnswer,
 } = useAgentChat({
@@ -240,6 +242,34 @@ const cancelExit = () => {
   showExitConfirm.value = false;
 };
 
+onMounted(async () => {
+  const analysis = consumePendingAnalysis();
+  if (!analysis) return;
+
+  await nextTick();
+
+  messages.value.push({
+    role: 'user',
+    text: analysis.question,
+    hasImage: true,
+    imageBase64: analysis.imageBase64,
+  });
+
+  currentUserQuery.value = analysis.question;
+
+  isThinking.value = true;
+  thinkingContent.value = t('visionAnalyzingPosition');
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await chatMessagesRef.value?.scrollToBottom();
+
+  const boardJson = JSON.stringify(analysis.pieces);
+  const combinedPrompt = `这是当前15x15棋盘的精确数据：${boardJson}，请结合数据回答：${analysis.question}`;
+
+  executeStreamingChat(combinedPrompt);
+});
+
 const handleSend = async (payload: { text: string; imageBase64: string | null }) => {
   if (gameSelectorActive.value) {
     gameSelectorActive.value = false;
@@ -249,12 +279,13 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     }
   }
 
-  // Handle image input - vision recognition workflow
   if (payload.imageBase64) {
-    // Add user message with image
+    const userText = payload.text?.trim() || '';
+    const hasQuestion = userText.length > 0;
+
     messages.value.push({
       role: 'user',
-      text: payload.text || '',
+      text: userText,
       hasImage: true,
       imageBase64: payload.imageBase64,
     });
@@ -270,18 +301,16 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     try {
       const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
 
-      // Store candidates data in global bridge and navigate to standalone game page
-      setVisionCandidates(result.candidates);
+      if (hasQuestion) {
+        setPendingQuestion(userText, payload.imageBase64);
+      }
+
+      requestBoardConfirmation(result.candidates);
 
       isThinking.value = false;
       thinkingContent.value = '';
       answerContent.value = '';
       showThinkingProcess.value = true;
-
-      messages.value.push({
-        role: 'agent',
-        text: t('visionBoardLoaded', ''),
-      });
 
       await nextTick();
       await router.push({ name: 'game' });
