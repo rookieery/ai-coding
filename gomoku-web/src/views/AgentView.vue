@@ -351,6 +351,9 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
       imageBase64: payload.imageBase64,
     });
 
+    query.value = '';
+    chatInputRef.value?.resetTextareaHeight();
+
     isThinking.value = true;
     thinkingContent.value = t('visionParsingBoard');
     answerContent.value = '';
@@ -388,8 +391,6 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
       chatMessagesRef.value?.scrollToBottom();
     }
 
-    query.value = '';
-    chatInputRef.value?.resetTextareaHeight();
     return;
   }
 
