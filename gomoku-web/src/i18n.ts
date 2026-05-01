@@ -261,6 +261,8 @@ export interface Messages {
   agentVisionBatchMove: string;
   agentVisionConfirmReplay: string;
   agentVisionConfirmAnalysis: string;
+  agentVisionAnalysisSummary: string;
+  agentVisionDefaultAnalysis: string;
 }
 
 export type MessageKey = keyof Messages;

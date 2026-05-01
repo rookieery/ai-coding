@@ -263,5 +263,7 @@
   "agentVisionEditMode": "编辑模式",
   "agentVisionBatchMove": "批量移动",
   "agentVisionConfirmReplay": "进入打谱模式",
-  "agentVisionConfirmAnalysis": "AI 战术分析"
+  "agentVisionConfirmAnalysis": "AI 战术分析",
+  "agentVisionAnalysisSummary": "棋局已确认：黑子 {0} 颗，白子 {1} 颗，当前轮到 {2} 方落子",
+  "agentVisionDefaultAnalysis": "请分析当前棋局的攻防态势，指出双方的优劣势和关键位置，给出后续推荐的落子方向"
 }

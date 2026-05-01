@@ -31,7 +31,7 @@ const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
-const { playMode, enterGomokuMode, enterVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64 } = useGlobalAgentPlay();
+const { playMode, enterGomokuMode, enterVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
 const { consumePendingAnalysis, setVisionCandidatesForReplay } = useVisionBridge();
 const router = useRouter();
 
@@ -236,8 +236,53 @@ const handleConfirmReplay = (pieces: number[][]) => {
   router.push({ name: 'game' });
 };
 
-const handleConfirmAnalysis = (_pieces: number[][]) => {
-  // Will be implemented in AGENT-VISION-05
+const handleConfirmAnalysis = async (pieces: number[][]) => {
+  const imageBase64 = pendingImageBase64.value;
+  const question = pendingQuestion.value;
+
+  isExitingGomoku.value = true;
+  exitPlayMode();
+
+  await nextTick();
+
+  let blackCount = 0;
+  let whiteCount = 0;
+  for (const row of pieces) {
+    for (const cell of row) {
+      if (cell === 1) blackCount++;
+      else if (cell === 2) whiteCount++;
+    }
+  }
+
+  const currentPlayer = blackCount <= whiteCount ? t('black') : t('white');
+  const summaryText = t('agentVisionAnalysisSummary', blackCount, whiteCount, currentPlayer);
+
+  messages.value.push({
+    role: 'agent',
+    text: summaryText,
+    hasImage: true,
+    imageBase64: imageBase64 ?? undefined,
+  });
+
+  await chatMessagesRef.value?.scrollToBottom();
+
+  const boardJson = JSON.stringify(pieces);
+  const combinedPrompt = question
+    ? `这是当前15x15棋盘的精确数据：${boardJson}，请结合数据回答：${question}`
+    : `这是当前15x15棋盘的精确数据：${boardJson}，${t('agentVisionDefaultAnalysis')}`;
+
+  currentUserQuery.value = question || t('agentVisionDefaultAnalysis');
+
+  isThinking.value = true;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await executeStreamingChat(combinedPrompt);
+
+  setTimeout(() => {
+    isExitingGomoku.value = false;
+  }, 400);
 };
 
 const handleVisionConfirmClose = () => {
