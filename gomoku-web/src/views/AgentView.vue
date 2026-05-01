@@ -236,32 +236,22 @@ const handleConfirmReplay = (pieces: number[][]) => {
   router.push({ name: 'game' });
 };
 
-const handleConfirmAnalysis = async (pieces: number[][]) => {
-  const imageBase64 = pendingImageBase64.value;
+const handleConfirmAnalysis = async (pieces: number[][], boardImageBase64: string) => {
   const question = pendingQuestion.value;
 
-  isExitingGomoku.value = true;
   exitPlayMode();
 
   await nextTick();
 
-  let blackCount = 0;
-  let whiteCount = 0;
-  for (const row of pieces) {
-    for (const cell of row) {
-      if (cell === 1) blackCount++;
-      else if (cell === 2) whiteCount++;
-    }
-  }
-
-  const currentPlayer = blackCount <= whiteCount ? t('black') : t('white');
-  const summaryText = t('agentVisionAnalysisSummary', blackCount, whiteCount, currentPlayer);
+  const displayText = question
+    ? `${t('agentVisionBoardConfirmed')}，${question}`
+    : t('agentVisionBoardConfirmed');
 
   messages.value.push({
-    role: 'agent',
-    text: summaryText,
+    role: 'user',
+    text: displayText,
     hasImage: true,
-    imageBase64: imageBase64 ?? undefined,
+    imageBase64: boardImageBase64 || undefined,
   });
 
   await chatMessagesRef.value?.scrollToBottom();
@@ -279,10 +269,6 @@ const handleConfirmAnalysis = async (pieces: number[][]) => {
   showThinkingProcess.value = true;
 
   await executeStreamingChat(combinedPrompt);
-
-  setTimeout(() => {
-    isExitingGomoku.value = false;
-  }, 400);
 };
 
 const handleVisionConfirmClose = () => {

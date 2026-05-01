@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { X, ChevronDown, ChevronUp, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-vue-next';
+import html2canvas from 'html2canvas-pro';
 import Board from '../../games/gomoku/components/Board.vue';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE } from '../../games/gomoku/gameLogic';
 import { t, currentTheme } from '../../i18n';
@@ -18,7 +19,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'confirm-replay', pieces: number[][]): void;
-  (e: 'confirm-analysis', pieces: number[][]): void;
+  (e: 'confirm-analysis', pieces: number[][], boardImageBase64: string): void;
   (e: 'close'): void;
 }>();
 
@@ -165,6 +166,22 @@ const handleBatchMove = (direction: 'up' | 'down' | 'left' | 'right') => {
 
 const hasSelectedArea = computed(() => selectedArea.value !== null);
 
+const boardRef = ref<InstanceType<typeof Board> | null>(null);
+
+const handleConfirmAnalysis = async () => {
+  let boardImageBase64 = '';
+  const boardEl = boardRef.value?.$el as HTMLElement | undefined;
+  if (boardEl) {
+    try {
+      const canvas = await html2canvas(boardEl, { backgroundColor: null, scale: 2 });
+      boardImageBase64 = canvas.toDataURL('image/png');
+    } catch {
+      boardImageBase64 = '';
+    }
+  }
+  emit('confirm-analysis', getCurrentBoard(), boardImageBase64);
+};
+
 defineExpose({
   getCurrentBoard,
   loadCandidate,
@@ -216,6 +233,7 @@ defineExpose({
     <!-- Board area -->
     <div class="flex-1 flex items-center justify-center overflow-auto p-4">
       <Board
+        ref="boardRef"
         :board="board"
         :currentPlayer="BLACK"
         :winner="EMPTY"
@@ -448,7 +466,7 @@ defineExpose({
         {{ t('agentVisionConfirmReplay') }}
       </button>
       <button
-        @click="emit('confirm-analysis', getCurrentBoard())"
+        @click="handleConfirmAnalysis"
         class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 border-2"
         :class="currentTheme === 'dark'
           ? 'border-indigo-500 text-indigo-400 hover:bg-indigo-600/20'
