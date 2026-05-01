@@ -20,6 +20,12 @@ const setVisionCandidates = (candidates: number[][][]) => {
   );
 };
 
+const setVisionCandidatesForReplay = (candidates: number[][][]) => {
+  pendingVisionCandidates.value = candidates.map(matrix =>
+    matrix.map(row => [...row])
+  );
+};
+
 const consumeVisionCandidates = (): number[][][] | null => {
   const current = pendingVisionCandidates.value;
   pendingVisionCandidates.value = null;
@@ -85,6 +91,7 @@ export const useVisionBridge = () => ({
   pendingQuestion,
   pendingAnalysis,
   setVisionCandidates,
+  setVisionCandidatesForReplay,
   consumeVisionCandidates,
   requestBoardConfirmation,
   confirmBoard,

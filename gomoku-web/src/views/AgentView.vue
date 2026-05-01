@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { gomokuAiApi } from '../api/gomoku-ai-api';
@@ -31,7 +32,8 @@ const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
 const { playMode, enterGomokuMode, enterVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64 } = useGlobalAgentPlay();
-const { consumePendingAnalysis } = useVisionBridge();
+const { consumePendingAnalysis, setVisionCandidatesForReplay } = useVisionBridge();
+const router = useRouter();
 
 const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || isExitingGomoku.value);
 
@@ -228,8 +230,10 @@ const handleExitClick = () => {
   showExitConfirm.value = true;
 };
 
-const handleConfirmReplay = (_pieces: number[][]) => {
-  // Will be implemented in AGENT-VISION-04
+const handleConfirmReplay = (pieces: number[][]) => {
+  setVisionCandidatesForReplay([pieces]);
+  exitPlayMode();
+  router.push({ name: 'game' });
 };
 
 const handleConfirmAnalysis = (_pieces: number[][]) => {

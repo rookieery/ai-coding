@@ -2,16 +2,10 @@
   "branchName": "feature/agent-intent-routing",
   "stories": [
     {
-      "id": "AGENT-VISION-03",
-      "title": "AgentView 集成视觉确认分屏与图片发送流程重构",
-      "description": "核心联调任务。修改 `gomoku-web/src/views/AgentView.vue`。分为两部分：\n\n**第一部分：分屏布局集成**\n1. 修改控制分屏布局的计算属性（当前为 `isGomokuLayout`，建议重命名为 `isSplitLayout`），使其在 `playMode === 'vision-confirm'` 时也返回 true，触发左右分屏布局。\n2. 在右侧面板区域，根据 playMode 条件渲染：如果为 'vision-confirm'，渲染 `AgentVisionPanel` 并传入 visionCandidates 和 pendingImageBase64 作为 props；如果为 'gomoku'，继续渲染 `AgentGomokuPanel`。\n3. 确保拖拽分割线在视觉确认模式下同样生效。\n4. 为 AgentVisionPanel 绑定三个事件监听：`@confirm-replay`、`@confirm-analysis`、`@close`。\n\n**第二部分：图片发送流程重构**\n1. 修改 `handleSend` 方法中处理 `payload.imageBase64` 的逻辑（当前约在第 282-332 行之间的 if 分支）。\n2. 保留调用 `visionApi.recognizeBoardFromBase64(imageBase64)` 获取候选矩阵的逻辑。\n3. **移除**原有的 `router.push({ name: 'game' })` 页面跳转调用。\n4. **替换为**：调用 `useGlobalAgentPlay().enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined)`，直接在当前页面进入视觉确认分屏。\n5. 在左侧聊天流中追加一条 Agent 系统消息，使用 i18n key `agentVisionConfirmEntered`（内容类似「棋局截图已解析，请在右侧面板微调确认」）。\n6. 保留原有的「正在解析棋局截图...」的 isThinking 提示，API 返回后自动关闭。\n7. **移除**原有对 bridge 的 `requestBoardConfirmation()` 和 `setPendingQuestion()` 调用（新流程不再需要通过桥接进行路由间通信）。",
-      "passes": true
-    },
-    {
       "id": "AGENT-VISION-04",
       "title": "实现「进入打谱模式」分支：视觉确认到独立对弈页的流转",
       "description": "流转闭环任务。修改 `gomoku-web/src/views/AgentView.vue` 和 `gomoku-web/src/composables/useVisionBridge.ts`。\n\n1. 在 AgentView 中实现 `handleConfirmReplay(pieces: number[][])` 方法，绑定到 AgentVisionPanel 的 `@confirm-replay` 事件。\n2. 方法逻辑：\n   a. 调用 `useVisionBridge()` 的 `setVisionCandidatesForReplay([pieces])` 方法（需在 bridge 中新增此方法），将用户微调后的唯一棋盘写入桥接状态。\n   b. 调用 `exitPlayMode()` 退出分屏，playMode 回归 'chat'。\n   c. 执行 `router.push({ name: 'game' })` 跳转到五子棋独立对弈页面。\n   d. GameView.vue 的现有 `loadVisionCandidates()` 逻辑将自动消费桥接数据，加载用户微调后的棋盘并进入打谱模式，无需修改 GameView。\n3. 在 `useVisionBridge.ts` 中新增 `setVisionCandidatesForReplay(candidates: number[][][])` 方法：将 candidates 直接赋值给内部的 `pendingVisionCandidates` 状态。这使得 GameView 的 `consumeVisionCandidates()` 能正确读取到数据。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AGENT-VISION-05",
