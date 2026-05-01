@@ -2,16 +2,10 @@
   "branchName": "feature/agent-intent-routing",
   "stories": [
     {
-      "id": "AGENT-VISION-06",
-      "title": "实现视觉确认面板关闭与取消流程",
-      "description": "交互完善任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n1. 实现 `handleVisionConfirmClose()` 方法，绑定到 AgentVisionPanel 的 `@close` 事件。\n2. 方法逻辑：\n   a. 调用 `exitPlayMode()` 退出分屏，playMode 回归 'chat'。\n   b. 在聊天流中追加一条 Agent 系统消息，使用 i18n key `agentVisionConfirmCancelled`（内容类似「棋谱确认已取消」）。\n   c. 确保退出动画平滑过渡。\n3. 同时处理 AgentVisionPanel 在编辑模式中用户误操作的健壮性：确保在关闭面板时，useGlobalAgentPlay 中的所有视觉确认相关状态（visionCandidates、pendingImageBase64、pendingQuestion）被完全清空。",
-      "passes": true
-    },
-    {
       "id": "AGENT-VISION-07",
       "title": "清理 useVisionBridge 遗留逻辑并确保双向兼容",
       "description": "桥接层重构任务。修改 `gomoku-web/src/composables/useVisionBridge.ts`。\n\n1. `requestBoardConfirmation` 方法保留但添加注释标记为「Legacy：仅供 GameView 直接跳转流程使用」。当前新流程不再调用此方法。\n2. 新增 `setVisionCandidatesForReplay(candidates: number[][][])` 方法：直接将 candidates 赋值给 `pendingVisionCandidates`。供打谱分支（AGENT-VISION-04）使用。\n3. 确保 `clearPendingRequest()` 方法能正确清理所有状态（包括新增的 replay 候选数据）。\n4. 确保 `consumeVisionCandidates()` 仍然能被 GameView 的 `loadVisionCandidates` 正常调用，保证从 AgentVisionPanel 确认后跳转到 GameView 的打谱流程完全兼容。\n5. 如果 `pendingAnalysis` 相关状态不再被新流程使用（AI 分析已改为在 AgentView 内直接通过 useAgentPlay 的状态处理），可将其保留但标记为废弃，不删除以避免破坏潜在的其他引用。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AGENT-VISION-08",
