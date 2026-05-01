@@ -255,6 +255,7 @@
   "exportSuccess": "Board exported as image!",
   "exportFailed": "Export failed, please try again",
   "agentVisionPanelTitle": "Board Fine-tuning",
+  "agentVisionConfirmEntered": "Board screenshot parsed. Please fine-tune and confirm in the right panel",
   "agentVisionCandidateLabel": "Candidate {0}",
   "agentVisionEditBlack": "Place Black",
   "agentVisionEditWhite": "Place White",

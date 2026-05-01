@@ -255,6 +255,7 @@
   "exportSuccess": "棋盘已导出为图片！",
   "exportFailed": "导出失败，请重试",
   "agentVisionPanelTitle": "棋谱微调",
+  "agentVisionConfirmEntered": "棋局截图已解析，请在右侧面板中微调并确认棋谱",
   "agentVisionCandidateLabel": "方案 {0}",
   "agentVisionEditBlack": "落黑子",
   "agentVisionEditWhite": "落白子",

@@ -252,6 +252,7 @@ export interface Messages {
   exportSuccess: string;
   exportFailed: string;
   agentVisionPanelTitle: string;
+  agentVisionConfirmEntered: string;
   agentVisionCandidateLabel: string;
   agentVisionEditBlack: string;
   agentVisionEditWhite: string;

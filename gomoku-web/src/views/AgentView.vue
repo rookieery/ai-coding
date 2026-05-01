@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, nextTick, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
 import { gomokuAiApi } from '../api/gomoku-ai-api';
@@ -12,6 +11,7 @@ import { useVisionBridge } from '../composables/useVisionBridge';
 import { BOARD_SIZE } from '../games/gomoku/gameLogic';
 import { parseMoveText } from '../games/gomoku/moveParser';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
+import AgentVisionPanel from '../components/agent/AgentVisionPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
 import AgentChatMessages from '../components/agent/AgentChatMessages.vue';
 import AgentChatInput from '../components/agent/AgentChatInput.vue';
@@ -25,15 +25,15 @@ const query = ref('');
 const chatMessagesRef = ref<InstanceType<typeof AgentChatMessages> | null>(null);
 const chatInputRef = ref<InstanceType<typeof AgentChatInput> | null>(null);
 const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
+const visionPanelRef = ref<InstanceType<typeof AgentVisionPanel> | null>(null);
 const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
-const { playMode, enterGomokuMode, exitPlayMode } = useGlobalAgentPlay();
-const router = useRouter();
-const { setVisionCandidates, requestBoardConfirmation, setPendingQuestion, consumePendingAnalysis } = useVisionBridge();
+const { playMode, enterGomokuMode, enterVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64 } = useGlobalAgentPlay();
+const { consumePendingAnalysis } = useVisionBridge();
 
-const isGomokuLayout = computed(() => playMode.value === 'gomoku' || isExitingGomoku.value);
+const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || isExitingGomoku.value);
 
 const {
   messages,
@@ -228,6 +228,18 @@ const handleExitClick = () => {
   showExitConfirm.value = true;
 };
 
+const handleConfirmReplay = (_pieces: number[][]) => {
+  // Will be implemented in AGENT-VISION-04
+};
+
+const handleConfirmAnalysis = (_pieces: number[][]) => {
+  // Will be implemented in AGENT-VISION-05
+};
+
+const handleVisionConfirmClose = () => {
+  // Will be implemented in AGENT-VISION-06
+};
+
 const confirmExit = () => {
   showExitConfirm.value = false;
   gameSelectorActive.value = false;
@@ -281,7 +293,6 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 
   if (payload.imageBase64) {
     const userText = payload.text?.trim() || '';
-    const hasQuestion = userText.length > 0;
 
     messages.value.push({
       role: 'user',
@@ -301,19 +312,20 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     try {
       const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
 
-      if (hasQuestion) {
-        setPendingQuestion(userText, payload.imageBase64);
-      }
-
-      requestBoardConfirmation(result.candidates);
+      enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
 
       isThinking.value = false;
       thinkingContent.value = '';
       answerContent.value = '';
       showThinkingProcess.value = true;
 
+      messages.value.push({
+        role: 'agent',
+        text: t('agentVisionConfirmEntered'),
+      });
+
       await nextTick();
-      await router.push({ name: 'game' });
+      chatMessagesRef.value?.scrollToBottom();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
       messages.value.push({
@@ -374,18 +386,18 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 <template>
   <div class="flex w-full"
        :class="[
-         isGomokuLayout ? 'flex-row h-screen overflow-hidden' : 'flex-col items-center justify-center min-h-screen'
+         isSplitLayout ? 'flex-row h-screen overflow-hidden' : 'flex-col items-center justify-center min-h-screen'
        ]">
 
     <!-- 左侧聊天区域 -->
     <div class="flex flex-col h-full shrink-0"
          :class="[
-           isGomokuLayout ? 'min-w-[320px] border-r panel-split' : 'max-w-4xl mx-auto min-h-[80vh] px-4 panel-full'
+           isSplitLayout ? 'min-w-[320px] border-r panel-split' : 'max-w-4xl mx-auto min-h-[80vh] px-4 panel-full'
          ]"
-         :style="isGomokuLayout ? `width: ${leftPanelWidth}%` : 'width: 100%'">
+         :style="isSplitLayout ? `width: ${leftPanelWidth}%` : 'width: 100%'">
 
       <!-- 返回按钮（仅分屏模式显示） -->
-      <div v-if="playMode === 'gomoku'" class="flex items-center px-4 py-3 border-b shrink-0"
+      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm'" class="flex items-center px-4 py-3 border-b shrink-0"
            :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
         <button @click="handleExitClick"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
@@ -400,11 +412,11 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
       <!-- 欢迎页 -->
       <AgentWelcomeScreen
         v-if="messages.length === 0"
-        :class="playMode === 'gomoku' ? 'flex-1' : 'w-full'"
+        :class="isSplitLayout ? 'flex-1' : 'w-full'"
       />
 
       <!-- 消息列表 -->
-      <div :class="playMode === 'gomoku' ? 'flex-1 overflow-y-auto' : 'w-full'">
+      <div :class="isSplitLayout ? 'flex-1 overflow-y-auto' : 'w-full'">
         <AgentChatMessages
           v-if="messages.length > 0"
           ref="chatMessagesRef"
@@ -428,12 +440,12 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
         @send="handleSend"
         :class="[
           'shrink-0',
-          playMode === 'gomoku' ? 'px-4 max-w-full' : 'max-w-3xl'
+          isSplitLayout ? 'px-4 max-w-full' : 'max-w-3xl'
         ]"
       >
         <template #actions>
           <button
-            v-if="playMode !== 'gomoku' && !gameSelectorActive"
+            v-if="!isSplitLayout && !gameSelectorActive"
             @click="handleEnterGomokuMode"
             class="px-5 py-2.5 rounded-full font-medium transition-all duration-200 shadow-sm hover:shadow-md bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
           >
@@ -444,7 +456,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     </div>
 
     <!-- 分割线（仅分屏模式显示） -->
-    <div v-if="isGomokuLayout"
+    <div v-if="isSplitLayout"
          @mousedown="startDrag"
          class="w-1 self-stretch cursor-col-resize group transition-colors duration-200 z-50 relative"
          :class="isDragging
@@ -461,13 +473,23 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 
     <!-- 右侧对弈面板（仅分屏模式显示） -->
     <transition name="slide-panel">
-      <div v-if="playMode === 'gomoku'" class="flex-1 h-full overflow-hidden panel-right"
+      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm'" class="flex-1 h-full overflow-hidden panel-right"
            :class="currentTheme === 'dark' ? 'bg-stone-900' : 'bg-stone-50'">
         <AgentGomokuPanel
+          v-if="playMode === 'gomoku'"
           ref="gomokuPanelRef"
           @userMove="handleUserMove"
           @surrender="handleSurrender"
           @aiFirstMove="handleAiFirstMove"
+        />
+        <AgentVisionPanel
+          v-else-if="playMode === 'vision-confirm'"
+          ref="visionPanelRef"
+          :candidates="visionCandidates!"
+          :imageBase64="pendingImageBase64!"
+          @confirm-replay="handleConfirmReplay"
+          @confirm-analysis="handleConfirmAnalysis"
+          @close="handleVisionConfirmClose"
         />
       </div>
     </transition>
