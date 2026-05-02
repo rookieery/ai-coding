@@ -209,7 +209,7 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
           <Sparkles class="w-5 h-5" />
         </button>
         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-lg">
-          {{ moveHistoryLength === 0 ? t('aiAnalysisEmptyBoard') : t('requestChessAiAnalysis') }}
+          {{ moveHistoryLength === 0 ? t('chessAiAnalysisEmptyBoard') : t('requestChessAiAnalysis') }}
           <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800"></div>
         </div>
       </div>

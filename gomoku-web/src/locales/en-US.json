@@ -270,6 +270,7 @@
   "agentVisionBoardConfirmed": "Board confirmed",
   "aiTacticalAnalysis": "AI Tactical Analysis",
   "aiAnalysisEmptyBoard": "Place at least one piece to use AI analysis",
+  "chessAiAnalysisEmptyBoard": "Make at least one move to use AI analysis",
   "chessVisionPanelTitle": "Chess Board Fine-tuning",
   "chessVisionEditRedPieces": "Red Side",
   "chessVisionEditBlackPieces": "Black Side",
@@ -290,5 +291,6 @@
   "visionSelectModeStart": "Select Area",
   "visionSelectModeActive": "Exit Selection",
   "visionSelectFirstPoint": "Click the first corner on the board",
-  "visionSelectSecondPoint": "Click the second corner to complete selection"
+  "visionSelectSecondPoint": "Click the second corner to complete selection",
+  "chessNoMoves": "No moves yet"
 }

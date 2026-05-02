@@ -270,6 +270,7 @@
   "agentVisionBoardConfirmed": "棋盘已确定",
   "aiTacticalAnalysis": "AI 战术分析",
   "aiAnalysisEmptyBoard": "请先落子后再使用AI战术分析",
+  "chessAiAnalysisEmptyBoard": "请先走棋后再使用AI战术分析",
   "chessVisionPanelTitle": "象棋棋谱微调",
   "chessVisionEditRedPieces": "红方",
   "chessVisionEditBlackPieces": "黑方",
@@ -290,5 +291,6 @@
   "visionSelectModeStart": "框选区域",
   "visionSelectModeActive": "退出框选",
   "visionSelectFirstPoint": "请在棋盘上点击第一个角点",
-  "visionSelectSecondPoint": "请在棋盘上点击第二个角点以完成框选"
+  "visionSelectSecondPoint": "请在棋盘上点击第二个角点以完成框选",
+  "chessNoMoves": "暂无走棋记录"
 }

@@ -86,7 +86,7 @@ watch(() => props.moveHistory.length, async () => {
       </div>
       <div v-if="moveHistory.length === 0" class="text-center py-8 text-sm transition-colors"
            :class="currentTheme === 'dark' ? 'text-stone-500' : 'text-stone-400'">
-        {{ i18nT('noMoves') }}
+        {{ i18nT('chessNoMoves') }}
       </div>
     </div>
   </div>
