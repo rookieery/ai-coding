@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-09",
-      "title": "前端：AgentView 集成象棋视觉确认分屏与完整流程",
-      "description": "核心联调任务。修改 `gomoku-web/src/views/AgentView.vue`。分为三部分：\n\n**第一部分：分屏布局集成**\n1. 修改 `isSplitLayout` 计算属性，增加 `playMode === 'chess-vision-confirm'` 条件。\n2. 在右侧面板区域（template 约第 530 行），增加 `v-else-if=\"playMode === 'chess-vision-confirm'\"` 分支，渲染 `AgentChessVisionPanel` 并传入 `chessVisionCandidates` 和 `pendingImageBase64` 作为 props。\n3. 确保拖拽分割线和返回按钮在象棋视觉确认模式下同样生效（v-if 条件增加 chess-vision-confirm 判断）。\n4. 引入 `AgentChessVisionPanel` 组件。\n5. 为 AgentChessVisionPanel 绑定三个事件监听：`@confirm-replay`、`@confirm-analysis`、`@close`。\n\n**第二部分：确认回调处理**\n1. 实现 `handleChessConfirmReplay(pieces: number[][])`：调用 `useVisionBridge().setChessVisionCandidatesForReplay([pieces])`，调用 `exitPlayMode()`，执行 `router.push({ name: 'chinese-chess' })` 跳转。\n2. 实现 `handleChessConfirmAnalysis(pieces: number[][], boardImageBase64: string)`：退出分屏，推送用户消息（含截图），构造增强 Prompt（将 10×9 棋盘数据序列化为 JSON，附带棋子编码说明），调用 `executeStreamingChat(combinedPrompt)` 进行 AI 战术分析。\n3. 实现 `handleChessVisionConfirmClose()`：退出分屏，推送取消消息，清理状态。\n\n预估代码变更约 80 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-10",
-      "title": "前端：ChineseChessView 消费视觉数据并加载残局",
-      "description": "联调闭环任务。修改 `gomoku-web/src/games/chinese-chess/views/ChineseChessView.vue`。\n\n1. 引入 `useVisionBridge`。\n2. 在现有的 `onMounted` 钩子中（约第 250 行），追加调用 `const candidates = useVisionBridge().consumeChessVisionCandidates()`。\n3. 如果返回了 candidates 数组且长度 > 0：取 candidates[0] 作为确认后的棋盘矩阵，调用 `gameState.loadBoardState(candidates[0])` 渲染残局棋盘。\n4. 同时需要处理 Vue Router 的 keep-alive 场景：在 `onActivated` 生命周期中同样检查并消费视觉数据（注意 consume 是一次性的，需要用标志位避免重复消费）。\n5. 加载成功后通过 `gameUI.notify(t('visionBoardLoaded', t('chessRedSide')))` 提示用户。预估代码变更约 40 行。",
-      "passes": false
+      "title": "ChineseChessView consume vision data and load endgame",
+      "description": "Modified `gomoku-web/src/games/chinese-chess/views/ChineseChessView.vue`.\n\n1. Introduced `useVisionBridge` and `PlayerSide` imports.\n2. Added `visionConsumed` ref flag to prevent double consumption.\n3. Created `consumeAndLoadVision()` function that calls `consumeChessVisionCandidates()`, loads board state via `gameState.loadBoardState()`, and notifies user with current player side text.\n4. Called in both `onMounted` and `onActivated` (keep-alive support).\n5. No new i18n keys needed - reuses existing `visionBoardLoaded`, `chessRed`, `chessBlack` keys.",
+      "passes": true
     },
     {
       "id": "CHESS-VISION-11",

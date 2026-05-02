@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, onDeactivated, onMounted, ref } from 'vue';
+import { computed, onUnmounted, onDeactivated, onMounted, onActivated, ref } from 'vue';
 import html2canvas from 'html2canvas-pro';
 import { t, currentTheme } from '../../../i18n';
 import { type GameType, type GameListItem, type ChineseChessFrontendGame } from '../../../api/game-api';
@@ -19,10 +19,13 @@ import { useGameRecords } from '../composables/useGameRecords';
 import { useGameUI } from '../composables/useGameUI';
 import { useGlobalSettings } from '../../../composables/useSettings';
 import { useGlobalAuth } from '../../../composables/useAuth';
+import { useVisionBridge } from '../../../composables/useVisionBridge';
+import { PlayerSide } from '../types';
 
 const GAME_TYPE: GameType = 'chinese_chess';
 
 const boardRef = ref<InstanceType<typeof Board> | null>(null);
+const visionConsumed = ref(false);
 
 defineOptions({
   name: 'ChineseChessView'
@@ -247,8 +250,24 @@ const handleCopySuccess = () => {
   gameUI.notify(t('copySuccess'));
 };
 
+const consumeAndLoadVision = () => {
+  if (visionConsumed.value) return;
+  const candidates = useVisionBridge().consumeChessVisionCandidates();
+  if (candidates && candidates.length > 0) {
+    gameState.loadBoardState(candidates[0]);
+    visionConsumed.value = true;
+    const sideText = gameState.currentPlayer.value === PlayerSide.RED ? t('chessRed') : t('chessBlack');
+    gameUI.notify(t('visionBoardLoaded', sideText));
+  }
+};
+
 onMounted(() => {
   gameRecords.fetchRecords();
+  consumeAndLoadVision();
+});
+
+onActivated(() => {
+  consumeAndLoadVision();
 });
 
 onUnmounted(() => {
