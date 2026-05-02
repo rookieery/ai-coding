@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-LLM-009-I18N",
-      "title": "前端：添加中国象棋 LLM 相关 i18n 翻译键",
-      "description": "国际化任务。在 `gomoku-web/src/locales/zh-CN.json` 和 `gomoku-web/src/locales/en-US.json` 中新增以下翻译 key：\n\n**LLM AI 相关**：\n- `chessLlmThinking`：「DeepSeek 正在推演局势...」 / 「DeepSeek is analyzing the position...」\n- `chessLlmFallbackMove`：「大模型返回非法走法，已启用兜底策略」 / 「LLM returned an invalid move, fallback strategy activated」\n- `chessLlmAnalysisTitle`：「AI 战术分析」 / 「AI Tactical Analysis」\n- `chessLlmSituation`：「局势评估」 / 「Situation Evaluation」\n- `chessLlmMoveReason`：「AI 思路」 / 「AI Reasoning」\n- `chessLlmCriticalMove`：「AI 本能反应：{reason}」 / 「AI Instinct: {reason}」\n- `chessNeuralDifficulty`：「神经网络(DeepSeek)」 / 「Neural Network (DeepSeek)」\n- `chessLlmHealthOk`：「LLM 服务正常」 / 「LLM Service Healthy」\n- `chessLlmHealthError`：「LLM 服务不可用」 / 「LLM Service Unavailable」\n\n**棋林对弈相关**：\n- `chessPlayModeTitle`：「中国象棋对弈」 / 「Chinese Chess Battle」\n- `chessPlayModeEntered`：「已进入中国象棋对弈模式，执红先行，请落子」 / 「Chinese Chess battle mode activated. You play Red, please make your move.」\n- `chessAiMoveMsg`：「AI 行棋：{notation}」 / 「AI plays: {notation}」\n- `chessUserMoveMsg`：「玩家行棋：{notation}」 / 「Player plays: {notation}」\n- `chessInvalidMoveMsg`：「该走法不合法，请重新输入」 / 「Invalid move, please try again」\n- `chessCheckMsg`：「将军！」 / 「Check!」\n- `chessCheckmateMsg`：「将死！{winner}方获胜」 / 「Checkmate! {winner} wins」\n- `chessSelectGameChess`：「中国象棋」 / 「Chinese Chess」\n- `chessAiThinkingStatus`：「AI 正在思考...」 / 「AI is thinking...」\n- `chessEnterPlayMode`：「进入对弈」 / 「Enter Battle」\n- `chessResignGame`：「认输」 / 「Resign」\n- `chessNewGame`：「新局」 / 「New Game」\n\n同时在 `gomoku-web/src/i18n.ts` 的 TranslationKeys 类型中追加以上 key。预估变更约 40 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-PLAY-001-AgentPlay-State",
       "title": "前端：扩展 useAgentPlay 支持中国象棋对弈模式",
       "description": "状态管理层改造。修改 `gomoku-web/src/composables/useAgentPlay.ts`。\n\n1. 将 `PlayMode` 联合类型从 `'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm'` 扩展为 `'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm' | 'chinese-chess'`。\n\n2. 新增方法 `enterChessMode(): void`：将 `playMode` 设为 `'chinese-chess'`，同时将 `isAIThinking` 设为 false。此方法用于从智能体对话进入中国象棋分屏对弈。\n\n3. 修改 `exitPlayMode()` 方法，确保在 playMode 为 `'chinese-chess'` 时也能正确重置为 `'chat'`，并清理所有相关状态（`isAIThinking = false`）。\n\n4. 确保 `useGlobalAgentPlay()` 单例模式在扩展后不受影响，所有已有的 `'gomoku'`、`'vision-confirm'`、`'chess-vision-confirm'` 模式逻辑保持不变。\n\n预估代码变更约 20 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-PLAY-002-AgentChessPanel",

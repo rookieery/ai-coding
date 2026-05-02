@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export type PlayMode = 'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm';
+export type PlayMode = 'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm' | 'chinese-chess';
 
 export function useAgentPlay() {
   const playMode = ref<PlayMode>('chat');
@@ -13,6 +13,11 @@ export function useAgentPlay() {
 
   const enterGomokuMode = () => {
     playMode.value = 'gomoku';
+  };
+
+  const enterChessMode = () => {
+    playMode.value = 'chinese-chess';
+    isAIThinking.value = false;
   };
 
   const enterVisionConfirmMode = (
@@ -54,6 +59,7 @@ export function useAgentPlay() {
     pendingImageBase64,
     pendingQuestion,
     enterGomokuMode,
+    enterChessMode,
     enterVisionConfirmMode,
     enterChessVisionConfirmMode,
     exitPlayMode,
