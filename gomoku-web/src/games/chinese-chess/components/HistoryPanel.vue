@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, withDefaults } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { PlayerSide, type MoveHistory } from '../types';
 import { t as i18nT, currentTheme } from '../../../i18n';
 import { moveToDisplayNotation } from '../notation';
@@ -26,15 +26,15 @@ const copyHistory = async () => {
   const text = props.moveHistory.map((move, index) => {
     const step = index + 1;
     const player = move.side === PlayerSide.RED ? i18nT('chessRed') : i18nT('chessBlack');
-    const notation = moveToDisplayNotation(move, i18nT);
+    const notation = moveToDisplayNotation(move, (key) => i18nT(key as Parameters<typeof i18nT>[0]));
     return `第${step}步${player}${notation}`;
   }).join('；') + '。';
 
   try {
     await navigator.clipboard.writeText(text);
     emit('copySuccess');
-  } catch (err) {
-    console.error('Failed to copy: ', err);
+  } catch {
+    // Clipboard write failed silently
   }
 };
 
@@ -81,7 +81,7 @@ watch(() => props.moveHistory.length, async () => {
         </div>
         <span class="font-medium px-2 py-0.5 rounded transition-colors"
               :class="currentTheme === 'dark' ? 'bg-stone-700 text-stone-300' : 'bg-stone-100 text-stone-600'">
-          {{ moveToDisplayNotation(move, i18nT) }}
+          {{ moveToDisplayNotation(move, (key) => i18nT(key as Parameters<typeof i18nT>[0])) }}
         </span>
       </div>
       <div v-if="moveHistory.length === 0" class="text-center py-8 text-sm transition-colors"

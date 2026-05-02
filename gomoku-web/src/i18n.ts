@@ -291,6 +291,7 @@ export interface Messages {
   chessVisionBoardConfirmed: string;
   chessVisionParseFailed: string;
   requestChessAiAnalysis: string;
+  chessAiAnalysisEmptyBoard: string;
   chessVisionValidationPieceCount: string;
   chessVisionValidationPosition: string;
   chessVisionPlacementPositionWarning: string;

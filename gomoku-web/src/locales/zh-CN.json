@@ -275,6 +275,7 @@
   "chessVisionEditRedPieces": "红方",
   "chessVisionEditBlackPieces": "黑方",
   "requestChessAiAnalysis": "AI 战术分析",
+  "chessAiAnalysisEmptyBoard": "当前无棋谱，请先走子",
   "chessVisionDefaultAnalysis": "请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向",
   "chessVisionEditEraser": "橡皮擦",
   "chessVisionEditMode": "编辑模式",

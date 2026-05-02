@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-PLAY-006-ChatMove-Interceptor",
-      "title": "前端：AgentView 聊天输入拦截与象棋走法解析分流",
-      "description": "核心联调任务。修改 `gomoku-web/src/views/AgentView.vue` 的 `handleSend` 方法。\n\n1. 当 `playMode === 'chinese-chess'` 时，获取用户输入 `query.value`，先调用 `parseChessMoveText(text, chessPanelRef.value.getBoard())` 尝试解析为象棋走法。\n\n2. **走法解析成功**（返回非 null）：\n   a. 通过 `chessPanelRef.value.isValidMove(parsedMove.from, parsedMove.to)` 校验走法合法性。\n   b. 如果合法：将用户消息上屏展示（格式为「玩家行棋：{notation}」），清空输入框，然后触发与棋盘点击落子相同的流程（调用 `handleChessUserMove` 的核心逻辑）。\n   c. 如果不合法：直接在聊天流追加 Agent 提示消息，使用 i18n key `chessInvalidMoveMsg`，告知用户走法不合法，不触发 AI 思考。\n\n3. **走法解析失败**（返回 null）：说明用户在进行普通聊天（非走法指令），直接走原有的 `sendMessage` / `executeStreamingChat` 逻辑，将消息发送给 DeepSeek Reasoner 进行普通对话。\n\n4. 确保与现有的五子棋走法解析逻辑（`parseMoveText`）互不冲突，两个分支各自独立处理。\n\n预估代码变更约 40 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-PLAY-007-Smoke-Test",
       "title": "全链路冒烟测试与功能验证",
       "description": "测试验证任务。启动前端和后端开发服务器，手动验证以下路径：\n\n**Feature 1：中国象棋神经网络 AI（独立页面）**：\n1. 进入中国象棋独立页面 → 选择难度「神经网络(DeepSeek)」→ 开始 PvE 对弈 → 落下一子 → 观察前端显示「DeepSeek 正在推演局势...」→ 等待 AI 走法 → 确认 AI 走法合法且附有分析文本 → 继续对弈多回合验证稳定性。\n2. 测试 AI 在被将军时的应将行为 → 确认威胁检测器正确拦截。\n3. 测试 AI 在存在绝杀时的直接杀棋行为 → 确认无需调用 LLM。\n\n**Feature 2：棋林对弈（智能体分屏）**：\n4. 进入智能体页面 → 点击「中国象棋」按钮 → 确认分屏布局正确渲染 → 右侧显示标准象棋开局棋盘。\n5. 点击棋盘落子 → 确认左侧聊天流显示走法记谱 → 确认 AI 开始思考 → 确认 AI 走法在棋盘上正确渲染 → 确认聊天流显示 AI 分析文本。\n6. 在聊天输入框输入「炮二平五」→ 确认走法被正确解析并执行 → 确认 AI 正常响应。\n7. 在聊天输入框输入普通文本（如「你好」）→ 确认消息走普通聊天流程，不影响棋局。\n8. 测试悔棋、新局、认输功能是否正常。\n9. 测试将死/困毙检测 → 确认游戏结束消息正确显示。\n\n**回归验证**：\n10. 五子棋对弈流程不受影响（游戏选择器、分屏布局、走法解析均无回归）。\n11. 五子棋/象棋视觉识别流程不受影响。\n12. 普通聊天流程不受影响。",
-      "passes": false
+      "passes": true
     }
   ]
 }

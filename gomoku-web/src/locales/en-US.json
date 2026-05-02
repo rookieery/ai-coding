@@ -275,6 +275,7 @@
   "chessVisionEditRedPieces": "Red Side",
   "chessVisionEditBlackPieces": "Black Side",
   "requestChessAiAnalysis": "AI Tactical Analysis",
+  "chessAiAnalysisEmptyBoard": "No moves yet, please play first",
   "chessVisionDefaultAnalysis": "Please analyze the current Chinese Chess position, including tactical advantages, key squares, material balance, and recommended moves",
   "chessVisionEditEraser": "Eraser",
   "chessVisionEditMode": "Edit Mode",

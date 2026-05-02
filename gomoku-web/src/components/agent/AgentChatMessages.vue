@@ -110,7 +110,7 @@ defineExpose({
           <!-- 游戏选择按钮 -->
           <div v-if="msg.isGameSelector" class="flex gap-3 mt-4">
             <button
-              @click="$emit('select-game', 'gomoku', msg)"
+              @click="$emit('selectGame', 'gomoku', msg)"
               :disabled="msg.isGameSelectorDismissed"
               class="px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
               :class="msg.isGameSelectorDismissed
@@ -120,7 +120,7 @@ defineExpose({
               {{ t('agentGameGomoku') }}
             </button>
             <button
-              @click="$emit('select-game', 'chinese-chess', msg)"
+              @click="$emit('selectGame', 'chinese-chess', msg)"
               :disabled="msg.isGameSelectorDismissed"
               class="px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
               :class="msg.isGameSelectorDismissed
