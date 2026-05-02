@@ -22,7 +22,6 @@ import { useGlobalSettings } from '../../../composables/useSettings';
 import { useGlobalAuth } from '../../../composables/useAuth';
 import { useVisionBridge } from '../../../composables/useVisionBridge';
 import { PlayerSide } from '../types';
-import { convertBoardStateToCodes } from '../utils';
 
 const GAME_TYPE: GameType = 'chinese_chess';
 
@@ -263,8 +262,6 @@ const handleRequestAiAnalysis = async () => {
       scale: 2,
     });
     const boardImageBase64 = canvas.toDataURL('image/png');
-
-    const boardCodes = convertBoardStateToCodes(gameState.board.value);
 
     useVisionBridge().setChessAnalysis({
       board: gameState.board.value,

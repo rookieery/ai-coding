@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-12",
-      "title": "前端：添加中国象棋视觉识别相关 i18n 翻译键",
-      "description": "国际化任务。在 `gomoku-web/src/locales/zh-CN.json` 和 `gomoku-web/src/locales/en-US.json` 中新增以下翻译 key 的中英文翻译：\n\n**象棋视觉面板相关**：\n- `chessVisionPanelTitle`：「象棋棋谱微调」 / 「Chess Board Fine-tuning」\n- `chessVisionEditRedPieces`：「红方」 / 「Red Side」\n- `chessVisionEditBlackPieces`：「黑方」 / 「Black Side」\n- `chessVisionEditEraser`：「橡皮擦」 / 「Eraser」\n- `chessVisionEditMode`：「编辑模式」 / 「Edit Mode」\n- `chessVisionBatchMove`：「批量移动」 / 「Batch Move」\n- `chessVisionConfirmReplay`：「进入打谱模式」 / 「Enter Replay Mode」\n- `chessVisionConfirmAnalysis`：「AI 战术分析」 / 「AI Tactical Analysis」\n- `chessVisionAnalysisSummary`：「棋局已确认：红方 {0} 子，黑方 {1} 子，当前轮到 {2} 方行棋」 / 「Board confirmed: {0} red pieces, {1} black pieces. Current turn: {2}」\n- `chessVisionDefaultAnalysis`：「请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向」 / 「Please analyze the current Chinese Chess position, including tactical advantages, key squares, material balance, and recommended moves」\n- `chessVisionConfirmCancelled`：「象棋棋谱确认已取消」 / 「Chess board confirmation has been cancelled」\n- `chessVisionBoardConfirmed`：「象棋棋盘已确定」 / 「Chess board confirmed」\n- `chessVisionParseFailed`：「象棋棋局解析失败」 / 「Failed to parse Chinese Chess board」\n\n**AI 分析按钮**：\n- `requestChessAiAnalysis`：「AI 战术分析」 / 「AI Tactical Analysis」\n\n同时在 `gomoku-web/src/i18n.ts` 的 TranslationKeys 类型中追加以上 key。预估变更约 30 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-13",
       "title": "全链路冒烟测试与功能验证",
       "description": "测试验证任务。启动前端和后端开发服务器，手动验证以下五条路径：\n\n1. **五子棋回归**：在智能体页面上传一张五子棋截图 → 后端自动识别为 gomoku → 右侧出现五子棋微调面板（AgentVisionPanel）→ 流程与改造前完全一致，确认无回归。\n\n2. **象棋自动识别**：上传一张中国象棋截图 → 后端自动识别为 chinese_chess → 右侧出现象棋微调面板（AgentChessVisionPanel）→ 切换 3 组候选方案 → 使用编辑工具放置/移除棋子 → 点击「进入打谱模式」→ 跳转到中国象棋独立页面 → 棋盘显示微调后的残局状态。\n\n3. **AI 战术分析分支**：上传中国象棋截图 → 自动识别 → 微调确认 → 点击「AI 战术分析」→ 退回单列聊天 → 聊天流展示截图和棋盘概况 → LLM 流式输出战术分析。\n\n4. **取消流程**：上传截图 → 自动识别为象棋 → 点击面板关闭按钮 → 平滑退回单列聊天 → 状态完全清理。\n\n5. **一键 AI 分析**：在中国象棋独立页面进行对弈 → 点击「AI 战术分析」按钮 → 跳转到智能体页面 → 自动触发 LLM 对当前盘面的战术分析。验证分析结果中提到的棋子位置与实际棋盘一致。",
-      "passes": false
+      "passes": true
     }
   ]
 }
