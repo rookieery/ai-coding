@@ -1,10 +1,22 @@
 import { ref } from 'vue';
+import type { BoardState } from '../games/chinese-chess/types';
 
 const pendingVisionCandidates = ref<number[][][] | null>(null);
 const resolveConfirmation = ref<((pieces: number[][]) => void) | null>(null);
 
 const pendingQuestion = ref<string | null>(null);
 const pendingImageBase64 = ref<string | null>(null);
+
+const pendingChessVisionCandidates = ref<number[][][] | null>(null);
+
+interface ChessAnalysisData {
+  board: BoardState;
+  currentPlayer: string;
+  question: string;
+  imageBase64: string;
+}
+
+const pendingChessAnalysis = ref<ChessAnalysisData | null>(null);
 
 /**
  * @deprecated The new AgentVisionPanel flow handles AI analysis directly in AgentView.
@@ -88,12 +100,36 @@ const consumePendingAnalysis = (): PendingAnalysis | null => {
   return current;
 };
 
+const setChessVisionCandidatesForReplay = (candidates: number[][][]) => {
+  pendingChessVisionCandidates.value = candidates.map(matrix =>
+    matrix.map(row => [...row])
+  );
+};
+
+const consumeChessVisionCandidates = (): number[][][] | null => {
+  const current = pendingChessVisionCandidates.value;
+  pendingChessVisionCandidates.value = null;
+  return current;
+};
+
+const setChessAnalysis = (data: ChessAnalysisData) => {
+  pendingChessAnalysis.value = { ...data };
+};
+
+const consumeChessAnalysis = (): ChessAnalysisData | null => {
+  const current = pendingChessAnalysis.value;
+  pendingChessAnalysis.value = null;
+  return current;
+};
+
 const clearPendingRequest = () => {
   pendingVisionCandidates.value = null;
   pendingQuestion.value = null;
   pendingImageBase64.value = null;
   pendingAnalysis.value = null;
   resolveConfirmation.value = null;
+  pendingChessVisionCandidates.value = null;
+  pendingChessAnalysis.value = null;
 };
 
 export const useVisionBridge = () => ({
@@ -101,6 +137,8 @@ export const useVisionBridge = () => ({
   resolveConfirmation,
   pendingQuestion,
   pendingAnalysis,
+  pendingChessVisionCandidates,
+  pendingChessAnalysis,
   setVisionCandidates,
   setVisionCandidatesForReplay,
   consumeVisionCandidates,
@@ -111,5 +149,9 @@ export const useVisionBridge = () => ({
   consumePendingQuestion,
   setPendingAnalysis,
   consumePendingAnalysis,
+  setChessVisionCandidatesForReplay,
+  consumeChessVisionCandidates,
+  setChessAnalysis,
+  consumeChessAnalysis,
   clearPendingRequest,
 });

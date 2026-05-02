@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-04",
-      "title": "前端：扩展 useAgentPlay 支持象棋视觉确认模式",
-      "description": "状态管理层改造。修改 `gomoku-web/src/composables/useAgentPlay.ts`。\n\n1. 将 `PlayMode` 联合类型从 `'chat' | 'gomoku' | 'vision-confirm'` 扩展为 `'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm'`。\n2. 新增响应式状态 `chessVisionCandidates: ref<number[][][] | null>` 用于存储豆包返回的 3 组 10×9 候选棋盘矩阵，默认 null。\n3. 新增方法 `enterChessVisionConfirmMode(candidates: number[][][], imageBase64: string, question?: string)`：将 playMode 设为 `'chess-vision-confirm'`，写入 chessVisionCandidates（同时复用现有的 pendingImageBase64 和 pendingQuestion 状态）。\n4. 修改 `exitPlayMode()` 方法，在重置 playMode 为 'chat' 的同时，清空 chessVisionCandidates。确保 useGlobalAgentPlay() 单例模式不受影响。预估代码变更约 30 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-05",
       "title": "前端：扩展 useVisionBridge 支持中国象棋数据传递",
       "description": "桥接层改造。修改 `gomoku-web/src/composables/useVisionBridge.ts`。\n\n1. 新增模块级响应式变量 `pendingChessVisionCandidates: ref<number[][][] | null>`（默认 null），用于在 AgentView 和 ChineseChessView 之间传递 10×9 的象棋棋盘矩阵。\n2. 新增 `setChessVisionCandidatesForReplay(candidates: number[][][])` 方法：深度拷贝 candidates 赋值给 `pendingChessVisionCandidates`。\n3. 新增 `consumeChessVisionCandidates(): number[][][] | null` 方法：读取并清空 `pendingChessVisionCandidates`。\n4. 新增象棋专用分析数据存储：`pendingChessAnalysis: ref<{ board: import('../games/chinese-chess/types').BoardState; currentPlayer: string; question: string; imageBase64: string } | null>`（默认 null），以及对应的 `setChessAnalysis` 和 `consumeChessAnalysis` 方法。\n5. 修改 `clearPendingRequest()` 方法，确保同时清空象棋相关状态。预估代码变更约 50 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-06",
