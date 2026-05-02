@@ -300,6 +300,27 @@ export interface Messages {
   visionSelectSecondPoint: string;
   chessNoMoves: string;
   stopGenerating: string;
+  chessLlmThinking: string;
+  chessLlmFallbackMove: string;
+  chessLlmAnalysisTitle: string;
+  chessLlmSituation: string;
+  chessLlmMoveReason: string;
+  chessLlmCriticalMove: string;
+  chessNeuralDifficulty: string;
+  chessLlmHealthOk: string;
+  chessLlmHealthError: string;
+  chessPlayModeTitle: string;
+  chessPlayModeEntered: string;
+  chessAiMoveMsg: string;
+  chessUserMoveMsg: string;
+  chessInvalidMoveMsg: string;
+  chessCheckMsg: string;
+  chessCheckmateMsg: string;
+  chessSelectGameChess: string;
+  chessAiThinkingStatus: string;
+  chessEnterPlayMode: string;
+  chessResignGame: string;
+  chessNewGame: string;
 }
 
 export type MessageKey = keyof Messages;
