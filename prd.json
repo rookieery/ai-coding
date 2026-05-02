@@ -2,22 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-LLM-005-Service",
-      "title": "后端：实现中国象棋 LLM 服务（DeepSeek API 调用与幻觉校验）",
-      "passes": true,
-      "description": "核心逻辑任务。在后端 `gomoku-server/src/services/` 下新建 `chess-llm.service.ts`。\n\n实现 `ChessLLMService` 类（导出单例 `chessLlmService`）：\n\n**核心方法 `generateMove(request: ChessLLMMoveRequest): Promise<ChessLLMMoveResponse>`**：\n\n1. **威胁拦截**：调用 `findCriticalMove(board, currentPlayer)`。如果返回非 null（存在关键走法），直接构建响应返回，跳过 LLM 调用，节省 Token。`isFallback: true`。\n\n2. **候选走法生成**：调用 `generateCandidateMoves(board, currentPlayer)` 获取 Top 15 候选走法。\n\n3. **Prompt 组装**：调用 `buildChessSystemPrompt(board, currentPlayer, candidates)` 构建完整 Prompt。\n\n4. **DeepSeek API 调用**：使用已有的 DeepSeek API 客户端（复用环境变量 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`，模型使用 `DEEPSEEK_MODEL` 或默认 `deepseek-chat`）。发送请求，temperature=0.3（中国象棋需要一定创造性但不至于太随机）。\n\n5. **响应解析与校验**：\n   a. 解析 LLM 返回的 JSON，提取 `move`（from/to 坐标）。\n   b. **幻觉校验**：检查 LLM 返回的走法是否在候选列表中。如果不在候选列表中，进一步验证走法的合法性（from 位置是否有己方棋子、走法是否符合棋子规则、走后己方不被将军）。\n   c. 如果走法非法或无法解析：使用候选列表中评分最高的走法作为兜底，`isFallback: true`，reason 中标注「大模型返回非法走法，已启用兜底策略」。\n   d. 如果走法合法但在候选列表之外：接受该走法但保留候选列表参考信息。\n\n6. **健康检查方法**：`healthCheck(): Promise<boolean>`，验证 DeepSeek API 连通性。\n\n预估代码约 150 行。"
-    },
-    {
-      "id": "CHESS-LLM-006-Controller-Routes",
-      "title": "后端：创建中国象棋 LLM 控制器与路由",
-      "description": "后端路由与接口暴露任务。\n\n1. **控制器**：在 `gomoku-server/src/controllers/` 下新建 `chess-llm.controller.ts`。\n   - `POST /api/games/chinese-chess/llm/move`：接收 `ChessLLMMoveRequest` 请求体，调用 `chessLlmService.generateMove()`，返回统一响应格式 `{ code: 0, data: ChessLLMMoveResponse, message: 'success' }`。异常由全局错误处理器捕获。\n   - `GET /api/games/chinese-chess/llm/health`：调用 `chessLlmService.healthCheck()`，返回 LLM 服务健康状态。\n\n2. **路由注册**：修改 `gomoku-server/src/routes/games/chinese-chess.routes.ts`（或新建路由文件），将上述两个端点注册到 Express Router。\n\n3. **主入口挂载**：确保中国象棋 LLM 路由被正确挂载到 Express 应用。检查 `gomoku-server/src/routes/games/index.ts` 或 `app.ts`，确保新路由文件被引入并使用。\n\n预估代码约 60 行。",
-      "passes": false
-    },
-    {
       "id": "CHESS-LLM-007-Frontend-API",
       "title": "前端：创建中国象棋 LLM API 调用与状态管理",
       "description": "前端数据层任务。\n\n1. **API 客户端**：在 `gomoku-web/src/games/chinese-chess/api/` 下新建 `chessLlmApi.ts`。\n   - 定义 `ChessLLMMoveRequest` 前端类型（与后端对应）。\n   - 编写 `generateChessLLMMove(request: ChessLLMMoveRequest): Promise<ChessLLMMoveResponse>` 函数，调用 `POST /api/games/chinese-chess/llm/move`。\n   - 编写 `checkChessLLMHealth(): Promise<boolean>` 函数，调用健康检查接口。\n\n2. **Composable 改造**：修改 `gomoku-web/src/games/chinese-chess/composables/useGameAI.ts`。\n   - 新增 `llmMove(board: BoardState, aiPlayerSide: PlayerSide, onMove: (result: any) => void): void` 方法。\n   - 方法逻辑：将 `BoardState` 通过 `convertBoardStateToCodes()` 转为 10×9 数值矩阵 → 构造 `ChessLLMMoveRequest`（包含 board、currentPlayer、moveHistory）→ 调用 `generateChessLLMMove()` → 解析响应中的 `move.from/to` 转换回 `BoardState` 坐标 → 调用 `onMove` 回调。\n   - 增加 `isLlmThinking: Ref<boolean>` 响应式状态，在 LLM 请求期间为 true。\n   - 保留现有的 Web Worker 本地 AI 逻辑不变，`llmMove` 与 `aiMove` 并行存在。\n\n预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-LLM-008-UI-Integration",

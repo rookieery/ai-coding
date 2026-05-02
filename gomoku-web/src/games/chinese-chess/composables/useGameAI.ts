@@ -1,8 +1,19 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { type BoardCoord, type BoardState, PlayerSide, type Difficulty } from '../types';
+import { convertBoardStateToCodes } from '../utils';
+import { chessLlmApi } from '../api/chessLlmApi';
+
+export interface ChessLLMMoveResult {
+  from: BoardCoord;
+  to: BoardCoord;
+  reason: string;
+  situationAnalysis?: string;
+  isFallback: boolean;
+}
 
 export function useGameAI() {
   const isAiThinking = ref(false);
+  const isLlmThinking: Ref<boolean> = ref(false);
   const thinkingPath = ref<{coord: BoardCoord, side: PlayerSide}[]>([]);
   const hintMove = ref<{from: BoardCoord, to: BoardCoord} | null>(null);
   const showThinking = ref(false);
@@ -87,8 +98,48 @@ export function useGameAI() {
     }
   };
 
+  const llmMove = (
+    board: BoardState,
+    aiPlayerSide: PlayerSide,
+    onMove: (result: ChessLLMMoveResult) => void,
+  ) => {
+    isLlmThinking.value = true;
+
+    const boardCodes = convertBoardStateToCodes(board);
+    const currentPlayer = aiPlayerSide === PlayerSide.RED ? 'red' : 'black';
+
+    const moveHistory = [] as Array<{
+      from: { row: number; col: number };
+      to: { row: number; col: number };
+      piece: number;
+      capturedPiece?: number;
+      notation?: string;
+    }>;
+
+    chessLlmApi
+      .generateMove({
+        board: boardCodes,
+        currentPlayer,
+        moveHistory,
+      })
+      .then((response) => {
+        isLlmThinking.value = false;
+        onMove({
+          from: { row: response.move.from.row, col: response.move.from.col },
+          to: { row: response.move.to.row, col: response.move.to.col },
+          reason: response.reason,
+          situationAnalysis: response.situationAnalysis,
+          isFallback: response.isFallback,
+        });
+      })
+      .catch(() => {
+        isLlmThinking.value = false;
+      });
+  };
+
   return {
     isAiThinking,
+    isLlmThinking,
     thinkingPath,
     hintMove,
     showThinking,
@@ -97,5 +148,6 @@ export function useGameAI() {
     showHint: showHintInternal,
     terminateWorker,
     toggleThinking,
+    llmMove,
   };
 }
