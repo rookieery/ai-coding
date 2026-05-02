@@ -269,5 +269,8 @@
   "agentVisionConfirmCancelled": "Board confirmation has been cancelled.",
   "agentVisionBoardConfirmed": "Board confirmed",
   "aiTacticalAnalysis": "AI Tactical Analysis",
-  "aiAnalysisEmptyBoard": "Place at least one piece to use AI analysis"
+  "aiAnalysisEmptyBoard": "Place at least one piece to use AI analysis",
+  "chessVisionPanelTitle": "Chess Board Fine-tuning",
+  "chessVisionEditRedPieces": "Red Side",
+  "chessVisionEditBlackPieces": "Black Side"
 }

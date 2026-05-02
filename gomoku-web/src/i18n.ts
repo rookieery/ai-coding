@@ -277,6 +277,9 @@ export interface Messages {
   agentVisionBoardConfirmed: string;
   aiTacticalAnalysis: string;
   aiAnalysisEmptyBoard: string;
+  chessVisionPanelTitle: string;
+  chessVisionEditRedPieces: string;
+  chessVisionEditBlackPieces: string;
 }
 
 export type MessageKey = keyof Messages;
