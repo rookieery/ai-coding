@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-05",
-      "title": "前端：扩展 useVisionBridge 支持中国象棋数据传递",
-      "description": "桥接层改造。修改 `gomoku-web/src/composables/useVisionBridge.ts`。\n\n1. 新增模块级响应式变量 `pendingChessVisionCandidates: ref<number[][][] | null>`（默认 null），用于在 AgentView 和 ChineseChessView 之间传递 10×9 的象棋棋盘矩阵。\n2. 新增 `setChessVisionCandidatesForReplay(candidates: number[][][])` 方法：深度拷贝 candidates 赋值给 `pendingChessVisionCandidates`。\n3. 新增 `consumeChessVisionCandidates(): number[][][] | null` 方法：读取并清空 `pendingChessVisionCandidates`。\n4. 新增象棋专用分析数据存储：`pendingChessAnalysis: ref<{ board: import('../games/chinese-chess/types').BoardState; currentPlayer: string; question: string; imageBase64: string } | null>`（默认 null），以及对应的 `setChessAnalysis` 和 `consumeChessAnalysis` 方法。\n5. 修改 `clearPendingRequest()` 方法，确保同时清空象棋相关状态。预估代码变更约 50 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-06",
       "title": "前端：AgentView 图片上传流程改造（自动路由棋局类型）",
       "description": "核心流程改造。修改 `gomoku-web/src/views/AgentView.vue` 的 `handleSend` 方法中处理 `payload.imageBase64` 的分支逻辑。\n\n**当前逻辑**（约第 347-397 行）：图片上传后直接调用 `visionApi.recognizeBoardFromBase64` → 成功后调用 `enterVisionConfirmMode` 进入五子棋视觉确认。\n\n**改造后逻辑**：图片上传后调用 `visionApi.recognizeBoardFromBase64`（后端已自动检测棋局类型）→ 根据 `result.boardType` 自动路由：\n- 若 `result.boardType === 'chinese_chess'`：调用 `enterChessVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined)` 进入象棋视觉确认分屏。\n- 否则（gomoku 或未指定）：保持现有逻辑，调用 `enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined)` 进入五子棋视觉确认。\n\n这是唯一需要改动的文件和方法。后端的统一检测确保前端只需一次 API 调用，通过返回的 boardType 字段决定走哪条分支。无需用户介入选择。预估代码变更约 10 行（增加一个 if-else 分支）。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-07",

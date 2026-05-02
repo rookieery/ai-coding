@@ -31,7 +31,7 @@ const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
-const { playMode, enterGomokuMode, enterVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
+const { playMode, enterGomokuMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
 const { consumePendingAnalysis, setVisionCandidatesForReplay, clearPendingRequest } = useVisionBridge();
 const router = useRouter();
 
@@ -368,7 +368,11 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     try {
       const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
 
-      enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
+      if (result.boardType === 'chinese_chess') {
+        enterChessVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
+      } else {
+        enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
+      }
 
       isThinking.value = false;
       thinkingContent.value = '';
