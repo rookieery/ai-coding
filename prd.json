@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-PLAY-003-MoveParser",
-      "title": "前端：编写中国象棋聊天走法解析器",
-      "description": "纯逻辑层任务。在 `gomoku-web/src/games/chinese-chess/` 下新建 `moveParser.ts`。\n\n实现 `parseChessMoveText(text: string, board: number[][]): ParsedChessMove | null` 函数，用于在棋林对弈模式中解析用户通过聊天输入框输入的走法指令。\n\n**支持的输入格式**：\n1. **标准记谱法**（如「炮二平五」「马八进七」「车一进一」）：使用正则匹配 `([车馬马炮兵卒仕士相象帅将])([一二三四五六七八九123456789])([进退平])([一二三四五六七八九123456789])` 模式。根据棋子类型、列号、方向（进/退/平）、目标位置推算出 from/to 坐标。需区分红黑方的数字映射（红方从右到左为一至九，黑方从右到左为 1 至 9）。\n\n2. **坐标格式**（如「0,0-1,0」或「(0,0)(1,0)」）：使用正则匹配 `\\(?\\s*(\\d)\\s*,\\s*(\\d)\\s*\\)?\\s*[-到至>]\\s*\\(?\\s*(\\d)\\s*,\\s*(\\d)\\s*\\)?`。直接提取 from(row,col) 和 to(row,col)。\n\n3. **简写格式**（如「进车」「跳马」等模糊描述）：作为可选的扩展解析，如果前两种格式均未匹配，尝试匹配常见动词+棋子的组合，返回可能的走法候选列表（交由上层逻辑选择）。此阶段可暂不实现，返回 null 即可。\n\n**返回类型** `ParsedChessMove`：`{ from: { row: number; col: number }; to: { row: number; col: number }; notation?: string; confidence: number }`。confidence 为解析置信度（标准记谱法=1.0，坐标格式=0.9，模糊匹配=0.5）。\n\n**校验**：解析出的坐标必须满足 0 ≤ row ≤ 9、0 ≤ col ≤ 8，from 位置必须有对应棋子，走法需基本合法（可以不在意将军检测，由上层进一步校验）。\n\n预估代码约 200 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-PLAY-004-AgentView-Layout",
       "title": "前端：AgentView 集成中国象棋分屏布局",
       "description": "视图层联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n**第一部分：布局与渲染**\n1. 引入 `AgentChessPanel` 组件。\n2. 修改 `isSplitLayout` 计算属性，增加 `playMode === 'chinese-chess'` 条件，使中国象棋对弈也触发左右分屏布局。\n3. 在右侧面板区域（template 中渲染 `AgentGomokuPanel` 和 `AgentChessVisionPanel` 的同级位置），增加 `v-else-if=\"playMode === 'chinese-chess'\"` 分支，渲染 `AgentChessPanel`。\n4. 确保拖拽分割线、返回按钮在中国象棋对弈模式下同样生效（相关 v-if 条件增加 `'chinese-chess'` 判断）。\n5. 为 `AgentChessPanel` 绑定事件监听：`@userMove`、`@aiMove`、`@gameOver`。\n\n**第二部分：游戏选择器更新**\n1. 修改 `handleGameSelection(gameType, msg)` 方法，增加 `gameType === 'chinese-chess'` 分支。\n2. 当用户选择中国象棋时：调用 `useGlobalAgentPlay().enterChessMode()` 进入分屏对弈模式（而非 `enterGomokuMode()`）。\n3. 向 messages 数组推送提示消息，使用 i18n key `chessPlayModeEntered`（如「已进入中国象棋对弈模式，执红先行，请落子」）。\n4. 调用 `chatMessagesRef.value?.scrollToBottom()` 滚动到底部。\n\n**第三部分：游戏选择器按钮启用**\n1. 在 `AgentChatMessages.vue` 中找到渲染游戏选择按钮的位置（当前中国象棋按钮是置灰禁用状态，标注「即将推出」）。\n2. 移除禁用状态和高亮样式，使中国象棋按钮变为可点击的正常状态。\n3. 修改按钮文本移除「(即将推出)」后缀。\n4. 绑定点击事件 emit `select-game` 并传递 `'chinese-chess'`。\n\n预估代码变更约 60 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-PLAY-005-UserMove-Flow",

@@ -120,11 +120,14 @@ defineExpose({
               {{ t('agentGameGomoku') }}
             </button>
             <button
-              disabled
-              class="px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-not-allowed"
-              :class="currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-200 text-stone-400'"
+              @click="$emit('select-game', 'chinese-chess', msg)"
+              :disabled="msg.isGameSelectorDismissed"
+              class="px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+              :class="msg.isGameSelectorDismissed
+                ? (currentTheme === 'dark' ? 'cursor-not-allowed bg-stone-700 text-stone-500' : 'cursor-not-allowed bg-stone-200 text-stone-400')
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'"
             >
-              {{ t('agentGameChineseChess') }}
+              {{ t('chessPlayModeTitle') }}
             </button>
           </div>
 

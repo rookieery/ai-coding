@@ -14,6 +14,7 @@ import { parseMoveText } from '../games/gomoku/moveParser';
 import { convertBoardStateToCodes } from '../games/chinese-chess/utils';
 import { PlayerSide } from '../games/chinese-chess/types';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
+import AgentChessPanel from '../components/agent/AgentChessPanel.vue';
 import AgentVisionPanel from '../components/agent/AgentVisionPanel.vue';
 import AgentChessVisionPanel from '../components/agent/AgentChessVisionPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
@@ -29,17 +30,18 @@ const query = ref('');
 const chatMessagesRef = ref<InstanceType<typeof AgentChatMessages> | null>(null);
 const chatInputRef = ref<InstanceType<typeof AgentChatInput> | null>(null);
 const gomokuPanelRef = ref<InstanceType<typeof AgentGomokuPanel> | null>(null);
+const chessPanelRef = ref<InstanceType<typeof AgentChessPanel> | null>(null);
 const visionPanelRef = ref<InstanceType<typeof AgentVisionPanel> | null>(null);
 const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 const activeAbortController = ref<AbortController | null>(null);
 
-const { playMode, enterGomokuMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, chessVisionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
+const { playMode, enterGomokuMode, enterChessMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, chessVisionCandidates, pendingImageBase64, pendingQuestion, isAIThinking } = useGlobalAgentPlay();
 const { consumePendingAnalysis, setVisionCandidatesForReplay, setChessVisionCandidatesForReplay, clearPendingRequest, consumeChessAnalysis } = useVisionBridge();
 const router = useRouter();
 
-const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || playMode.value === 'chess-vision-confirm' || isExitingGomoku.value);
+const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'chinese-chess' || playMode.value === 'vision-confirm' || playMode.value === 'chess-vision-confirm' || isExitingGomoku.value);
 
 const {
   messages,
@@ -100,11 +102,14 @@ const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
   if (gameType === 'gomoku') {
     enterGomokuMode();
     gomokuPanelRef.value?.resetGame();
+  } else if (gameType === 'chinese-chess') {
+    enterChessMode();
+    chessPanelRef.value?.resetGame();
   }
 
   messages.value.push({
     role: 'agent',
-    text: t('agentGomokuModeEntered')
+    text: gameType === 'chinese-chess' ? t('chessPlayModeEntered') : t('agentGomokuModeEntered')
   });
 
   await nextTick();
@@ -246,6 +251,28 @@ const handleSurrender = () => {
   messages.value.push({
     role: 'agent',
     text: t('agentSurrenderNotification')
+  });
+};
+
+const handleChessUserMove = (move: { from: { row: number; col: number }; to: { row: number; col: number }; notation: string }) => {
+  messages.value.push({
+    role: 'user',
+    text: t('chessUserMoveMsg', move.notation)
+  });
+};
+
+const handleChessAiMove = (move: { from: { row: number; col: number }; to: { row: number; col: number }; notation: string }) => {
+  messages.value.push({
+    role: 'agent',
+    text: t('chessAiMoveMsg', move.notation)
+  });
+};
+
+const handleChessGameOver = (result: { winner: string; reason: string }) => {
+  isAIThinking.value = false;
+  messages.value.push({
+    role: 'agent',
+    text: t('chessCheckmateMsg', result.winner)
   });
 };
 
@@ -571,7 +598,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
          :style="isSplitLayout ? `width: ${leftPanelWidth}%` : 'width: 100%'">
 
       <!-- 返回按钮（仅分屏模式显示） -->
-      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm' || playMode === 'chess-vision-confirm'" class="flex items-center px-4 py-3 border-b shrink-0"
+      <div v-if="playMode === 'gomoku' || playMode === 'chinese-chess' || playMode === 'vision-confirm' || playMode === 'chess-vision-confirm'" class="flex items-center px-4 py-3 border-b shrink-0"
            :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
         <button @click="handleExitClick"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
@@ -648,7 +675,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 
     <!-- 右侧对弈面板（仅分屏模式显示） -->
     <transition name="slide-panel">
-      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm' || playMode === 'chess-vision-confirm'" class="flex-1 h-full overflow-hidden panel-right"
+      <div v-if="playMode === 'gomoku' || playMode === 'chinese-chess' || playMode === 'vision-confirm' || playMode === 'chess-vision-confirm'" class="flex-1 h-full overflow-hidden panel-right"
            :class="currentTheme === 'dark' ? 'bg-stone-900' : 'bg-stone-50'">
         <AgentGomokuPanel
           v-if="playMode === 'gomoku'"
@@ -656,6 +683,13 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
           @userMove="handleUserMove"
           @surrender="handleSurrender"
           @aiFirstMove="handleAiFirstMove"
+        />
+        <AgentChessPanel
+          v-else-if="playMode === 'chinese-chess'"
+          ref="chessPanelRef"
+          @userMove="handleChessUserMove"
+          @aiMove="handleChessAiMove"
+          @gameOver="handleChessGameOver"
         />
         <AgentVisionPanel
           v-else-if="playMode === 'vision-confirm'"
