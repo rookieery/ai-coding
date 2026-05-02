@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-01",
-      "title": "后端：创建中国象棋视觉识别服务",
-      "description": "纯后端任务。在 `gomoku-server/src/services/` 下新建 `chess-vision.service.ts`。复用 Doubao (Volcengine) 多模态 API（与五子棋共用 VOLCENGINE_API_KEY / VOLCENGINE_BASE_URL / DOUBAO_VISION_ENDPOINT_ID 环境变量）。\n\n1. **数据格式定义**：识别结果为 10 行 × 9 列的二维数组，棋子编码为：0=空位，1=红帅，2=红仕，3=红相，4=红马，5=红车，6=红炮，7=红兵，8=黑将，9=黑士，10=黑象，11=黑马，12=黑车，13=黑炮，14=黑卒。\n\n2. **System Prompt 核心要素**：\n   - 声明为「追求绝对零误差的中国象棋视觉标定系统」。\n   - 要求 AI 先通过「楚河汉界」文字和九宫格斜线确认棋盘类型为中国象棋。\n   - 坐标约定：row 0 为黑方底线（上方），row 9 为红方底线（下方），col 0 为最左列，col 8 为最右列。\n   - 识别策略：通过棋子上的中文字符（帅/将、仕/士、相/象、马、车、炮、兵/卒）确定棋子类型和阵营，而非颜色深浅。\n   - 生成 10×9 的 ASCII 字符画进行坐标标注。\n   - 自校验步骤：红方必须恰好有 1 个帅，黑方必须恰好有 1 个将；每方的仕、相、马、车、炮各不超过 2 个，兵/卒不超过 5 个。\n   - 输出 3 组候选矩阵，分别对应原图位置、整体向上偏移 1 格、整体向下偏移 1 格的假设。\n   - JSON 格式：{\"boardType\": \"chinese_chess\", \"candidates\": [matrix1, matrix2, matrix3]}，每个 matrix 为 10×9 的二维数组，值域 0-14。\n\n3. **解析与校验**：编写 `parseVisionResponse` 和 `validateAndParseJson`，校验每个候选矩阵恰好 10 行 9 列、值域为 0-14。导出单例 `chessVisionService`。预估代码约 200 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-02",
       "title": "后端：创建统一视觉识别入口（自动检测棋局类型）",
       "description": "后端架构任务。在 `gomoku-server/src/services/` 下新建 `unified-vision.service.ts`，创建统一的视觉识别入口，自动检测棋局类型后路由到对应的专业识别服务。\n\n1. **棋局类型自动检测**：编写 `detectBoardType(imageBase64: string): Promise<'gomoku' | 'chinese_chess'>` 方法。向同一个 Doubao 视觉模型发送一条极短的检测 Prompt：「请判断这张图片是五子棋棋盘还是中国象棋棋盘。五子棋特征：15×15 交叉线网格、黑白圆石棋子、有星位标记点。中国象棋特征：9×10 网格、中间有'楚河汉界'文字、棋子为圆形带汉字（帅将仕士相象马车炮兵卒）。请仅回复一个词：gomoku 或 chinese_chess」。参数设置 max_tokens=10, temperature=0，确保极速返回。\n\n2. **统一识别入口**：编写 `recognizeBoard(imageBase64: string): Promise<{ boardType: 'gomoku' | 'chinese_chess'; candidates: number[][][] }>` 方法。内部流程：先调用 `detectBoardType` 获取类型 → 若为 gomoku 则委托给现有 `visionService.recognizeBoard` → 若为 chinese_chess 则委托给 `chessVisionService.recognizeChessBoard` → 统一返回包含 boardType 的结果对象。\n\n3. **统一路由**：修改 `gomoku-server/src/routes/vision.routes.ts`，将现有的 `POST /api/vision/recognize` 路由改为调用 `unifiedVisionService.recognizeBoard`（替代原来直接调用 visionService）。这样前端无需任何改动即可同时支持两种棋局。\n\n预估代码约 80 行（新增 unified-vision.service.ts），路由改动约 5 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-03",

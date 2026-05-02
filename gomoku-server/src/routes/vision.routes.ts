@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { visionService } from '../services/vision.service';
+import { unifiedVisionService } from '../services/unified-vision.service';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -35,7 +35,7 @@ router.post('/recognize', async (req: Request, res: Response) => {
 
     logger.info('Received board recognition request');
 
-    const result = await visionService.recognizeBoard(imageBase64);
+    const result = await unifiedVisionService.recognizeBoard(imageBase64);
 
     res.json({
       success: true,
