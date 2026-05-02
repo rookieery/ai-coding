@@ -200,3 +200,6 @@ export interface MatchQueryParams extends PaginationParams {
 
 // LLM AI Service Types
 export * from './llm.types';
+
+// Chinese Chess LLM AI Service Types
+export * from './chess-llm.types';

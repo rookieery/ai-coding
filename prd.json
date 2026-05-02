@@ -1,4 +1,101 @@
 {
   "branchName": "feature/chinese-chess-migration",
-  "stories": []
+  "stories": [
+    {
+      "id": "CHESS-LLM-001-Types",
+      "title": "后端：创建中国象棋 LLM AI 服务接口与类型定义",
+      "description": "纯类型定义任务。在后端 `gomoku-server/src/types/` 下新建 `chess-llm.types.ts`。\n\n1. `ChessLLMMoveRequest`：包含棋盘状态 `board: number[][]`（10×9 二维数组，棋子编码 0-14，同视觉识别的编码规范：0=空位，1=红帅，2=红仕，3=红相，4=红马，5=红车，6=红炮，7=红兵，8=黑将，9=黑士，10=黑象，11=黑马，12=黑车，13=黑炮，14=黑卒）、当前行棋方 `currentPlayer: 'red' | 'black'`、历史走法记录 `moveHistory: ChessMoveRecord[]`（每条含 from、to、piece、capturedPiece、notation）。\n\n2. `ChessMoveRecord`：`{ from: { row: number; col: number }; to: { row: number; col: number }; piece: number; capturedPiece?: number; notation?: string }`。\n\n3. `ChessLLMMoveResponse`：包含推荐走法 `move: { from: { row: number; col: number }; to: { row: number; col: number } }`、分析文本 `reason: string`、局势评估 `situationAnalysis?: string`、是否为兜底走法 `isFallback: boolean`。\n\n4. `ChessCandidateMove`：`{ from: { row: number; col: number }; to: { row: number; col: number }; score: number; reason: string }`，其中 reason 用中文简述落子理由（如「进车将军」、「跳马防守」）。\n\n确保完全使用 TypeScript 强类型，暂不实现业务逻辑。预估代码约 60 行。",
+      "passes": true
+    },
+    {
+      "id": "CHESS-LLM-002-Board-Prompt",
+      "title": "后端：编写中国象棋棋盘文本化与 Prompt 组装工具",
+      "description": "纯工具类任务。在后端 `gomoku-server/src/utils/` 下新建 `chessBoardPromptUtils.ts`。\n\n1. **棋盘 ASCII 可视化**：编写 `boardToAscii(board: number[][]): string` 函数，将 10×9 数值矩阵转换为人类可读的 ASCII 棋盘。棋子用中文字符表示：帅/将/仕/士/相/象/馬/马/車/车/炮/兵/卒（红方用常规字，黑方可加区分标记），空位用「·」，楚河汉界区域标注。上方标注列号 a-i，左方标注行号 0-9。\n\n2. **棋子价值评估文本**：编写 `getMaterialAnalysis(board: number[][]): string` 函数，统计双方剩余子力（车=9分，马=4分，炮=4.5分，仕=2分，相=2分，兵/卒过河+1分），输出红黑双方总分子力对比文本。\n\n3. **System Prompt 组装**：编写 `buildChessSystemPrompt(board: number[][], currentPlayer: string, candidates: ChessCandidateMove[]): string` 函数。Prompt 要素：\n   - 角色设定：你是中国象棋特级大师，拥有深厚的开局、中局、残局理论功底。\n   - 棋盘当前局势的 ASCII 可视化。\n   - 子力对比分析文本。\n   - 当前行棋方（红方/黑方）。\n   - 候选走法列表（Top 15），包含坐标和理由。\n   - 强制 JSON 输出格式：`{ \"move\": { \"from\": { \"row\": x, \"col\": y }, \"to\": { \"row\": x, \"col\": y } }, \"reason\": \"...\", \"situationAnalysis\": \"...\" }`\n   - 策略指导：优先处理将军/应将，其次攻防要点，关注子力交换得失，注意将帅安全。\n   - 术语要求：使用中国象棋标准术语（如抽将、闪击、牵制、兑子、腾挪、拦截等）。\n\n预估代码约 200 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-003-Candidate-Generator",
+      "title": "后端：实现中国象棋候选走法生成器",
+      "description": "纯算法工具任务。在后端 `gomoku-server/src/utils/` 下新建 `chessCandidateGenerator.ts`。\n\n实现 `generateCandidateMoves(board: number[][], playerColor: 'red' | 'black'): ChessCandidateMove[]` 函数。这是 LLM 走子生成中关键的前置步骤，为 LLM 提供「选择题」而非「填空题」。\n\n**核心逻辑**：\n1. **走法生成**：遍历当前行棋方所有棋子，为每个棋子生成所有伪合法走法（不考虑将军约束的走法）。棋子编码映射到走法规则：\n   - 车(5/12)：直线走，遇子停（可吃敌子）。\n   - 马(4/11)：日字走法，检查蹩马腿。\n   - 炮(6/13)：直线移动（不吃子时不能越子），吃子必须隔一个炮架。\n   - 兵(7)/卒(14)：未过河只能前进，过河后可左右。\n   - 仕(2)/士(9)：九宫格内斜线走一步。\n   - 相(3)/象(10)：田字走法，不能过河，检查塞象眼。\n   - 帅(1)/将(8)：九宫格内直线走一步。\n\n2. **合法走法过滤**：执行每个伪合法走法后，检查走后己方将/帅是否被将军（包括将帅对面），过滤掉导致己方被将的走法。\n\n3. **走法评分**：为每个合法走法计算评分（简单的启发式）：\n   - 吃子价值：按被吃棋子分值加权（车900、炮450、马400、仕200、相200、兵100）。\n   - 将军加分：走后对方被将军，额外 +500。\n   - 中心控制加分：棋子走向中心区域（col 3-5, row 3-6）额外 +50。\n   - 前进加分：过河兵/卒前进 +30。\n\n4. **排序与截断**：按评分降序排列，返回 Top 15 候选走法，每个包含 `from`、`to`、`score`、`reason`（简短中文描述，如「车一进五（吃黑卒）」、「马八进七（占据要道）」）。\n\n预估代码约 300 行（含所有棋子走法规则和评分逻辑）。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-004-Threat-Detector",
+      "title": "后端：实现中国象棋关键威胁检测拦截器",
+      "description": "纯逻辑算法任务。在后端 `gomoku-server/src/utils/` 下新建 `chessThreatDetector.ts`。\n\n实现 `findCriticalMove(board: number[][], playerColor: 'red' | 'black'): { from: { row: number; col: number }; to: { row: number; col: number }; reason: string } | null` 函数。\n\n**检测逻辑**（按优先级从高到低）：\n\n1. **绝杀检测（最高优先级）**：遍历当前方所有合法走法，检查是否存在走后直接将死对方的走法（对方没有任何合法走法可以应将）。如果存在，立即返回该走法，reason 为「绝杀！直接将死对方」。\n\n2. **应将检测**：检查当前方是否正在被将军。如果是，遍历所有合法走法寻找应将走法（走后己方不被将军的走法）。优先选择可以吃掉将军棋子的应将，其次选择挡将/垫将，最后选择移动将/帅。返回最高优先级的应将走法，reason 为「必须应将：{具体原因}」。\n\n3. **对方致命威胁拦截**：检查对方是否存在下一步可以绝杀的走法（模拟对方所有合法走法，看是否有一步将死的）。如果存在，寻找当前方可以阻止该绝杀的走法（通过吃掉威胁棋子、挡住攻击线路、或将/帅逃离）。返回拦截走法，reason 为「紧急防守：对方即将{具体威胁}，必须拦截」。\n\n4. **无关键威胁则返回 null**：如果没有上述任何情况，返回 null，表示需要调用 LLM 进行深度思考。\n\n预估代码约 200 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-005-Service",
+      "title": "后端：实现中国象棋 LLM 服务（DeepSeek API 调用与幻觉校验）",
+      "description": "核心逻辑任务。在后端 `gomoku-server/src/services/` 下新建 `chess-llm.service.ts`。\n\n实现 `ChessLLMService` 类（导出单例 `chessLlmService`）：\n\n**核心方法 `generateMove(request: ChessLLMMoveRequest): Promise<ChessLLMMoveResponse>`**：\n\n1. **威胁拦截**：调用 `findCriticalMove(board, currentPlayer)`。如果返回非 null（存在关键走法），直接构建响应返回，跳过 LLM 调用，节省 Token。`isFallback: true`。\n\n2. **候选走法生成**：调用 `generateCandidateMoves(board, currentPlayer)` 获取 Top 15 候选走法。\n\n3. **Prompt 组装**：调用 `buildChessSystemPrompt(board, currentPlayer, candidates)` 构建完整 Prompt。\n\n4. **DeepSeek API 调用**：使用已有的 DeepSeek API 客户端（复用环境变量 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`，模型使用 `DEEPSEEK_MODEL` 或默认 `deepseek-chat`）。发送请求，temperature=0.3（中国象棋需要一定创造性但不至于太随机）。\n\n5. **响应解析与校验**：\n   a. 解析 LLM 返回的 JSON，提取 `move`（from/to 坐标）。\n   b. **幻觉校验**：检查 LLM 返回的走法是否在候选列表中。如果不在候选列表中，进一步验证走法的合法性（from 位置是否有己方棋子、走法是否符合棋子规则、走后己方不被将军）。\n   c. 如果走法非法或无法解析：使用候选列表中评分最高的走法作为兜底，`isFallback: true`，reason 中标注「大模型返回非法走法，已启用兜底策略」。\n   d. 如果走法合法但在候选列表之外：接受该走法但保留候选列表参考信息。\n\n6. **健康检查方法**：`healthCheck(): Promise<boolean>`，验证 DeepSeek API 连通性。\n\n预估代码约 150 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-006-Controller-Routes",
+      "title": "后端：创建中国象棋 LLM 控制器与路由",
+      "description": "后端路由与接口暴露任务。\n\n1. **控制器**：在 `gomoku-server/src/controllers/` 下新建 `chess-llm.controller.ts`。\n   - `POST /api/games/chinese-chess/llm/move`：接收 `ChessLLMMoveRequest` 请求体，调用 `chessLlmService.generateMove()`，返回统一响应格式 `{ code: 0, data: ChessLLMMoveResponse, message: 'success' }`。异常由全局错误处理器捕获。\n   - `GET /api/games/chinese-chess/llm/health`：调用 `chessLlmService.healthCheck()`，返回 LLM 服务健康状态。\n\n2. **路由注册**：修改 `gomoku-server/src/routes/games/chinese-chess.routes.ts`（或新建路由文件），将上述两个端点注册到 Express Router。\n\n3. **主入口挂载**：确保中国象棋 LLM 路由被正确挂载到 Express 应用。检查 `gomoku-server/src/routes/games/index.ts` 或 `app.ts`，确保新路由文件被引入并使用。\n\n预估代码约 60 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-007-Frontend-API",
+      "title": "前端：创建中国象棋 LLM API 调用与状态管理",
+      "description": "前端数据层任务。\n\n1. **API 客户端**：在 `gomoku-web/src/games/chinese-chess/api/` 下新建 `chessLlmApi.ts`。\n   - 定义 `ChessLLMMoveRequest` 前端类型（与后端对应）。\n   - 编写 `generateChessLLMMove(request: ChessLLMMoveRequest): Promise<ChessLLMMoveResponse>` 函数，调用 `POST /api/games/chinese-chess/llm/move`。\n   - 编写 `checkChessLLMHealth(): Promise<boolean>` 函数，调用健康检查接口。\n\n2. **Composable 改造**：修改 `gomoku-web/src/games/chinese-chess/composables/useGameAI.ts`。\n   - 新增 `llmMove(board: BoardState, aiPlayerSide: PlayerSide, onMove: (result: any) => void): void` 方法。\n   - 方法逻辑：将 `BoardState` 通过 `convertBoardStateToCodes()` 转为 10×9 数值矩阵 → 构造 `ChessLLMMoveRequest`（包含 board、currentPlayer、moveHistory）→ 调用 `generateChessLLMMove()` → 解析响应中的 `move.from/to` 转换回 `BoardState` 坐标 → 调用 `onMove` 回调。\n   - 增加 `isLlmThinking: Ref<boolean>` 响应式状态，在 LLM 请求期间为 true。\n   - 保留现有的 Web Worker 本地 AI 逻辑不变，`llmMove` 与 `aiMove` 并行存在。\n\n预估代码约 100 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-008-UI-Integration",
+      "title": "前端：GameControls 集成神经网络 AI 选项与思考 UI",
+      "description": "前端视图层集成任务。\n\n1. **GameControls.vue 改造**：修改 `gomoku-web/src/games/chinese-chess/components/GameControls.vue`。\n   - 确保「神经网络」难度选项已在下拉菜单中可用（当前已存在 `neural` 选项）。\n   - 当难度为 `neural` 且轮到 AI 行棋时，显示「DeepSeek 正在推演局势...」的加载提示，使用 `ThinkingProcess.vue` 共享组件。\n   - 在 AI 思考过程中，禁止用户操作棋盘。\n\n2. **ChineseChessView.vue 改造**：修改 `gomoku-web/src/games/chinese-chess/views/ChineseChessView.vue`。\n   - 当 `gameState.config.difficulty === 'neural'` 且轮到 AI 时，调用 `useGameAI().llmMove()` 替代本地 Worker AI。\n   - 在右侧历史面板上方或状态栏中展示 LLM 返回的 `reason`（AI 思考分析）和 `situationAnalysis`（局势评估），使用可折叠的 `ThinkingProcess.vue` 组件。\n   - LLM 返回后，自动执行走法，并在棋盘上标注最后一步走法（高亮 from 和 to 位置）。\n\n3. **思考过程展示**：复用 `gomoku-web/src/common/components/ui/ThinkingProcess.vue` 组件，展示 LLM 的思考过程文本。支持折叠/展开，显示字符数统计。\n\n预估代码变更约 120 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-LLM-009-I18N",
+      "title": "前端：添加中国象棋 LLM 相关 i18n 翻译键",
+      "description": "国际化任务。在 `gomoku-web/src/locales/zh-CN.json` 和 `gomoku-web/src/locales/en-US.json` 中新增以下翻译 key：\n\n**LLM AI 相关**：\n- `chessLlmThinking`：「DeepSeek 正在推演局势...」 / 「DeepSeek is analyzing the position...」\n- `chessLlmFallbackMove`：「大模型返回非法走法，已启用兜底策略」 / 「LLM returned an invalid move, fallback strategy activated」\n- `chessLlmAnalysisTitle`：「AI 战术分析」 / 「AI Tactical Analysis」\n- `chessLlmSituation`：「局势评估」 / 「Situation Evaluation」\n- `chessLlmMoveReason`：「AI 思路」 / 「AI Reasoning」\n- `chessLlmCriticalMove`：「AI 本能反应：{reason}」 / 「AI Instinct: {reason}」\n- `chessNeuralDifficulty`：「神经网络(DeepSeek)」 / 「Neural Network (DeepSeek)」\n- `chessLlmHealthOk`：「LLM 服务正常」 / 「LLM Service Healthy」\n- `chessLlmHealthError`：「LLM 服务不可用」 / 「LLM Service Unavailable」\n\n**棋林对弈相关**：\n- `chessPlayModeTitle`：「中国象棋对弈」 / 「Chinese Chess Battle」\n- `chessPlayModeEntered`：「已进入中国象棋对弈模式，执红先行，请落子」 / 「Chinese Chess battle mode activated. You play Red, please make your move.」\n- `chessAiMoveMsg`：「AI 行棋：{notation}」 / 「AI plays: {notation}」\n- `chessUserMoveMsg`：「玩家行棋：{notation}」 / 「Player plays: {notation}」\n- `chessInvalidMoveMsg`：「该走法不合法，请重新输入」 / 「Invalid move, please try again」\n- `chessCheckMsg`：「将军！」 / 「Check!」\n- `chessCheckmateMsg`：「将死！{winner}方获胜」 / 「Checkmate! {winner} wins」\n- `chessSelectGameChess`：「中国象棋」 / 「Chinese Chess」\n- `chessAiThinkingStatus`：「AI 正在思考...」 / 「AI is thinking...」\n- `chessEnterPlayMode`：「进入对弈」 / 「Enter Battle」\n- `chessResignGame`：「认输」 / 「Resign」\n- `chessNewGame`：「新局」 / 「New Game」\n\n同时在 `gomoku-web/src/i18n.ts` 的 TranslationKeys 类型中追加以上 key。预估变更约 40 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-001-AgentPlay-State",
+      "title": "前端：扩展 useAgentPlay 支持中国象棋对弈模式",
+      "description": "状态管理层改造。修改 `gomoku-web/src/composables/useAgentPlay.ts`。\n\n1. 将 `PlayMode` 联合类型从 `'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm'` 扩展为 `'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm' | 'chinese-chess'`。\n\n2. 新增方法 `enterChessMode(): void`：将 `playMode` 设为 `'chinese-chess'`，同时将 `isAIThinking` 设为 false。此方法用于从智能体对话进入中国象棋分屏对弈。\n\n3. 修改 `exitPlayMode()` 方法，确保在 playMode 为 `'chinese-chess'` 时也能正确重置为 `'chat'`，并清理所有相关状态（`isAIThinking = false`）。\n\n4. 确保 `useGlobalAgentPlay()` 单例模式在扩展后不受影响，所有已有的 `'gomoku'`、`'vision-confirm'`、`'chess-vision-confirm'` 模式逻辑保持不变。\n\n预估代码变更约 20 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-002-AgentChessPanel",
+      "title": "前端：创建 AgentChessPanel.vue 中国象棋分屏对弈面板",
+      "description": "核心组件开发。在 `gomoku-web/src/components/agent/` 下新建 `AgentChessPanel.vue`。该组件是 Agent 分屏对弈模式中右侧的中国象棋交互面板，类比 `AgentGomokuPanel.vue` 的设计模式。\n\n1. **棋盘渲染**：引入中国象棋 Board 组件（`src/games/chinese-chess/components/Board.vue`），渲染 10×9 棋盘。使用 `useGameState` composable 管理内部棋盘状态（初始化为标准开局）。\n\n2. **玩家交互**：监听 Board 的棋子点击和落子事件。仅当轮到玩家行棋时允许操作（红方默认为玩家）。当轮到 AI 时禁用棋盘点击。\n\n3. **走法通知**：玩家落子后，emit `@userMove` 事件，携带走法信息 `{ from: { row, col }, to: { row, col }, notation: string }`。notation 使用现有的中国象棋记谱法工具（`src/games/chinese-chess/notation.ts`）生成标准记谱（如「炮二平五」）。\n\n4. **AI 落子接口**：暴露 `placeAiPiece(from: { row: number; col: number }, to: { row: number; col: number }): void` 方法。外部调用此方法在棋盘上执行 AI 的走法，触发内部状态更新（移动棋子、处理吃子、切换行棋方），然后 emit `@aiMove` 事件。\n\n5. **状态查询**：暴露 `getBoard(): number[][]` 方法返回当前棋盘的数值矩阵（通过 `convertBoardStateToCodes` 转换）。暴露 `getMoveHistory(): ChessMoveRecord[]` 返回走法历史。暴露 `isValidMove(from, to): boolean` 校验走法合法性。暴露 `getCurrentPlayer(): 'red' | 'black'` 获取当前行棋方。\n\n6. **游戏控制**：暴露 `resetGame(): void` 重置棋盘到标准开局。暴露 `undoLastMove(): void` 悔棋（撤回最后一步）。\n\n7. **游戏结束检测**：每次走法后检测是否将死或困毙。如果游戏结束，emit `@gameOver` 事件，携带 `{ winner: 'red' | 'black' | 'draw', reason: string }`。\n\n8. **UI 布局**：面板顶部显示游戏状态（当前行棋方、回合数）。底部提供紧凑的控制按钮（悔棋、新局、认输）。棋盘居中占满面板主体区域，适配容器宽度。\n\n9. **AI 角色选择**：接受 prop `playerSide: 'red' | 'black'`，默认 `'red'`。决定哪方由玩家操作，哪方由 AI 控制。\n\nProps：`playerSide?: 'red' | 'black'`（默认 `'red'`）。\nEmits：`userMove(move)`、`aiMove(move)`、`gameOver(result)`。\nDefineExpose：`placeAiPiece`、`getBoard`、`getMoveHistory`、`isValidMove`、`getCurrentPlayer`、`resetGame`、`undoLastMove`。\n\n所有 UI 文本使用 i18n。预估代码约 350 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-003-MoveParser",
+      "title": "前端：编写中国象棋聊天走法解析器",
+      "description": "纯逻辑层任务。在 `gomoku-web/src/games/chinese-chess/` 下新建 `moveParser.ts`。\n\n实现 `parseChessMoveText(text: string, board: number[][]): ParsedChessMove | null` 函数，用于在棋林对弈模式中解析用户通过聊天输入框输入的走法指令。\n\n**支持的输入格式**：\n1. **标准记谱法**（如「炮二平五」「马八进七」「车一进一」）：使用正则匹配 `([车馬马炮兵卒仕士相象帅将])([一二三四五六七八九123456789])([进退平])([一二三四五六七八九123456789])` 模式。根据棋子类型、列号、方向（进/退/平）、目标位置推算出 from/to 坐标。需区分红黑方的数字映射（红方从右到左为一至九，黑方从右到左为 1 至 9）。\n\n2. **坐标格式**（如「0,0-1,0」或「(0,0)(1,0)」）：使用正则匹配 `\\(?\\s*(\\d)\\s*,\\s*(\\d)\\s*\\)?\\s*[-到至>]\\s*\\(?\\s*(\\d)\\s*,\\s*(\\d)\\s*\\)?`。直接提取 from(row,col) 和 to(row,col)。\n\n3. **简写格式**（如「进车」「跳马」等模糊描述）：作为可选的扩展解析，如果前两种格式均未匹配，尝试匹配常见动词+棋子的组合，返回可能的走法候选列表（交由上层逻辑选择）。此阶段可暂不实现，返回 null 即可。\n\n**返回类型** `ParsedChessMove`：`{ from: { row: number; col: number }; to: { row: number; col: number }; notation?: string; confidence: number }`。confidence 为解析置信度（标准记谱法=1.0，坐标格式=0.9，模糊匹配=0.5）。\n\n**校验**：解析出的坐标必须满足 0 ≤ row ≤ 9、0 ≤ col ≤ 8，from 位置必须有对应棋子，走法需基本合法（可以不在意将军检测，由上层进一步校验）。\n\n预估代码约 200 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-004-AgentView-Layout",
+      "title": "前端：AgentView 集成中国象棋分屏布局",
+      "description": "视图层联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n**第一部分：布局与渲染**\n1. 引入 `AgentChessPanel` 组件。\n2. 修改 `isSplitLayout` 计算属性，增加 `playMode === 'chinese-chess'` 条件，使中国象棋对弈也触发左右分屏布局。\n3. 在右侧面板区域（template 中渲染 `AgentGomokuPanel` 和 `AgentChessVisionPanel` 的同级位置），增加 `v-else-if=\"playMode === 'chinese-chess'\"` 分支，渲染 `AgentChessPanel`。\n4. 确保拖拽分割线、返回按钮在中国象棋对弈模式下同样生效（相关 v-if 条件增加 `'chinese-chess'` 判断）。\n5. 为 `AgentChessPanel` 绑定事件监听：`@userMove`、`@aiMove`、`@gameOver`。\n\n**第二部分：游戏选择器更新**\n1. 修改 `handleGameSelection(gameType, msg)` 方法，增加 `gameType === 'chinese-chess'` 分支。\n2. 当用户选择中国象棋时：调用 `useGlobalAgentPlay().enterChessMode()` 进入分屏对弈模式（而非 `enterGomokuMode()`）。\n3. 向 messages 数组推送提示消息，使用 i18n key `chessPlayModeEntered`（如「已进入中国象棋对弈模式，执红先行，请落子」）。\n4. 调用 `chatMessagesRef.value?.scrollToBottom()` 滚动到底部。\n\n**第三部分：游戏选择器按钮启用**\n1. 在 `AgentChatMessages.vue` 中找到渲染游戏选择按钮的位置（当前中国象棋按钮是置灰禁用状态，标注「即将推出」）。\n2. 移除禁用状态和高亮样式，使中国象棋按钮变为可点击的正常状态。\n3. 修改按钮文本移除「(即将推出)」后缀。\n4. 绑定点击事件 emit `select-game` 并传递 `'chinese-chess'`。\n\n预估代码变更约 60 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-005-UserMove-Flow",
+      "title": "前端：实现中国象棋用户落子拦截与 AI 思考触发",
+      "description": "数据桥接联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n1. **用户落子事件处理**：实现 `handleChessUserMove(move)` 方法，绑定到 `AgentChessPanel` 的 `@userMove` 事件。\n   a. 在左侧聊天流追加系统消息：「玩家行棋：{move.notation}」（使用 i18n key `chessUserMoveMsg`，参数为 notation）。\n   b. 将 `useGlobalAgentPlay().isAIThinking` 设为 true，锁定 UI（禁用棋盘点击）。\n   c. 从 `AgentChessPanel` 获取当前棋盘状态：`chessPanelRef.value.getBoard()` 和 `chessPanelRef.value.getCurrentPlayer()`。\n   d. 构造 `ChessLLMMoveRequest`，调用 `chessLlmApi.generateChessLLMMove(request)` 发起后端 LLM 走子请求。\n\n2. **AI 响应处理**：在上述请求的回调中：\n   a. 如果请求成功：提取响应中的 `move.from/to`，调用 `chessPanelRef.value.placeAiPiece(move.from, move.to)` 在棋盘上执行 AI 走法。\n   b. 在左侧聊天流追加 AI 消息，包含 `reason`（AI 的分析文本）和 `situationAnalysis`（局势评估），使用 `ThinkingProcess.vue` 的可折叠 UI 展示思考过程。\n   c. 将 `isAIThinking` 设为 false，解锁 UI。\n   d. 如果 AI 走法导致将军，追加提示消息（使用 i18n key `chessCheckMsg`）。\n\n3. **错误处理**：如果 LLM 请求失败，在聊天流追加错误提示消息，`isAIThinking` 设为 false，告知用户 AI 暂时无法响应。\n\n4. **游戏结束处理**：实现 `handleChessGameOver(result)` 方法，绑定到 `@gameOver` 事件。\n   a. 在聊天流追加游戏结束消息（使用 i18n key `chessCheckmateMsg`，参数为获胜方）。\n   b. `isAIThinking` 设为 false。\n\n预估代码变更约 100 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-006-ChatMove-Interceptor",
+      "title": "前端：AgentView 聊天输入拦截与象棋走法解析分流",
+      "description": "核心联调任务。修改 `gomoku-web/src/views/AgentView.vue` 的 `handleSend` 方法。\n\n1. 当 `playMode === 'chinese-chess'` 时，获取用户输入 `query.value`，先调用 `parseChessMoveText(text, chessPanelRef.value.getBoard())` 尝试解析为象棋走法。\n\n2. **走法解析成功**（返回非 null）：\n   a. 通过 `chessPanelRef.value.isValidMove(parsedMove.from, parsedMove.to)` 校验走法合法性。\n   b. 如果合法：将用户消息上屏展示（格式为「玩家行棋：{notation}」），清空输入框，然后触发与棋盘点击落子相同的流程（调用 `handleChessUserMove` 的核心逻辑）。\n   c. 如果不合法：直接在聊天流追加 Agent 提示消息，使用 i18n key `chessInvalidMoveMsg`，告知用户走法不合法，不触发 AI 思考。\n\n3. **走法解析失败**（返回 null）：说明用户在进行普通聊天（非走法指令），直接走原有的 `sendMessage` / `executeStreamingChat` 逻辑，将消息发送给 DeepSeek Reasoner 进行普通对话。\n\n4. 确保与现有的五子棋走法解析逻辑（`parseMoveText`）互不冲突，两个分支各自独立处理。\n\n预估代码变更约 40 行。",
+      "passes": false
+    },
+    {
+      "id": "CHESS-PLAY-007-Smoke-Test",
+      "title": "全链路冒烟测试与功能验证",
+      "description": "测试验证任务。启动前端和后端开发服务器，手动验证以下路径：\n\n**Feature 1：中国象棋神经网络 AI（独立页面）**：\n1. 进入中国象棋独立页面 → 选择难度「神经网络(DeepSeek)」→ 开始 PvE 对弈 → 落下一子 → 观察前端显示「DeepSeek 正在推演局势...」→ 等待 AI 走法 → 确认 AI 走法合法且附有分析文本 → 继续对弈多回合验证稳定性。\n2. 测试 AI 在被将军时的应将行为 → 确认威胁检测器正确拦截。\n3. 测试 AI 在存在绝杀时的直接杀棋行为 → 确认无需调用 LLM。\n\n**Feature 2：棋林对弈（智能体分屏）**：\n4. 进入智能体页面 → 点击「中国象棋」按钮 → 确认分屏布局正确渲染 → 右侧显示标准象棋开局棋盘。\n5. 点击棋盘落子 → 确认左侧聊天流显示走法记谱 → 确认 AI 开始思考 → 确认 AI 走法在棋盘上正确渲染 → 确认聊天流显示 AI 分析文本。\n6. 在聊天输入框输入「炮二平五」→ 确认走法被正确解析并执行 → 确认 AI 正常响应。\n7. 在聊天输入框输入普通文本（如「你好」）→ 确认消息走普通聊天流程，不影响棋局。\n8. 测试悔棋、新局、认输功能是否正常。\n9. 测试将死/困毙检测 → 确认游戏结束消息正确显示。\n\n**回归验证**：\n10. 五子棋对弈流程不受影响（游戏选择器、分屏布局、走法解析均无回归）。\n11. 五子棋/象棋视觉识别流程不受影响。\n12. 普通聊天流程不受影响。",
+      "passes": false
+    }
+  ]
 }
