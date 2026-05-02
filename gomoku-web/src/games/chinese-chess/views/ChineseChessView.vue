@@ -253,6 +253,7 @@ const handleCopySuccess = () => {
 };
 
 const handleRequestAiAnalysis = async () => {
+  if (gameState.moveHistory.value.length === 0) return;
   const el = boardRef.value?.$el as HTMLElement | undefined;
   if (!el) return;
 
