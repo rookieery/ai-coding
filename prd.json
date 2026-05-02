@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-PLAY-005-UserMove-Flow",
-      "title": "前端：实现中国象棋用户落子拦截与 AI 思考触发",
-      "description": "数据桥接联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n1. **用户落子事件处理**：实现 `handleChessUserMove(move)` 方法，绑定到 `AgentChessPanel` 的 `@userMove` 事件。\n   a. 在左侧聊天流追加系统消息：「玩家行棋：{move.notation}」（使用 i18n key `chessUserMoveMsg`，参数为 notation）。\n   b. 将 `useGlobalAgentPlay().isAIThinking` 设为 true，锁定 UI（禁用棋盘点击）。\n   c. 从 `AgentChessPanel` 获取当前棋盘状态：`chessPanelRef.value.getBoard()` 和 `chessPanelRef.value.getCurrentPlayer()`。\n   d. 构造 `ChessLLMMoveRequest`，调用 `chessLlmApi.generateChessLLMMove(request)` 发起后端 LLM 走子请求。\n\n2. **AI 响应处理**：在上述请求的回调中：\n   a. 如果请求成功：提取响应中的 `move.from/to`，调用 `chessPanelRef.value.placeAiPiece(move.from, move.to)` 在棋盘上执行 AI 走法。\n   b. 在左侧聊天流追加 AI 消息，包含 `reason`（AI 的分析文本）和 `situationAnalysis`（局势评估），使用 `ThinkingProcess.vue` 的可折叠 UI 展示思考过程。\n   c. 将 `isAIThinking` 设为 false，解锁 UI。\n   d. 如果 AI 走法导致将军，追加提示消息（使用 i18n key `chessCheckMsg`）。\n\n3. **错误处理**：如果 LLM 请求失败，在聊天流追加错误提示消息，`isAIThinking` 设为 false，告知用户 AI 暂时无法响应。\n\n4. **游戏结束处理**：实现 `handleChessGameOver(result)` 方法，绑定到 `@gameOver` 事件。\n   a. 在聊天流追加游戏结束消息（使用 i18n key `chessCheckmateMsg`，参数为获胜方）。\n   b. `isAIThinking` 设为 false。\n\n预估代码变更约 100 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-PLAY-006-ChatMove-Interceptor",
       "title": "前端：AgentView 聊天输入拦截与象棋走法解析分流",
       "description": "核心联调任务。修改 `gomoku-web/src/views/AgentView.vue` 的 `handleSend` 方法。\n\n1. 当 `playMode === 'chinese-chess'` 时，获取用户输入 `query.value`，先调用 `parseChessMoveText(text, chessPanelRef.value.getBoard())` 尝试解析为象棋走法。\n\n2. **走法解析成功**（返回非 null）：\n   a. 通过 `chessPanelRef.value.isValidMove(parsedMove.from, parsedMove.to)` 校验走法合法性。\n   b. 如果合法：将用户消息上屏展示（格式为「玩家行棋：{notation}」），清空输入框，然后触发与棋盘点击落子相同的流程（调用 `handleChessUserMove` 的核心逻辑）。\n   c. 如果不合法：直接在聊天流追加 Agent 提示消息，使用 i18n key `chessInvalidMoveMsg`，告知用户走法不合法，不触发 AI 思考。\n\n3. **走法解析失败**（返回 null）：说明用户在进行普通聊天（非走法指令），直接走原有的 `sendMessage` / `executeStreamingChat` 逻辑，将消息发送给 DeepSeek Reasoner 进行普通对话。\n\n4. 确保与现有的五子棋走法解析逻辑（`parseMoveText`）互不冲突，两个分支各自独立处理。\n\n预估代码变更约 40 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-PLAY-007-Smoke-Test",

@@ -259,6 +259,20 @@ const resign = (): void => {
   emitGameOver();
 };
 
+const placeUserPieceFromChat = (from: BoardCoord, to: BoardCoord): boolean => {
+  if (!isPlayerTurn.value || isGameOverState.value) return false;
+
+  const result = executeMoveInternal(from, to, playerSideEnum.value);
+  if (!result) return false;
+
+  if (isGameOverState.value) {
+    emitGameOver();
+  } else {
+    emit('userMove', { from, to, notation: result.notation });
+  }
+  return true;
+};
+
 defineExpose({
   placeAiPiece,
   getBoard,
@@ -267,6 +281,7 @@ defineExpose({
   getCurrentPlayer,
   resetGame,
   undoLastMove,
+  placeUserPieceFromChat,
 });
 </script>
 

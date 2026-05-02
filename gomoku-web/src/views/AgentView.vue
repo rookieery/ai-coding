@@ -11,6 +11,7 @@ import { useSplitDrag } from '../composables/useSplitDrag';
 import { useVisionBridge } from '../composables/useVisionBridge';
 import { BOARD_SIZE } from '../games/gomoku/gameLogic';
 import { parseMoveText } from '../games/gomoku/moveParser';
+import { parseChessMoveText } from '../games/chinese-chess/moveParser';
 import { convertBoardStateToCodes } from '../games/chinese-chess/utils';
 import { PlayerSide, PieceType } from '../games/chinese-chess/types';
 import type { MoveHistory } from '../games/chinese-chess/types';
@@ -631,6 +632,29 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     }
 
     return;
+  }
+
+  // Intercept chess move commands in chinese-chess mode
+  if (playMode.value === 'chinese-chess') {
+    const board = chessPanelRef.value?.getBoard();
+    if (board) {
+      const parsed = parseChessMoveText(payload.text, board);
+      if (parsed) {
+        const { from, to } = parsed;
+
+        if (chessPanelRef.value?.isValidMove(from, to)) {
+          query.value = '';
+          chatInputRef.value?.resetTextareaHeight();
+          chessPanelRef.value.placeUserPieceFromChat(from, to);
+        } else {
+          messages.value.push({ role: 'user', text: payload.text });
+          messages.value.push({ role: 'agent', text: t('chessInvalidMoveMsg') });
+          query.value = '';
+          chatInputRef.value?.resetTextareaHeight();
+        }
+        return;
+      }
+    }
   }
 
   // Intercept chess move commands in gomoku mode
