@@ -76,7 +76,8 @@ export function useGameUI() {
     currentPlayer: PlayerSide,
     isAiThinking: boolean,
     isAnalysisMode: boolean,
-    status: GameStatus
+    status: GameStatus,
+    isLlmThinking?: boolean
   ): string => {
     if (winner === PlayerSide.RED) return t('statusRedWin');
     if (winner === PlayerSide.BLACK) return t('statusBlackWinChess');
@@ -88,7 +89,8 @@ export function useGameUI() {
     if (status === GameStatus.CHECK) return t('statusCheck');
 
     const turnText = currentPlayer === PlayerSide.RED ? t('statusRedTurn') : t('statusBlackTurnChess');
-    const thinkingText = isAiThinking ? ` (${t('aiThinking')})` : '';
+    const thinkingLabel = isLlmThinking ? t('llmThinking') : t('aiThinking');
+    const thinkingText = (isAiThinking || isLlmThinking) ? ` (${thinkingLabel})` : '';
 
     if (isAnalysisMode) return `${t('analysisMode')} - ${turnText}${thinkingText}`;
     return `${turnText}${thinkingText}`;
@@ -104,6 +106,7 @@ export function useGameUI() {
       case 'intermediate': return t('difficultyIntermediate');
       case 'advanced': return t('difficultyAdvanced');
       case 'expert': return t('difficultyExpert');
+      case 'neural': return t('difficultyNeural');
     }
   };
 

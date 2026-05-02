@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-LLM-007-Frontend-API",
-      "title": "前端：创建中国象棋 LLM API 调用与状态管理",
-      "description": "前端数据层任务。\n\n1. **API 客户端**：在 `gomoku-web/src/games/chinese-chess/api/` 下新建 `chessLlmApi.ts`。\n   - 定义 `ChessLLMMoveRequest` 前端类型（与后端对应）。\n   - 编写 `generateChessLLMMove(request: ChessLLMMoveRequest): Promise<ChessLLMMoveResponse>` 函数，调用 `POST /api/games/chinese-chess/llm/move`。\n   - 编写 `checkChessLLMHealth(): Promise<boolean>` 函数，调用健康检查接口。\n\n2. **Composable 改造**：修改 `gomoku-web/src/games/chinese-chess/composables/useGameAI.ts`。\n   - 新增 `llmMove(board: BoardState, aiPlayerSide: PlayerSide, onMove: (result: any) => void): void` 方法。\n   - 方法逻辑：将 `BoardState` 通过 `convertBoardStateToCodes()` 转为 10×9 数值矩阵 → 构造 `ChessLLMMoveRequest`（包含 board、currentPlayer、moveHistory）→ 调用 `generateChessLLMMove()` → 解析响应中的 `move.from/to` 转换回 `BoardState` 坐标 → 调用 `onMove` 回调。\n   - 增加 `isLlmThinking: Ref<boolean>` 响应式状态，在 LLM 请求期间为 true。\n   - 保留现有的 Web Worker 本地 AI 逻辑不变，`llmMove` 与 `aiMove` 并行存在。\n\n预估代码约 100 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-LLM-008-UI-Integration",
       "title": "前端：GameControls 集成神经网络 AI 选项与思考 UI",
       "description": "前端视图层集成任务。\n\n1. **GameControls.vue 改造**：修改 `gomoku-web/src/games/chinese-chess/components/GameControls.vue`。\n   - 确保「神经网络」难度选项已在下拉菜单中可用（当前已存在 `neural` 选项）。\n   - 当难度为 `neural` 且轮到 AI 行棋时，显示「DeepSeek 正在推演局势...」的加载提示，使用 `ThinkingProcess.vue` 共享组件。\n   - 在 AI 思考过程中，禁止用户操作棋盘。\n\n2. **ChineseChessView.vue 改造**：修改 `gomoku-web/src/games/chinese-chess/views/ChineseChessView.vue`。\n   - 当 `gameState.config.difficulty === 'neural'` 且轮到 AI 时，调用 `useGameAI().llmMove()` 替代本地 Worker AI。\n   - 在右侧历史面板上方或状态栏中展示 LLM 返回的 `reason`（AI 思考分析）和 `situationAnalysis`（局势评估），使用可折叠的 `ThinkingProcess.vue` 组件。\n   - LLM 返回后，自动执行走法，并在棋盘上标注最后一步走法（高亮 from 和 to 位置）。\n\n3. **思考过程展示**：复用 `gomoku-web/src/common/components/ui/ThinkingProcess.vue` 组件，展示 LLM 的思考过程文本。支持折叠/展开，显示字符数统计。\n\n预估代码变更约 120 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-LLM-009-I18N",

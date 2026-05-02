@@ -30,7 +30,7 @@ export interface ChineseChessFrontendGame {
   moveHistory: ChineseChessMoveHistory[];
   timestamp: number;
   mode: 'pvp' | 'pve';
-  aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  aiDifficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
   aiRole: 'red' | 'black';
   isPublic?: boolean;
   gameType?: GameType;

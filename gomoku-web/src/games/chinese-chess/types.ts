@@ -61,7 +61,7 @@ export enum GameStatus {
 }
 
 // 游戏难度
-export type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural';
 
 // 游戏模式
 export type GameMode = 'pvp' | 'pve' | 'analysis';

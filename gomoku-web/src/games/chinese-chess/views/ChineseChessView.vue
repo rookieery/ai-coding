@@ -13,6 +13,7 @@ import SaveGameModal from '../components/SaveGameModal.vue';
 import GameRecordsModal from '../components/GameRecordsModal.vue';
 import DeleteConfirmModal from '../components/DeleteConfirmModal.vue';
 import NotificationToast from '../components/NotificationToast.vue';
+import ThinkingProcess from '../../../common/components/ui/ThinkingProcess.vue';
 
 import { useGameState } from '../composables/useGameState';
 import { useGameAI } from '../composables/useGameAI';
@@ -28,6 +29,13 @@ const GAME_TYPE: GameType = 'chinese_chess';
 const router = useRouter();
 const boardRef = ref<InstanceType<typeof Board> | null>(null);
 const visionConsumed = ref(false);
+
+const llmThinkingContent = ref('');
+const llmSituationContent = ref('');
+const showLlmThinking = ref(true);
+const showLlmSituation = ref(true);
+
+const isAnyAiThinking = computed(() => gameAI.isAiThinking.value || gameAI.isLlmThinking.value);
 
 defineOptions({
   name: 'ChineseChessView'
@@ -58,6 +66,24 @@ const triggerAiMove = () => {
   if (gameState.winner.value !== undefined || gameState.mode.value !== 'pve' || gameState.isAnalysisMode.value) return;
   if (gameState.currentPlayer.value !== gameState.aiPlayer.value) return;
 
+  if (gameState.aiDifficulty.value === 'neural') {
+    llmThinkingContent.value = '';
+    llmSituationContent.value = '';
+    gameAI.llmMove(
+      gameState.board.value,
+      gameState.aiPlayer.value,
+      (result) => {
+        const moveResult = gameState.executeMove(result.from, result.to, gameState.aiPlayer.value, gameUI.playSound, triggerAiMove);
+        if (moveResult.success) {
+          gameAI.hintMove.value = null;
+          llmThinkingContent.value = result.reason || '';
+          llmSituationContent.value = result.situationAnalysis || '';
+        }
+      }
+    );
+    return;
+  }
+
   gameAI.aiMove(
     gameState.board.value,
     gameState.aiPlayer.value,
@@ -67,12 +93,14 @@ const triggerAiMove = () => {
 };
 
 const handleSelectPiece = (coord: BoardCoord | null) => {
+  if (gameAI.isLlmThinking.value) return;
   if (coord) {
     gameState.handleSelectPiece(coord);
   }
 };
 
 const handleMovePiece = (from: BoardCoord, to: BoardCoord) => {
+  if (gameAI.isLlmThinking.value) return;
   const result = gameState.executeMove(from, to, gameState.currentPlayer.value, gameUI.playSound, triggerAiMove);
   if (result.success) {
     gameAI.hintMove.value = null;
@@ -83,6 +111,7 @@ const handleMovePiece = (from: BoardCoord, to: BoardCoord) => {
 };
 
 const handleClickCell = (coord: BoardCoord) => {
+  if (gameAI.isLlmThinking.value) return;
   const { selectedPiece, validMoves } = gameState;
   if (selectedPiece.value) {
     const isLegal = validMoves.value?.some(m => m.col === coord.col && m.row === coord.row) ?? false;
@@ -100,13 +129,15 @@ const handleUndo = () => {
 
 const handleResetGame = () => {
   gameState.resetGame(gameAI.terminateWorker, triggerAiMove);
+  llmThinkingContent.value = '';
+  llmSituationContent.value = '';
 };
 
 const handleSetMode = (newMode: 'pvp' | 'pve') => {
   gameState.setMode(newMode, gameAI.terminateWorker, triggerAiMove);
 };
 
-const handleSetAiDifficulty = (diff: 'beginner' | 'intermediate' | 'advanced' | 'expert') => {
+const handleSetAiDifficulty = (diff: 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'neural') => {
   gameState.setAiDifficulty(diff, gameAI.terminateWorker, triggerAiMove);
 };
 
@@ -119,7 +150,7 @@ const handleToggleAnalysisMode = () => {
 };
 
 const handleShowHint = () => {
-  if (gameState.winner.value !== undefined || gameAI.isAiThinking.value) return;
+  if (gameState.winner.value !== undefined || isAnyAiThinking.value) return;
   if (gameState.mode.value === 'pve' && gameState.currentPlayer.value === gameState.aiPlayer.value && !gameState.isAnalysisMode.value) return;
 
   gameAI.showHint(
@@ -333,7 +364,7 @@ onDeactivated(() => {
       :isAnalysisMode="gameState.isAnalysisMode.value"
       :showThinking="gameAI.showThinking.value"
       :showSteps="gameState.showSteps.value"
-      :isAiThinking="gameAI.isAiThinking.value"
+      :isAiThinking="isAnyAiThinking"
       :theme="theme"
       @setMode="handleSetMode"
       @setAiDifficulty="handleSetAiDifficulty"
@@ -385,8 +416,22 @@ onDeactivated(() => {
             gameState.isAnalysisMode.value ? (currentTheme === 'dark' ? 'ring-2 ring-indigo-500 text-indigo-300' : 'ring-2 ring-indigo-400 text-indigo-700') : ''
           ]"
         >
-          {{ gameUI.getStatusText(gameState.winner.value, gameState.currentPlayer.value, gameAI.isAiThinking.value, gameState.isAnalysisMode.value, gameState.gameStatus.value) }}
+          {{ gameUI.getStatusText(gameState.winner.value, gameState.currentPlayer.value, gameAI.isAiThinking.value, gameState.isAnalysisMode.value, gameState.gameStatus.value, gameAI.isLlmThinking.value) }}
         </div>
+        <ThinkingProcess
+          v-if="llmThinkingContent || gameAI.isLlmThinking.value"
+          :isThinking="gameAI.isLlmThinking.value"
+          :content="llmThinkingContent"
+          :show="showLlmThinking"
+          @toggle="showLlmThinking = $event"
+        />
+        <ThinkingProcess
+          v-if="llmSituationContent"
+          :isThinking="false"
+          :content="llmSituationContent"
+          :show="showLlmSituation"
+          @toggle="showLlmSituation = $event"
+        />
         <div class="flex-1 min-h-0 overflow-hidden">
           <ChineseChessHistoryPanel
             :moveHistory="gameState.moveHistory.value"
