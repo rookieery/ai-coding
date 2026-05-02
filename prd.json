@@ -2,22 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-10",
-      "title": "ChineseChessView consume vision data and load endgame",
-      "description": "Modified `gomoku-web/src/games/chinese-chess/views/ChineseChessView.vue`.\n\n1. Introduced `useVisionBridge` and `PlayerSide` imports.\n2. Added `visionConsumed` ref flag to prevent double consumption.\n3. Created `consumeAndLoadVision()` function that calls `consumeChessVisionCandidates()`, loads board state via `gameState.loadBoardState()`, and notifies user with current player side text.\n4. Called in both `onMounted` and `onActivated` (keep-alive support).\n5. No new i18n keys needed - reuses existing `visionBoardLoaded`, `chessRed`, `chessBlack` keys.",
-      "passes": true
-    },
-    {
-      "id": "CHESS-VISION-11",
-      "title": "前端：ChineseChessView 增加一键 AI 战术分析功能",
-      "description": "功能开发任务。修改 `gomoku-web/src/games/chinese-chess/views/ChineseChessView.vue` 和 `gomoku-web/src/games/chinese-chess/components/GameControls.vue`。\n\n1. **GameControls.vue 新增按钮**：在工具栏中增加「AI 战术分析」按钮（图标使用 lucide-vue-next 的 Brain 或 Sparkles 图标），emit 新事件 `requestAiAnalysis`。按钮在游戏进行中（IN_PROGRESS 状态）且非 AI 思考时可用。\n\n2. **ChineseChessView.vue 实现分析流程**：\n   a. 实现 `handleRequestAiAnalysis()` 方法。\n   b. 使用 `html2canvas` 对 `boardRef` 截图生成 boardImageBase64。\n   c. 调用 `useGameState` 的 board 和 currentPlayer，将 BoardState 通过 `convertBoardStateToCodes` 转为数值矩阵。\n   d. 调用 `useVisionBridge().setChessAnalysis({ board: gameState.board.value, currentPlayer: gameState.currentPlayer.value, question: '', imageBase64: boardImageBase64 })` 存储分析数据。\n   e. 执行 `router.push({ name: 'agent' })` 跳转到 AgentView。\n\n3. **AgentView.vue 消费分析数据**：在 `onMounted` / `onActivated` 的 `processPendingAnalysis` 方法中，增加对 `useVisionBridge().consumeChessAnalysis()` 的检查。如果存在象棋分析数据，构造增强 Prompt（包含棋子编码说明和棋盘矩阵 JSON），调用 `executeStreamingChat` 进行流式分析。在聊天流中展示用户截图和 AI 分析结果。\n\n预估代码变更约 80 行。",
-      "passes": false
-    },
-    {
       "id": "CHESS-VISION-12",
       "title": "前端：添加中国象棋视觉识别相关 i18n 翻译键",
       "description": "国际化任务。在 `gomoku-web/src/locales/zh-CN.json` 和 `gomoku-web/src/locales/en-US.json` 中新增以下翻译 key 的中英文翻译：\n\n**象棋视觉面板相关**：\n- `chessVisionPanelTitle`：「象棋棋谱微调」 / 「Chess Board Fine-tuning」\n- `chessVisionEditRedPieces`：「红方」 / 「Red Side」\n- `chessVisionEditBlackPieces`：「黑方」 / 「Black Side」\n- `chessVisionEditEraser`：「橡皮擦」 / 「Eraser」\n- `chessVisionEditMode`：「编辑模式」 / 「Edit Mode」\n- `chessVisionBatchMove`：「批量移动」 / 「Batch Move」\n- `chessVisionConfirmReplay`：「进入打谱模式」 / 「Enter Replay Mode」\n- `chessVisionConfirmAnalysis`：「AI 战术分析」 / 「AI Tactical Analysis」\n- `chessVisionAnalysisSummary`：「棋局已确认：红方 {0} 子，黑方 {1} 子，当前轮到 {2} 方行棋」 / 「Board confirmed: {0} red pieces, {1} black pieces. Current turn: {2}」\n- `chessVisionDefaultAnalysis`：「请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向」 / 「Please analyze the current Chinese Chess position, including tactical advantages, key squares, material balance, and recommended moves」\n- `chessVisionConfirmCancelled`：「象棋棋谱确认已取消」 / 「Chess board confirmation has been cancelled」\n- `chessVisionBoardConfirmed`：「象棋棋盘已确定」 / 「Chess board confirmed」\n- `chessVisionParseFailed`：「象棋棋局解析失败」 / 「Failed to parse Chinese Chess board」\n\n**AI 分析按钮**：\n- `requestChessAiAnalysis`：「AI 战术分析」 / 「AI Tactical Analysis」\n\n同时在 `gomoku-web/src/i18n.ts` 的 TranslationKeys 类型中追加以上 key。预估变更约 30 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-13",

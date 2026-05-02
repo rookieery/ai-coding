@@ -274,5 +274,14 @@
   "chessVisionEditRedPieces": "Red Side",
   "chessVisionEditBlackPieces": "Black Side",
   "requestChessAiAnalysis": "AI Tactical Analysis",
-  "chessVisionDefaultAnalysis": "Please analyze the current Chinese Chess position, including tactical advantages, key squares, material balance, and recommended moves"
+  "chessVisionDefaultAnalysis": "Please analyze the current Chinese Chess position, including tactical advantages, key squares, material balance, and recommended moves",
+  "chessVisionEditEraser": "Eraser",
+  "chessVisionEditMode": "Edit Mode",
+  "chessVisionBatchMove": "Batch Move",
+  "chessVisionConfirmReplay": "Enter Replay Mode",
+  "chessVisionConfirmAnalysis": "AI Tactical Analysis",
+  "chessVisionAnalysisSummary": "Board confirmed: {0} red pieces, {1} black pieces. Current turn: {2}",
+  "chessVisionConfirmCancelled": "Chess board confirmation has been cancelled",
+  "chessVisionBoardConfirmed": "Chess board confirmed",
+  "chessVisionParseFailed": "Failed to parse Chinese Chess board"
 }

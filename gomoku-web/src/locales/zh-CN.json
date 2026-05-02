@@ -274,5 +274,14 @@
   "chessVisionEditRedPieces": "红方",
   "chessVisionEditBlackPieces": "黑方",
   "requestChessAiAnalysis": "AI 战术分析",
-  "chessVisionDefaultAnalysis": "请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向"
+  "chessVisionDefaultAnalysis": "请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向",
+  "chessVisionEditEraser": "橡皮擦",
+  "chessVisionEditMode": "编辑模式",
+  "chessVisionBatchMove": "批量移动",
+  "chessVisionConfirmReplay": "进入打谱模式",
+  "chessVisionConfirmAnalysis": "AI 战术分析",
+  "chessVisionAnalysisSummary": "棋局已确认：红方 {0} 子，黑方 {1} 子，当前轮到 {2} 方行棋",
+  "chessVisionConfirmCancelled": "象棋棋谱确认已取消",
+  "chessVisionBoardConfirmed": "象棋棋盘已确定",
+  "chessVisionParseFailed": "象棋棋局解析失败"
 }

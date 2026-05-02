@@ -280,8 +280,17 @@ export interface Messages {
   chessVisionPanelTitle: string;
   chessVisionEditRedPieces: string;
   chessVisionEditBlackPieces: string;
-  requestChessAiAnalysis: string;
+  chessVisionEditEraser: string;
+  chessVisionEditMode: string;
+  chessVisionBatchMove: string;
+  chessVisionConfirmReplay: string;
+  chessVisionConfirmAnalysis: string;
+  chessVisionAnalysisSummary: string;
   chessVisionDefaultAnalysis: string;
+  chessVisionConfirmCancelled: string;
+  chessVisionBoardConfirmed: string;
+  chessVisionParseFailed: string;
+  requestChessAiAnalysis: string;
 }
 
 export type MessageKey = keyof Messages;
