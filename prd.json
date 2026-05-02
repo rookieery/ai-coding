@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-LLM-001-Types",
-      "title": "后端：创建中国象棋 LLM AI 服务接口与类型定义",
-      "description": "纯类型定义任务。在后端 `gomoku-server/src/types/` 下新建 `chess-llm.types.ts`。\n\n1. `ChessLLMMoveRequest`：包含棋盘状态 `board: number[][]`（10×9 二维数组，棋子编码 0-14，同视觉识别的编码规范：0=空位，1=红帅，2=红仕，3=红相，4=红马，5=红车，6=红炮，7=红兵，8=黑将，9=黑士，10=黑象，11=黑马，12=黑车，13=黑炮，14=黑卒）、当前行棋方 `currentPlayer: 'red' | 'black'`、历史走法记录 `moveHistory: ChessMoveRecord[]`（每条含 from、to、piece、capturedPiece、notation）。\n\n2. `ChessMoveRecord`：`{ from: { row: number; col: number }; to: { row: number; col: number }; piece: number; capturedPiece?: number; notation?: string }`。\n\n3. `ChessLLMMoveResponse`：包含推荐走法 `move: { from: { row: number; col: number }; to: { row: number; col: number } }`、分析文本 `reason: string`、局势评估 `situationAnalysis?: string`、是否为兜底走法 `isFallback: boolean`。\n\n4. `ChessCandidateMove`：`{ from: { row: number; col: number }; to: { row: number; col: number }; score: number; reason: string }`，其中 reason 用中文简述落子理由（如「进车将军」、「跳马防守」）。\n\n确保完全使用 TypeScript 强类型，暂不实现业务逻辑。预估代码约 60 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-LLM-002-Board-Prompt",
       "title": "后端：编写中国象棋棋盘文本化与 Prompt 组装工具",
       "description": "纯工具类任务。在后端 `gomoku-server/src/utils/` 下新建 `chessBoardPromptUtils.ts`。\n\n1. **棋盘 ASCII 可视化**：编写 `boardToAscii(board: number[][]): string` 函数，将 10×9 数值矩阵转换为人类可读的 ASCII 棋盘。棋子用中文字符表示：帅/将/仕/士/相/象/馬/马/車/车/炮/兵/卒（红方用常规字，黑方可加区分标记），空位用「·」，楚河汉界区域标注。上方标注列号 a-i，左方标注行号 0-9。\n\n2. **棋子价值评估文本**：编写 `getMaterialAnalysis(board: number[][]): string` 函数，统计双方剩余子力（车=9分，马=4分，炮=4.5分，仕=2分，相=2分，兵/卒过河+1分），输出红黑双方总分子力对比文本。\n\n3. **System Prompt 组装**：编写 `buildChessSystemPrompt(board: number[][], currentPlayer: string, candidates: ChessCandidateMove[]): string` 函数。Prompt 要素：\n   - 角色设定：你是中国象棋特级大师，拥有深厚的开局、中局、残局理论功底。\n   - 棋盘当前局势的 ASCII 可视化。\n   - 子力对比分析文本。\n   - 当前行棋方（红方/黑方）。\n   - 候选走法列表（Top 15），包含坐标和理由。\n   - 强制 JSON 输出格式：`{ \"move\": { \"from\": { \"row\": x, \"col\": y }, \"to\": { \"row\": x, \"col\": y } }, \"reason\": \"...\", \"situationAnalysis\": \"...\" }`\n   - 策略指导：优先处理将军/应将，其次攻防要点，关注子力交换得失，注意将帅安全。\n   - 术语要求：使用中国象棋标准术语（如抽将、闪击、牵制、兑子、腾挪、拦截等）。\n\n预估代码约 200 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-LLM-003-Candidate-Generator",
