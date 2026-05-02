@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-07",
-      "title": "前端：创建 AgentChessVisionPanel 象棋棋谱微调面板",
-      "description": "核心组件开发。在 `gomoku-web/src/components/agent/` 下新建 `AgentChessVisionPanel.vue`。该组件在分屏模式右侧渲染，提供中国象棋棋谱微调功能。\n\n1. **棋盘渲染区**：引入中国象棋 Board 组件（来自 `src/games/chinese-chess/components/Board.vue`），渲染 10×9 棋盘。初始化时加载 candidates[0] 的棋盘数据。维护内部 `localBoard: ref<BoardState>` 状态，通过 `convertCodesToBoardState(codes: number[][])` 将数值矩阵转换为 BoardState（Piece | null）[][] 格式。监听 Board 的 `@clickCell` 事件用于编辑模式。\n\n2. **候选方案切换**：棋盘上方渲染一行紧凑的切换按钮（「方案 1」「方案 2」「方案 3」），点击即切换 localBoard 加载对应候选矩阵。高亮当前选中的方案。\n\n3. **微调工具栏**：棋盘下方渲染工具条。包含编辑模式开关（Switch），以及棋子选择区域——分为红方工具（帅、仕、相、马、车、炮、兵）和黑方工具（将、士、象、马、车、炮、卒）和橡皮擦。当编辑模式开启且选中某工具时，用户点击棋盘格子执行对应操作（放置或移除棋子）。\n\n4. **批量移动**：工具条内增加「批量移动」折叠区，包含选区功能和方向按钮（上下左右偏移），偏移格数 1-2 格。逻辑参考现有 AgentVisionPanel.vue 的 batchMoveArea 实现，适配 10×9 的边界检查。\n\n5. **底部操作栏**：固定在面板底部，包含两个主按钮：左侧「进入打谱模式」（primary 实心样式）和右侧「AI 战术分析」（outline 描边样式）。使用 html2canvas 截图生成 boardImageBase64。\n\n6. **顶部信息栏**：显示标题和关闭按钮（X 图标）。\n\nProps：`candidates: number[][][]`、`imageBase64: string`。\nEmits：`confirm-replay(pieces: number[][])`、`confirm-analysis(pieces: number[][], boardImageBase64: string)`、`close`。\nDefineExpose：`getCurrentBoard(): number[][]`、`loadCandidate(index: number): void`。\n\n所有 UI 文本使用 i18n。预估代码约 350 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-08",
       "title": "前端：为中国象棋 GameState 增加 loadBoardState 方法",
       "description": "引擎层扩展。修改 `gomoku-web/src/games/chinese-chess/composables/useGameState.ts`。\n\n1. 新增 `loadBoardState(codes: number[][])` 方法：接收 10×9 的数值矩阵（值域 0-14），调用工具函数 `convertCodesToBoardState` 将其转换为 BoardState（Piece | null）[][] 格式。转换规则：0→null，1→{ type: KING, side: RED }，2→{ type: ADVISOR, side: RED }，...，8→{ type: KING, side: BLACK }，...，14→{ type: PAWN, side: BLACK }。每个 Piece 的 coord 根据其行列索引自动设置。\n\n2. 赋值逻辑：使用 `board.value = newBoard` 直接替换棋盘状态。清空 `moveHistory.value = []`、`selectedPiece.value = null`、`validMoves.value = []`、`moveResult.value = null`。\n\n3. 推断当前回合：遍历 board 统计红方和黑方棋子数量。由于中国象棋红先，若红方已行走步数（基于吃子和棋子位置推断）等于黑方，轮到红方；否则轮到黑方。简化规则：若红方棋子总数 ≤ 黑方棋子总数，轮到红方；否则轮到黑方。将 `currentPlayer.value` 设为推断结果。\n\n4. 将游戏状态设为 `gameStatus.value = GameStatus.IN_PROGRESS`，`mode.value = 'pvp'`。\n\n5. 在 `gomoku-web/src/games/chinese-chess/` 下新建 `utils.ts` 文件，导出 `convertCodesToBoardState(codes: number[][]): BoardState` 和 `convertBoardStateToCodes(board: BoardState): number[][]` 两个工具函数。预估代码约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-09",

@@ -18,6 +18,7 @@ import {
 } from '../gameLogic';
 import { createInitialBoard, movePiece as boardMovePiece, getPieceAt } from '../boardState';
 import { type ChineseChessFrontendGame, type GameType } from '../../../api/game-api';
+import { convertCodesToBoardState } from '../utils';
 
 export function useGameState() {
   const board = ref<BoardState>(createInitialBoard());
@@ -257,6 +258,30 @@ export function useGameState() {
     isAnalysisMode.value = true;
   };
 
+  const loadBoardState = (codes: number[][]) => {
+    const newBoard = convertCodesToBoardState(codes);
+    board.value = newBoard;
+    moveHistory.value = [];
+    selectedPiece.value = null;
+    validMoves.value = [];
+    moveResult.value = null;
+
+    let redCount = 0;
+    let blackCount = 0;
+    for (const row of newBoard) {
+      for (const cell of row) {
+        if (cell) {
+          if (cell.side === PlayerSide.RED) redCount++;
+          else blackCount++;
+        }
+      }
+    }
+    currentPlayer.value = redCount <= blackCount ? PlayerSide.RED : PlayerSide.BLACK;
+
+    gameStatus.value = GameStatus.IN_PROGRESS;
+    mode.value = 'pvp';
+  };
+
   const toFrontendGame = (name: string, isPublic: boolean, gameType: string): ChineseChessFrontendGame => {
     return {
       id: currentRecordId.value || Date.now().toString(),
@@ -301,6 +326,7 @@ export function useGameState() {
     toggleAnalysisMode,
     toggleSteps,
     importGame,
+    loadBoardState,
     toFrontendGame,
   };
 }
