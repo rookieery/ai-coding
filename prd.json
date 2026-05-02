@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-08",
-      "title": "前端：为中国象棋 GameState 增加 loadBoardState 方法",
-      "description": "引擎层扩展。修改 `gomoku-web/src/games/chinese-chess/composables/useGameState.ts`。\n\n1. 新增 `loadBoardState(codes: number[][])` 方法：接收 10×9 的数值矩阵（值域 0-14），调用工具函数 `convertCodesToBoardState` 将其转换为 BoardState（Piece | null）[][] 格式。转换规则：0→null，1→{ type: KING, side: RED }，2→{ type: ADVISOR, side: RED }，...，8→{ type: KING, side: BLACK }，...，14→{ type: PAWN, side: BLACK }。每个 Piece 的 coord 根据其行列索引自动设置。\n\n2. 赋值逻辑：使用 `board.value = newBoard` 直接替换棋盘状态。清空 `moveHistory.value = []`、`selectedPiece.value = null`、`validMoves.value = []`、`moveResult.value = null`。\n\n3. 推断当前回合：遍历 board 统计红方和黑方棋子数量。由于中国象棋红先，若红方已行走步数（基于吃子和棋子位置推断）等于黑方，轮到红方；否则轮到黑方。简化规则：若红方棋子总数 ≤ 黑方棋子总数，轮到红方；否则轮到黑方。将 `currentPlayer.value` 设为推断结果。\n\n4. 将游戏状态设为 `gameStatus.value = GameStatus.IN_PROGRESS`，`mode.value = 'pvp'`。\n\n5. 在 `gomoku-web/src/games/chinese-chess/` 下新建 `utils.ts` 文件，导出 `convertCodesToBoardState(codes: number[][]): BoardState` 和 `convertBoardStateToCodes(board: BoardState): number[][]` 两个工具函数。预估代码约 80 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-09",
       "title": "前端：AgentView 集成象棋视觉确认分屏与完整流程",
       "description": "核心联调任务。修改 `gomoku-web/src/views/AgentView.vue`。分为三部分：\n\n**第一部分：分屏布局集成**\n1. 修改 `isSplitLayout` 计算属性，增加 `playMode === 'chess-vision-confirm'` 条件。\n2. 在右侧面板区域（template 约第 530 行），增加 `v-else-if=\"playMode === 'chess-vision-confirm'\"` 分支，渲染 `AgentChessVisionPanel` 并传入 `chessVisionCandidates` 和 `pendingImageBase64` 作为 props。\n3. 确保拖拽分割线和返回按钮在象棋视觉确认模式下同样生效（v-if 条件增加 chess-vision-confirm 判断）。\n4. 引入 `AgentChessVisionPanel` 组件。\n5. 为 AgentChessVisionPanel 绑定三个事件监听：`@confirm-replay`、`@confirm-analysis`、`@close`。\n\n**第二部分：确认回调处理**\n1. 实现 `handleChessConfirmReplay(pieces: number[][])`：调用 `useVisionBridge().setChessVisionCandidatesForReplay([pieces])`，调用 `exitPlayMode()`，执行 `router.push({ name: 'chinese-chess' })` 跳转。\n2. 实现 `handleChessConfirmAnalysis(pieces: number[][], boardImageBase64: string)`：退出分屏，推送用户消息（含截图），构造增强 Prompt（将 10×9 棋盘数据序列化为 JSON，附带棋子编码说明），调用 `executeStreamingChat(combinedPrompt)` 进行 AI 战术分析。\n3. 实现 `handleChessVisionConfirmClose()`：退出分屏，推送取消消息，清理状态。\n\n预估代码变更约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-10",

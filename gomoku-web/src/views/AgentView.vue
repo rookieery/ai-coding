@@ -13,6 +13,7 @@ import { BOARD_SIZE } from '../games/gomoku/gameLogic';
 import { parseMoveText } from '../games/gomoku/moveParser';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentVisionPanel from '../components/agent/AgentVisionPanel.vue';
+import AgentChessVisionPanel from '../components/agent/AgentChessVisionPanel.vue';
 import AgentWelcomeScreen from '../components/agent/AgentWelcomeScreen.vue';
 import AgentChatMessages from '../components/agent/AgentChatMessages.vue';
 import AgentChatInput from '../components/agent/AgentChatInput.vue';
@@ -31,11 +32,11 @@ const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
-const { playMode, enterGomokuMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
-const { consumePendingAnalysis, setVisionCandidatesForReplay, clearPendingRequest } = useVisionBridge();
+const { playMode, enterGomokuMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, chessVisionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
+const { consumePendingAnalysis, setVisionCandidatesForReplay, setChessVisionCandidatesForReplay, clearPendingRequest } = useVisionBridge();
 const router = useRouter();
 
-const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || isExitingGomoku.value);
+const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || playMode.value === 'chess-vision-confirm' || isExitingGomoku.value);
 
 const {
   messages,
@@ -290,6 +291,67 @@ const handleVisionConfirmClose = () => {
   }, 400);
 };
 
+const handleChessConfirmReplay = (pieces: number[][]) => {
+  setChessVisionCandidatesForReplay([pieces]);
+  exitPlayMode();
+  router.push({ name: 'chinese-chess' });
+};
+
+const handleChessConfirmAnalysis = async (pieces: number[][], boardImageBase64: string) => {
+  const question = pendingQuestion.value;
+
+  exitPlayMode();
+
+  await nextTick();
+
+  const displayText = question
+    ? `${t('agentVisionBoardConfirmed')}，${question}`
+    : t('agentVisionBoardConfirmed');
+
+  messages.value.push({
+    role: 'user',
+    text: displayText,
+    hasImage: true,
+    imageBase64: boardImageBase64 || undefined,
+  });
+
+  await chatMessagesRef.value?.scrollToBottom();
+
+  const boardJson = JSON.stringify(pieces);
+  const encodingExplain = '编码说明: 0=空, 1=红帅 2=红仕 3=红相 4=红马 5=红车 6=红炮 7=红兵, 8=黑将 9=黑士 10=黑象 11=黑马 12=黑车 13=黑炮 14=黑卒';
+  const combinedPrompt = question
+    ? `这是当前10x9中国象棋棋盘的精确数据（${encodingExplain}）：${boardJson}，请结合数据回答：${question}`
+    : `这是当前10x9中国象棋棋盘的精确数据（${encodingExplain}）：${boardJson}，请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向`;
+
+  currentUserQuery.value = question || 'AI Tactical Analysis';
+
+  isThinking.value = true;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await executeStreamingChat(combinedPrompt);
+};
+
+const handleChessVisionConfirmClose = () => {
+  isExitingGomoku.value = true;
+  exitPlayMode();
+  clearPendingRequest();
+
+  messages.value.push({
+    role: 'agent',
+    text: t('agentVisionConfirmCancelled'),
+  });
+
+  nextTick(() => {
+    chatMessagesRef.value?.scrollToBottom();
+  });
+
+  setTimeout(() => {
+    isExitingGomoku.value = false;
+  }, 400);
+};
+
 const confirmExit = () => {
   showExitConfirm.value = false;
   gameSelectorActive.value = false;
@@ -455,7 +517,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
          :style="isSplitLayout ? `width: ${leftPanelWidth}%` : 'width: 100%'">
 
       <!-- 返回按钮（仅分屏模式显示） -->
-      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm'" class="flex items-center px-4 py-3 border-b shrink-0"
+      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm' || playMode === 'chess-vision-confirm'" class="flex items-center px-4 py-3 border-b shrink-0"
            :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'">
         <button @click="handleExitClick"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
@@ -531,7 +593,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
 
     <!-- 右侧对弈面板（仅分屏模式显示） -->
     <transition name="slide-panel">
-      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm'" class="flex-1 h-full overflow-hidden panel-right"
+      <div v-if="playMode === 'gomoku' || playMode === 'vision-confirm' || playMode === 'chess-vision-confirm'" class="flex-1 h-full overflow-hidden panel-right"
            :class="currentTheme === 'dark' ? 'bg-stone-900' : 'bg-stone-50'">
         <AgentGomokuPanel
           v-if="playMode === 'gomoku'"
@@ -548,6 +610,14 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
           @confirm-replay="handleConfirmReplay"
           @confirm-analysis="handleConfirmAnalysis"
           @close="handleVisionConfirmClose"
+        />
+        <AgentChessVisionPanel
+          v-else-if="playMode === 'chess-vision-confirm'"
+          :candidates="chessVisionCandidates!"
+          :imageBase64="pendingImageBase64!"
+          @confirm-replay="handleChessConfirmReplay"
+          @confirm-analysis="handleChessConfirmAnalysis"
+          @close="handleChessVisionConfirmClose"
         />
       </div>
     </transition>
