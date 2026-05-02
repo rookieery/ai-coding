@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-02",
-      "title": "后端：创建统一视觉识别入口（自动检测棋局类型）",
-      "description": "后端架构任务。在 `gomoku-server/src/services/` 下新建 `unified-vision.service.ts`，创建统一的视觉识别入口，自动检测棋局类型后路由到对应的专业识别服务。\n\n1. **棋局类型自动检测**：编写 `detectBoardType(imageBase64: string): Promise<'gomoku' | 'chinese_chess'>` 方法。向同一个 Doubao 视觉模型发送一条极短的检测 Prompt：「请判断这张图片是五子棋棋盘还是中国象棋棋盘。五子棋特征：15×15 交叉线网格、黑白圆石棋子、有星位标记点。中国象棋特征：9×10 网格、中间有'楚河汉界'文字、棋子为圆形带汉字（帅将仕士相象马车炮兵卒）。请仅回复一个词：gomoku 或 chinese_chess」。参数设置 max_tokens=10, temperature=0，确保极速返回。\n\n2. **统一识别入口**：编写 `recognizeBoard(imageBase64: string): Promise<{ boardType: 'gomoku' | 'chinese_chess'; candidates: number[][][] }>` 方法。内部流程：先调用 `detectBoardType` 获取类型 → 若为 gomoku 则委托给现有 `visionService.recognizeBoard` → 若为 chinese_chess 则委托给 `chessVisionService.recognizeChessBoard` → 统一返回包含 boardType 的结果对象。\n\n3. **统一路由**：修改 `gomoku-server/src/routes/vision.routes.ts`，将现有的 `POST /api/vision/recognize` 路由改为调用 `unifiedVisionService.recognizeBoard`（替代原来直接调用 visionService）。这样前端无需任何改动即可同时支持两种棋局。\n\n预估代码约 80 行（新增 unified-vision.service.ts），路由改动约 5 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-03",
       "title": "前端：适配统一视觉 API 返回的 boardType 字段",
       "description": "前端接口层改造。修改 `gomoku-web/src/api/vision-api.ts`。\n\n1. 修改 `RecognitionResult` 接口，确保 `boardType` 字段类型为 `'gomoku' | 'chinese_chess'`（当前类型为 string，需收窄）。\n2. 在 `gomoku-web/src/api/` 下新建 `chess-vision-api.ts`，定义象棋棋子编码常量映射 `CHESS_PIECE_CODES`：0=EMPTY, 1=RED_KING, 2=RED_ADVISOR, ..., 14=BLACK_PAWN。导出 `convertCodesToBoardState` 类型签名供后续使用。预估代码变更约 40 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-04",

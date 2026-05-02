@@ -1,7 +1,9 @@
 import { API_BASE_URL } from '../config';
 
+export type BoardType = 'gomoku' | 'chinese_chess';
+
 export interface RecognitionResult {
-  boardType: string;
+  boardType: BoardType;
   candidates: number[][][];
 }
 
