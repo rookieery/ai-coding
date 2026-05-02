@@ -292,5 +292,6 @@
   "visionSelectModeActive": "Exit Selection",
   "visionSelectFirstPoint": "Click the first corner on the board",
   "visionSelectSecondPoint": "Click the second corner to complete selection",
-  "chessNoMoves": "No moves yet"
+  "chessNoMoves": "No moves yet",
+  "stopGenerating": "Stop generating"
 }

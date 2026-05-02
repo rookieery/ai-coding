@@ -97,7 +97,8 @@ export class ChatApiService {
     request: ChatRequest,
     onChunk: (chunk: ChatStreamChunk) => void,
     onError?: (error: Error) => void,
-    onComplete?: () => void
+    onComplete?: () => void,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/chat/stream`, {
@@ -105,6 +106,7 @@ export class ChatApiService {
         headers: this.getHeaders(),
         body: JSON.stringify(request),
         credentials: 'include',
+        signal,
       });
 
       if (!response.ok) {
@@ -166,6 +168,9 @@ export class ChatApiService {
         reader.releaseLock();
       }
     } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        throw error;
+      }
       console.error('Error in stream chat:', error);
       onError?.(error as Error);
       onChunk({ type: 'answer', text: '', error: (error as Error).message });

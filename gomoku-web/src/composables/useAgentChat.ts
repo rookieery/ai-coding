@@ -12,6 +12,7 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
   const answerContent = ref('');
   const showThinkingProcess = ref(true);
   const currentUserQuery = ref('');
+  let abortController: AbortController | null = null;
 
   const scrollToBottom = async () => {
     if (externalScrollToBottom) {
@@ -33,7 +34,36 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
     showThinkingProcess.value = true;
   };
 
+  const finalizeStreamingResponse = () => {
+    if (answerContent.value.trim()) {
+      messages.value.push({
+        role: 'agent',
+        text: answerContent.value,
+        reasoningContent: thinkingContent.value.trim() || undefined,
+        relatedUserQuery: currentUserQuery.value
+      });
+    } else if (thinkingContent.value.trim()) {
+      messages.value.push({
+        role: 'agent',
+        text: thinkingContent.value,
+        relatedUserQuery: currentUserQuery.value
+      });
+    }
+
+    if (messages.value.length > 50) {
+      messages.value = messages.value.slice(-50);
+    }
+
+    thinkingContent.value = '';
+    answerContent.value = '';
+    isThinking.value = false;
+    showThinkingProcess.value = true;
+    abortController = null;
+    scrollToBottom();
+  };
+
   const executeStreamingChat = async (userQuery: string) => {
+    abortController = new AbortController();
     try {
       await chatApi.sendMessageStream(
         {
@@ -60,33 +90,15 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
           scrollToBottom();
         },
         () => {
-          if (answerContent.value.trim()) {
-            messages.value.push({
-              role: 'agent',
-              text: answerContent.value,
-              reasoningContent: thinkingContent.value.trim() || undefined,
-              relatedUserQuery: currentUserQuery.value
-            });
-          } else if (thinkingContent.value.trim()) {
-            messages.value.push({
-              role: 'agent',
-              text: thinkingContent.value,
-              relatedUserQuery: currentUserQuery.value
-            });
-          }
-
-          if (messages.value.length > 50) {
-            messages.value = messages.value.slice(-50);
-          }
-
-          thinkingContent.value = '';
-          answerContent.value = '';
-          isThinking.value = false;
-          showThinkingProcess.value = true;
-          scrollToBottom();
-        }
+          finalizeStreamingResponse();
+        },
+        abortController.signal
       );
     } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        finalizeStreamingResponse();
+        return;
+      }
       const errorMessage = error instanceof Error ? error.message : t('connectionError');
       messages.value.push({
         role: 'agent',
@@ -94,7 +106,14 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
       });
       isThinking.value = false;
       showThinkingProcess.value = true;
+      abortController = null;
       await scrollToBottom();
+    }
+  };
+
+  const stopGeneration = () => {
+    if (abortController) {
+      abortController.abort();
     }
   };
 
@@ -158,5 +177,6 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
     executeStreamingChat,
     regenerateStreamingAnswer,
     regenerateAnswer,
+    stopGeneration,
   };
 }

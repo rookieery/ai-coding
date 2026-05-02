@@ -38,13 +38,14 @@ export class GomokuAiApiService {
     return headers;
   }
 
-  async generateMove(request: GomokuAiMoveRequest): Promise<GomokuAiMoveResponse> {
+  async generateMove(request: GomokuAiMoveRequest, signal?: AbortSignal): Promise<GomokuAiMoveResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/games/gomoku/llm/move`, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(request),
         credentials: 'include',
+        signal,
       });
 
       const result: GomokuAiMoveResponse = await response.json();

@@ -43,6 +43,12 @@ export class ChatController {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    let clientDisconnected = false;
+
+    req.on('close', () => {
+      clientDisconnected = true;
+    });
+
     try {
       const { message, history = [] } = req.body;
 
@@ -57,16 +63,21 @@ export class ChatController {
 
       // 处理流式事件
       for await (const event of stream) {
+        if (clientDisconnected) break;
         res.write(`data: ${JSON.stringify(event)}\n\n`);
       }
 
       // 发送完成标记
-      res.write(`data: [DONE]\n\n`);
+      if (!clientDisconnected) {
+        res.write(`data: [DONE]\n\n`);
+      }
       res.end();
       return;
     } catch (error: any) {
-      console.error('DeepSeek Stream Error:', error);
-      res.write(`data: ${JSON.stringify({ error: 'Internal Server Error', message: error.message })}\n\n`);
+      if (!clientDisconnected) {
+        console.error('DeepSeek Stream Error:', error);
+        res.write(`data: ${JSON.stringify({ error: 'Internal Server Error', message: error.message })}\n\n`);
+      }
       res.end();
       return;
     }

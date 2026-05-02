@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Send, Paperclip, X } from 'lucide-vue-next';
+import { Send, Paperclip, X, Square } from 'lucide-vue-next';
 import { currentTheme, t } from '../../i18n';
 import { useAutoResize } from '../../composables/useAutoResize';
 
@@ -18,6 +18,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   'update:query': [value: string];
   send: [payload: { text: string; imageBase64: string | null }];
+  stop: [];
 }>();
 
 const { textareaRef, adjustTextareaHeight, resetTextareaHeight } = useAutoResize();
@@ -178,14 +179,23 @@ defineExpose({
           rows="1"
         />
         <button
+          v-if="isThinking"
+          @click="emit('stop')"
+          class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer bg-indigo-600 text-white hover:bg-indigo-700"
+          :aria-label="t('stopGenerating')"
+        >
+          <Square class="w-5 h-5" />
+        </button>
+        <button
+          v-else
           @click="handleSend"
           class="rounded-full transition-colors p-3 flex-shrink-0 self-end cursor-pointer"
           :class="[
-            (query.trim() || selectedImageBase64) && !isThinking
+            (query.trim() || selectedImageBase64)
               ? 'bg-indigo-600 text-white hover:bg-indigo-700'
               : (currentTheme === 'dark' ? 'bg-stone-700 text-stone-500' : 'bg-stone-100 text-stone-400'),
           ]"
-          :disabled="(!query.trim() && !selectedImageBase64) || isThinking"
+          :disabled="!query.trim() && !selectedImageBase64"
         >
           <Send class="w-5 h-5" />
         </button>

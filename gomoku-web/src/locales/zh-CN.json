@@ -292,5 +292,6 @@
   "visionSelectModeActive": "退出框选",
   "visionSelectFirstPoint": "请在棋盘上点击第一个角点",
   "visionSelectSecondPoint": "请在棋盘上点击第二个角点以完成框选",
-  "chessNoMoves": "暂无走棋记录"
+  "chessNoMoves": "暂无走棋记录",
+  "stopGenerating": "停止生成"
 }

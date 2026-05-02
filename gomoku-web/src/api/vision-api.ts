@@ -34,12 +34,13 @@ export class VisionApiService {
     return headers;
   }
 
-  async recognizeBoardFromBase64(imageBase64: string): Promise<RecognitionResult> {
+  async recognizeBoardFromBase64(imageBase64: string, signal?: AbortSignal): Promise<RecognitionResult> {
     const response = await fetch(`${this.baseUrl}/vision/recognize`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ imageBase64 }),
       credentials: 'include',
+      signal,
     });
 
     const result: VisionApiResponse<RecognitionResult> = await response.json();

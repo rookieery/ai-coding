@@ -298,6 +298,8 @@ export interface Messages {
   visionSelectModeActive: string;
   visionSelectFirstPoint: string;
   visionSelectSecondPoint: string;
+  chessNoMoves: string;
+  stopGenerating: string;
 }
 
 export type MessageKey = keyof Messages;

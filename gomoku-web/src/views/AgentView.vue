@@ -33,6 +33,7 @@ const visionPanelRef = ref<InstanceType<typeof AgentVisionPanel> | null>(null);
 const showExitConfirm = ref(false);
 const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
+const activeAbortController = ref<AbortController | null>(null);
 
 const { playMode, enterGomokuMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, chessVisionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
 const { consumePendingAnalysis, setVisionCandidatesForReplay, setChessVisionCandidatesForReplay, clearPendingRequest, consumeChessAnalysis } = useVisionBridge();
@@ -51,6 +52,7 @@ const {
   executeStreamingChat,
   regenerateStreamingAnswer,
   regenerateAnswer,
+  stopGeneration,
 } = useAgentChat({
   scrollToBottom: async () => {
     await chatMessagesRef.value?.scrollToBottom();
@@ -58,6 +60,22 @@ const {
 });
 
 const { leftPanelWidth, isDragging, startDrag } = useSplitDrag();
+
+const resetThinkingState = () => {
+  isThinking.value = false;
+  thinkingContent.value = '';
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+  activeAbortController.value = null;
+};
+
+const handleStop = () => {
+  if (activeAbortController.value) {
+    activeAbortController.value.abort();
+    activeAbortController.value = null;
+  }
+  stopGeneration();
+};
 
 const handleEnterGomokuMode = () => {
   gameSelectorActive.value = true;
@@ -112,6 +130,7 @@ const handleUserMove = async (r: number, c: number, userCoord?: string) => {
   thinkingContent.value = t('agentAiThinkingMove');
   answerContent.value = '';
   showThinkingProcess.value = true;
+  activeAbortController.value = new AbortController();
 
   await chatMessagesRef.value?.scrollToBottom();
 
@@ -120,7 +139,7 @@ const handleUserMove = async (r: number, c: number, userCoord?: string) => {
       board,
       currentPlayer: 'white',
       moveHistory,
-    });
+    }, activeAbortController.value.signal);
 
     if (response.success && response.data) {
       const { x, y, reason, isFallback } = response.data;
@@ -140,21 +159,21 @@ const handleUserMove = async (r: number, c: number, userCoord?: string) => {
 
       gomokuPanelRef.value.placeAiPiece(y, x);
 
-      isThinking.value = false;
-      thinkingContent.value = '';
-      answerContent.value = '';
-      showThinkingProcess.value = true;
+      resetThinkingState();
 
       await chatMessagesRef.value?.scrollToBottom();
     }
   } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      resetThinkingState();
+      return;
+    }
     const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
     messages.value.push({
       role: 'agent',
       text: `${t('genericErrorPrefix')}${errorMessage}`,
     });
-    isThinking.value = false;
-    showThinkingProcess.value = true;
+    resetThinkingState();
     await chatMessagesRef.value?.scrollToBottom();
   }
 };
@@ -169,6 +188,7 @@ const handleAiFirstMove = async () => {
   thinkingContent.value = t('agentAiThinkingMove');
   answerContent.value = '';
   showThinkingProcess.value = true;
+  activeAbortController.value = new AbortController();
 
   await chatMessagesRef.value?.scrollToBottom();
 
@@ -177,7 +197,7 @@ const handleAiFirstMove = async () => {
       board,
       currentPlayer: 'black',
       moveHistory,
-    });
+    }, activeAbortController.value.signal);
 
     if (response.success && response.data) {
       const { x, y, reason, isFallback } = response.data;
@@ -203,21 +223,21 @@ const handleAiFirstMove = async () => {
         });
       }
 
-      isThinking.value = false;
-      thinkingContent.value = '';
-      answerContent.value = '';
-      showThinkingProcess.value = true;
+      resetThinkingState();
 
       await chatMessagesRef.value?.scrollToBottom();
     }
   } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      resetThinkingState();
+      return;
+    }
     const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
     messages.value.push({
       role: 'agent',
       text: `${t('genericErrorPrefix')}${errorMessage}`,
     });
-    isThinking.value = false;
-    showThinkingProcess.value = true;
+    resetThinkingState();
     await chatMessagesRef.value?.scrollToBottom();
   }
 };
@@ -456,12 +476,13 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     thinkingContent.value = t('visionParsingBoard');
     answerContent.value = '';
     showThinkingProcess.value = true;
+    activeAbortController.value = new AbortController();
 
     await nextTick();
     chatMessagesRef.value?.scrollToBottom();
 
     try {
-      const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64);
+      const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64, activeAbortController.value.signal);
 
       if (result.boardType === 'chinese_chess') {
         enterChessVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
@@ -469,10 +490,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
         enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
       }
 
-      isThinking.value = false;
-      thinkingContent.value = '';
-      answerContent.value = '';
-      showThinkingProcess.value = true;
+      resetThinkingState();
 
       messages.value.push({
         role: 'agent',
@@ -482,13 +500,16 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
       await nextTick();
       chatMessagesRef.value?.scrollToBottom();
     } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        resetThinkingState();
+        return;
+      }
       const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
       messages.value.push({
         role: 'agent',
         text: `${t('genericErrorPrefix')}${errorMessage}`,
       });
-      isThinking.value = false;
-      showThinkingProcess.value = true;
+      resetThinkingState();
       await nextTick();
       chatMessagesRef.value?.scrollToBottom();
     }
@@ -591,6 +612,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
         v-model:query="query"
         :is-thinking="isThinking"
         @send="handleSend"
+        @stop="handleStop"
         :class="[
           'shrink-0',
           isSplitLayout ? 'px-4 max-w-full' : 'max-w-3xl'
