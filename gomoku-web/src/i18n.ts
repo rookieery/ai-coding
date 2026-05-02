@@ -280,6 +280,8 @@ export interface Messages {
   chessVisionPanelTitle: string;
   chessVisionEditRedPieces: string;
   chessVisionEditBlackPieces: string;
+  requestChessAiAnalysis: string;
+  chessVisionDefaultAnalysis: string;
 }
 
 export type MessageKey = keyof Messages;

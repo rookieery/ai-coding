@@ -11,6 +11,8 @@ import { useSplitDrag } from '../composables/useSplitDrag';
 import { useVisionBridge } from '../composables/useVisionBridge';
 import { BOARD_SIZE } from '../games/gomoku/gameLogic';
 import { parseMoveText } from '../games/gomoku/moveParser';
+import { convertBoardStateToCodes } from '../games/chinese-chess/utils';
+import { PlayerSide } from '../games/chinese-chess/types';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentVisionPanel from '../components/agent/AgentVisionPanel.vue';
 import AgentChessVisionPanel from '../components/agent/AgentChessVisionPanel.vue';
@@ -33,7 +35,7 @@ const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 
 const { playMode, enterGomokuMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, chessVisionCandidates, pendingImageBase64, pendingQuestion } = useGlobalAgentPlay();
-const { consumePendingAnalysis, setVisionCandidatesForReplay, setChessVisionCandidatesForReplay, clearPendingRequest } = useVisionBridge();
+const { consumePendingAnalysis, setVisionCandidatesForReplay, setChessVisionCandidatesForReplay, clearPendingRequest, consumeChessAnalysis } = useVisionBridge();
 const router = useRouter();
 
 const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'vision-confirm' || playMode.value === 'chess-vision-confirm' || isExitingGomoku.value);
@@ -367,6 +369,37 @@ const cancelExit = () => {
 };
 
 const processPendingAnalysis = async () => {
+  const chessAnalysis = consumeChessAnalysis();
+  if (chessAnalysis) {
+    await nextTick();
+
+    const boardCodes = convertBoardStateToCodes(chessAnalysis.board);
+    const sideText = chessAnalysis.currentPlayer === PlayerSide.RED ? 'red' : 'black';
+
+    messages.value.push({
+      role: 'user',
+      text: t('chessVisionDefaultAnalysis'),
+      hasImage: true,
+      imageBase64: chessAnalysis.imageBase64,
+    });
+
+    currentUserQuery.value = t('chessVisionDefaultAnalysis');
+
+    isThinking.value = true;
+    thinkingContent.value = '';
+    answerContent.value = '';
+    showThinkingProcess.value = true;
+
+    await chatMessagesRef.value?.scrollToBottom();
+
+    const boardJson = JSON.stringify(boardCodes);
+    const encodingExplain = '编码说明: 0=空, 1=红帅 2=红仕 3=红相 4=红马 5=红车 6=红炮 7=红兵, 8=黑将 9=黑士 10=黑象 11=黑马 12=黑车 13=黑炮 14=黑卒';
+    const combinedPrompt = `这是当前10x9中国象棋棋盘的精确数据（${encodingExplain}）：${boardJson}，当前轮到${sideText}方行棋，请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向`;
+
+    executeStreamingChat(combinedPrompt);
+    return;
+  }
+
   const analysis = consumePendingAnalysis();
   if (!analysis) return;
 

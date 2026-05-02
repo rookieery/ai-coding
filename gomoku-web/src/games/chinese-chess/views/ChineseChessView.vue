@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, onDeactivated, onMounted, onActivated, ref } from 'vue';
 import html2canvas from 'html2canvas-pro';
+import { useRouter } from 'vue-router';
 import { t, currentTheme } from '../../../i18n';
 import { type GameType, type GameListItem, type ChineseChessFrontendGame } from '../../../api/game-api';
 import { type BoardCoord } from '../types';
@@ -21,9 +22,11 @@ import { useGlobalSettings } from '../../../composables/useSettings';
 import { useGlobalAuth } from '../../../composables/useAuth';
 import { useVisionBridge } from '../../../composables/useVisionBridge';
 import { PlayerSide } from '../types';
+import { convertBoardStateToCodes } from '../utils';
 
 const GAME_TYPE: GameType = 'chinese_chess';
 
+const router = useRouter();
 const boardRef = ref<InstanceType<typeof Board> | null>(null);
 const visionConsumed = ref(false);
 
@@ -250,6 +253,32 @@ const handleCopySuccess = () => {
   gameUI.notify(t('copySuccess'));
 };
 
+const handleRequestAiAnalysis = async () => {
+  const el = boardRef.value?.$el as HTMLElement | undefined;
+  if (!el) return;
+
+  try {
+    const canvas = await html2canvas(el, {
+      backgroundColor: null,
+      scale: 2,
+    });
+    const boardImageBase64 = canvas.toDataURL('image/png');
+
+    const boardCodes = convertBoardStateToCodes(gameState.board.value);
+
+    useVisionBridge().setChessAnalysis({
+      board: gameState.board.value,
+      currentPlayer: gameState.currentPlayer.value,
+      question: '',
+      imageBase64: boardImageBase64,
+    });
+
+    router.push({ name: 'agent' });
+  } catch {
+    gameUI.notify(t('exportFailed'));
+  }
+};
+
 const consumeAndLoadVision = () => {
   if (visionConsumed.value) return;
   const candidates = useVisionBridge().consumeChessVisionCandidates();
@@ -321,6 +350,7 @@ onDeactivated(() => {
       @exportBoard="handleExportBoard"
       @showRecords="handleOpenRecords"
       @updateTheme="settings.setChessTheme"
+      @requestAiAnalysis="handleRequestAiAnalysis"
     />
 
     <div class="flex flex-col lg:flex-row items-start justify-center w-full px-4 gap-4 sm:gap-6 lg:gap-8">

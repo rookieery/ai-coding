@@ -272,5 +272,7 @@
   "aiAnalysisEmptyBoard": "请先落子后再使用AI战术分析",
   "chessVisionPanelTitle": "象棋棋谱微调",
   "chessVisionEditRedPieces": "红方",
-  "chessVisionEditBlackPieces": "黑方"
+  "chessVisionEditBlackPieces": "黑方",
+  "requestChessAiAnalysis": "AI 战术分析",
+  "chessVisionDefaultAnalysis": "请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向"
 }

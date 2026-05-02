@@ -272,5 +272,7 @@
   "aiAnalysisEmptyBoard": "Place at least one piece to use AI analysis",
   "chessVisionPanelTitle": "Chess Board Fine-tuning",
   "chessVisionEditRedPieces": "Red Side",
-  "chessVisionEditBlackPieces": "Black Side"
+  "chessVisionEditBlackPieces": "Black Side",
+  "requestChessAiAnalysis": "AI Tactical Analysis",
+  "chessVisionDefaultAnalysis": "Please analyze the current Chinese Chess position, including tactical advantages, key squares, material balance, and recommended moves"
 }
