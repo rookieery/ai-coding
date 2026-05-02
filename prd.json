@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-PLAY-002-AgentChessPanel",
-      "title": "前端：创建 AgentChessPanel.vue 中国象棋分屏对弈面板",
-      "description": "核心组件开发。在 `gomoku-web/src/components/agent/` 下新建 `AgentChessPanel.vue`。该组件是 Agent 分屏对弈模式中右侧的中国象棋交互面板，类比 `AgentGomokuPanel.vue` 的设计模式。\n\n1. **棋盘渲染**：引入中国象棋 Board 组件（`src/games/chinese-chess/components/Board.vue`），渲染 10×9 棋盘。使用 `useGameState` composable 管理内部棋盘状态（初始化为标准开局）。\n\n2. **玩家交互**：监听 Board 的棋子点击和落子事件。仅当轮到玩家行棋时允许操作（红方默认为玩家）。当轮到 AI 时禁用棋盘点击。\n\n3. **走法通知**：玩家落子后，emit `@userMove` 事件，携带走法信息 `{ from: { row, col }, to: { row, col }, notation: string }`。notation 使用现有的中国象棋记谱法工具（`src/games/chinese-chess/notation.ts`）生成标准记谱（如「炮二平五」）。\n\n4. **AI 落子接口**：暴露 `placeAiPiece(from: { row: number; col: number }, to: { row: number; col: number }): void` 方法。外部调用此方法在棋盘上执行 AI 的走法，触发内部状态更新（移动棋子、处理吃子、切换行棋方），然后 emit `@aiMove` 事件。\n\n5. **状态查询**：暴露 `getBoard(): number[][]` 方法返回当前棋盘的数值矩阵（通过 `convertBoardStateToCodes` 转换）。暴露 `getMoveHistory(): ChessMoveRecord[]` 返回走法历史。暴露 `isValidMove(from, to): boolean` 校验走法合法性。暴露 `getCurrentPlayer(): 'red' | 'black'` 获取当前行棋方。\n\n6. **游戏控制**：暴露 `resetGame(): void` 重置棋盘到标准开局。暴露 `undoLastMove(): void` 悔棋（撤回最后一步）。\n\n7. **游戏结束检测**：每次走法后检测是否将死或困毙。如果游戏结束，emit `@gameOver` 事件，携带 `{ winner: 'red' | 'black' | 'draw', reason: string }`。\n\n8. **UI 布局**：面板顶部显示游戏状态（当前行棋方、回合数）。底部提供紧凑的控制按钮（悔棋、新局、认输）。棋盘居中占满面板主体区域，适配容器宽度。\n\n9. **AI 角色选择**：接受 prop `playerSide: 'red' | 'black'`，默认 `'red'`。决定哪方由玩家操作，哪方由 AI 控制。\n\nProps：`playerSide?: 'red' | 'black'`（默认 `'red'`）。\nEmits：`userMove(move)`、`aiMove(move)`、`gameOver(result)`。\nDefineExpose：`placeAiPiece`、`getBoard`、`getMoveHistory`、`isValidMove`、`getCurrentPlayer`、`resetGame`、`undoLastMove`。\n\n所有 UI 文本使用 i18n。预估代码约 350 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-PLAY-003-MoveParser",
       "title": "前端：编写中国象棋聊天走法解析器",
       "description": "纯逻辑层任务。在 `gomoku-web/src/games/chinese-chess/` 下新建 `moveParser.ts`。\n\n实现 `parseChessMoveText(text: string, board: number[][]): ParsedChessMove | null` 函数，用于在棋林对弈模式中解析用户通过聊天输入框输入的走法指令。\n\n**支持的输入格式**：\n1. **标准记谱法**（如「炮二平五」「马八进七」「车一进一」）：使用正则匹配 `([车馬马炮兵卒仕士相象帅将])([一二三四五六七八九123456789])([进退平])([一二三四五六七八九123456789])` 模式。根据棋子类型、列号、方向（进/退/平）、目标位置推算出 from/to 坐标。需区分红黑方的数字映射（红方从右到左为一至九，黑方从右到左为 1 至 9）。\n\n2. **坐标格式**（如「0,0-1,0」或「(0,0)(1,0)」）：使用正则匹配 `\\(?\\s*(\\d)\\s*,\\s*(\\d)\\s*\\)?\\s*[-到至>]\\s*\\(?\\s*(\\d)\\s*,\\s*(\\d)\\s*\\)?`。直接提取 from(row,col) 和 to(row,col)。\n\n3. **简写格式**（如「进车」「跳马」等模糊描述）：作为可选的扩展解析，如果前两种格式均未匹配，尝试匹配常见动词+棋子的组合，返回可能的走法候选列表（交由上层逻辑选择）。此阶段可暂不实现，返回 null 即可。\n\n**返回类型** `ParsedChessMove`：`{ from: { row: number; col: number }; to: { row: number; col: number }; notation?: string; confidence: number }`。confidence 为解析置信度（标准记谱法=1.0，坐标格式=0.9，模糊匹配=0.5）。\n\n**校验**：解析出的坐标必须满足 0 ≤ row ≤ 9、0 ≤ col ≤ 8，from 位置必须有对应棋子，走法需基本合法（可以不在意将军检测，由上层进一步校验）。\n\n预估代码约 200 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-PLAY-004-AgentView-Layout",
