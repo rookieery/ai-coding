@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-PLAY-004-AgentView-Layout",
-      "title": "前端：AgentView 集成中国象棋分屏布局",
-      "description": "视图层联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n**第一部分：布局与渲染**\n1. 引入 `AgentChessPanel` 组件。\n2. 修改 `isSplitLayout` 计算属性，增加 `playMode === 'chinese-chess'` 条件，使中国象棋对弈也触发左右分屏布局。\n3. 在右侧面板区域（template 中渲染 `AgentGomokuPanel` 和 `AgentChessVisionPanel` 的同级位置），增加 `v-else-if=\"playMode === 'chinese-chess'\"` 分支，渲染 `AgentChessPanel`。\n4. 确保拖拽分割线、返回按钮在中国象棋对弈模式下同样生效（相关 v-if 条件增加 `'chinese-chess'` 判断）。\n5. 为 `AgentChessPanel` 绑定事件监听：`@userMove`、`@aiMove`、`@gameOver`。\n\n**第二部分：游戏选择器更新**\n1. 修改 `handleGameSelection(gameType, msg)` 方法，增加 `gameType === 'chinese-chess'` 分支。\n2. 当用户选择中国象棋时：调用 `useGlobalAgentPlay().enterChessMode()` 进入分屏对弈模式（而非 `enterGomokuMode()`）。\n3. 向 messages 数组推送提示消息，使用 i18n key `chessPlayModeEntered`（如「已进入中国象棋对弈模式，执红先行，请落子」）。\n4. 调用 `chatMessagesRef.value?.scrollToBottom()` 滚动到底部。\n\n**第三部分：游戏选择器按钮启用**\n1. 在 `AgentChatMessages.vue` 中找到渲染游戏选择按钮的位置（当前中国象棋按钮是置灰禁用状态，标注「即将推出」）。\n2. 移除禁用状态和高亮样式，使中国象棋按钮变为可点击的正常状态。\n3. 修改按钮文本移除「(即将推出)」后缀。\n4. 绑定点击事件 emit `select-game` 并传递 `'chinese-chess'`。\n\n预估代码变更约 60 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-PLAY-005-UserMove-Flow",
       "title": "前端：实现中国象棋用户落子拦截与 AI 思考触发",
       "description": "数据桥接联调任务。修改 `gomoku-web/src/views/AgentView.vue`。\n\n1. **用户落子事件处理**：实现 `handleChessUserMove(move)` 方法，绑定到 `AgentChessPanel` 的 `@userMove` 事件。\n   a. 在左侧聊天流追加系统消息：「玩家行棋：{move.notation}」（使用 i18n key `chessUserMoveMsg`，参数为 notation）。\n   b. 将 `useGlobalAgentPlay().isAIThinking` 设为 true，锁定 UI（禁用棋盘点击）。\n   c. 从 `AgentChessPanel` 获取当前棋盘状态：`chessPanelRef.value.getBoard()` 和 `chessPanelRef.value.getCurrentPlayer()`。\n   d. 构造 `ChessLLMMoveRequest`，调用 `chessLlmApi.generateChessLLMMove(request)` 发起后端 LLM 走子请求。\n\n2. **AI 响应处理**：在上述请求的回调中：\n   a. 如果请求成功：提取响应中的 `move.from/to`，调用 `chessPanelRef.value.placeAiPiece(move.from, move.to)` 在棋盘上执行 AI 走法。\n   b. 在左侧聊天流追加 AI 消息，包含 `reason`（AI 的分析文本）和 `situationAnalysis`（局势评估），使用 `ThinkingProcess.vue` 的可折叠 UI 展示思考过程。\n   c. 将 `isAIThinking` 设为 false，解锁 UI。\n   d. 如果 AI 走法导致将军，追加提示消息（使用 i18n key `chessCheckMsg`）。\n\n3. **错误处理**：如果 LLM 请求失败，在聊天流追加错误提示消息，`isAIThinking` 设为 false，告知用户 AI 暂时无法响应。\n\n4. **游戏结束处理**：实现 `handleChessGameOver(result)` 方法，绑定到 `@gameOver` 事件。\n   a. 在聊天流追加游戏结束消息（使用 i18n key `chessCheckmateMsg`，参数为获胜方）。\n   b. `isAIThinking` 设为 false。\n\n预估代码变更约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-PLAY-006-ChatMove-Interceptor",

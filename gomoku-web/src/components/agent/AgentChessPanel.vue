@@ -184,17 +184,19 @@ const handleMovePiece = (from: BoardCoord, to: BoardCoord) => {
   }
 };
 
-const placeAiPiece = (from: BoardCoord, to: BoardCoord): void => {
-  if (isGameOverState.value) return;
+const placeAiPiece = (from: BoardCoord, to: BoardCoord): { check: boolean; gameOver: boolean } | null => {
+  if (isGameOverState.value) return null;
 
   const result = executeMoveInternal(from, to, aiSideEnum.value);
-  if (!result) return;
+  if (!result) return null;
 
   if (isGameOverState.value) {
     emitGameOver();
   } else {
     emit('aiMove', { from, to, notation: result.notation });
   }
+
+  return { check: result.moveResult.check, gameOver: result.moveResult.gameOver };
 };
 
 const getBoard = (): number[][] => convertBoardStateToCodes(board.value);
