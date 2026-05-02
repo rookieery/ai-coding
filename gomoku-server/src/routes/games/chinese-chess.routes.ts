@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { chineseChessController } from '../../controllers/chinese-chess.controller';
+import { chessLlmController } from '../../controllers/chess-llm.controller';
 import { optionalAuthenticate, authenticate } from '../../middleware/auth';
 import { validateId } from '../../middleware/validation';
 
@@ -39,5 +40,19 @@ router.get('/frontend/:id', optionalAuthenticate, validateId(), chineseChessCont
  * @access  Private (仅作者或管理员)
  */
 router.delete('/:id', authenticate, validateId(), chineseChessController.deleteGame.bind(chineseChessController));
+
+/**
+ * @route   GET /api/games/chinese-chess/llm/health
+ * @desc    Chinese Chess LLM AI health check
+ * @access  Public
+ */
+router.get('/llm/health', chessLlmController.healthCheck.bind(chessLlmController));
+
+/**
+ * @route   POST /api/games/chinese-chess/llm/move
+ * @desc    Generate Chinese Chess AI move via LLM
+ * @access  Public
+ */
+router.post('/llm/move', chessLlmController.generateMove.bind(chessLlmController));
 
 export default router;
