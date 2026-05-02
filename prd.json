@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-LLM-002-Board-Prompt",
-      "title": "后端：编写中国象棋棋盘文本化与 Prompt 组装工具",
-      "description": "纯工具类任务。在后端 `gomoku-server/src/utils/` 下新建 `chessBoardPromptUtils.ts`。\n\n1. **棋盘 ASCII 可视化**：编写 `boardToAscii(board: number[][]): string` 函数，将 10×9 数值矩阵转换为人类可读的 ASCII 棋盘。棋子用中文字符表示：帅/将/仕/士/相/象/馬/马/車/车/炮/兵/卒（红方用常规字，黑方可加区分标记），空位用「·」，楚河汉界区域标注。上方标注列号 a-i，左方标注行号 0-9。\n\n2. **棋子价值评估文本**：编写 `getMaterialAnalysis(board: number[][]): string` 函数，统计双方剩余子力（车=9分，马=4分，炮=4.5分，仕=2分，相=2分，兵/卒过河+1分），输出红黑双方总分子力对比文本。\n\n3. **System Prompt 组装**：编写 `buildChessSystemPrompt(board: number[][], currentPlayer: string, candidates: ChessCandidateMove[]): string` 函数。Prompt 要素：\n   - 角色设定：你是中国象棋特级大师，拥有深厚的开局、中局、残局理论功底。\n   - 棋盘当前局势的 ASCII 可视化。\n   - 子力对比分析文本。\n   - 当前行棋方（红方/黑方）。\n   - 候选走法列表（Top 15），包含坐标和理由。\n   - 强制 JSON 输出格式：`{ \"move\": { \"from\": { \"row\": x, \"col\": y }, \"to\": { \"row\": x, \"col\": y } }, \"reason\": \"...\", \"situationAnalysis\": \"...\" }`\n   - 策略指导：优先处理将军/应将，其次攻防要点，关注子力交换得失，注意将帅安全。\n   - 术语要求：使用中国象棋标准术语（如抽将、闪击、牵制、兑子、腾挪、拦截等）。\n\n预估代码约 200 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-LLM-003-Candidate-Generator",
       "title": "后端：实现中国象棋候选走法生成器",
       "description": "纯算法工具任务。在后端 `gomoku-server/src/utils/` 下新建 `chessCandidateGenerator.ts`。\n\n实现 `generateCandidateMoves(board: number[][], playerColor: 'red' | 'black'): ChessCandidateMove[]` 函数。这是 LLM 走子生成中关键的前置步骤，为 LLM 提供「选择题」而非「填空题」。\n\n**核心逻辑**：\n1. **走法生成**：遍历当前行棋方所有棋子，为每个棋子生成所有伪合法走法（不考虑将军约束的走法）。棋子编码映射到走法规则：\n   - 车(5/12)：直线走，遇子停（可吃敌子）。\n   - 马(4/11)：日字走法，检查蹩马腿。\n   - 炮(6/13)：直线移动（不吃子时不能越子），吃子必须隔一个炮架。\n   - 兵(7)/卒(14)：未过河只能前进，过河后可左右。\n   - 仕(2)/士(9)：九宫格内斜线走一步。\n   - 相(3)/象(10)：田字走法，不能过河，检查塞象眼。\n   - 帅(1)/将(8)：九宫格内直线走一步。\n\n2. **合法走法过滤**：执行每个伪合法走法后，检查走后己方将/帅是否被将军（包括将帅对面），过滤掉导致己方被将的走法。\n\n3. **走法评分**：为每个合法走法计算评分（简单的启发式）：\n   - 吃子价值：按被吃棋子分值加权（车900、炮450、马400、仕200、相200、兵100）。\n   - 将军加分：走后对方被将军，额外 +500。\n   - 中心控制加分：棋子走向中心区域（col 3-5, row 3-6）额外 +50。\n   - 前进加分：过河兵/卒前进 +30。\n\n4. **排序与截断**：按评分降序排列，返回 Top 15 候选走法，每个包含 `from`、`to`、`score`、`reason`（简短中文描述，如「车一进五（吃黑卒）」、「马八进七（占据要道）」）。\n\n预估代码约 300 行（含所有棋子走法规则和评分逻辑）。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-LLM-004-Threat-Detector",
