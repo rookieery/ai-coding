@@ -2,16 +2,10 @@
   "branchName": "feature/chinese-chess-migration",
   "stories": [
     {
-      "id": "CHESS-VISION-03",
-      "title": "前端：适配统一视觉 API 返回的 boardType 字段",
-      "description": "前端接口层改造。修改 `gomoku-web/src/api/vision-api.ts`。\n\n1. 修改 `RecognitionResult` 接口，确保 `boardType` 字段类型为 `'gomoku' | 'chinese_chess'`（当前类型为 string，需收窄）。\n2. 在 `gomoku-web/src/api/` 下新建 `chess-vision-api.ts`，定义象棋棋子编码常量映射 `CHESS_PIECE_CODES`：0=EMPTY, 1=RED_KING, 2=RED_ADVISOR, ..., 14=BLACK_PAWN。导出 `convertCodesToBoardState` 类型签名供后续使用。预估代码变更约 40 行。",
-      "passes": true
-    },
-    {
       "id": "CHESS-VISION-04",
       "title": "前端：扩展 useAgentPlay 支持象棋视觉确认模式",
       "description": "状态管理层改造。修改 `gomoku-web/src/composables/useAgentPlay.ts`。\n\n1. 将 `PlayMode` 联合类型从 `'chat' | 'gomoku' | 'vision-confirm'` 扩展为 `'chat' | 'gomoku' | 'vision-confirm' | 'chess-vision-confirm'`。\n2. 新增响应式状态 `chessVisionCandidates: ref<number[][][] | null>` 用于存储豆包返回的 3 组 10×9 候选棋盘矩阵，默认 null。\n3. 新增方法 `enterChessVisionConfirmMode(candidates: number[][][], imageBase64: string, question?: string)`：将 playMode 设为 `'chess-vision-confirm'`，写入 chessVisionCandidates（同时复用现有的 pendingImageBase64 和 pendingQuestion 状态）。\n4. 修改 `exitPlayMode()` 方法，在重置 playMode 为 'chat' 的同时，清空 chessVisionCandidates。确保 useGlobalAgentPlay() 单例模式不受影响。预估代码变更约 30 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "CHESS-VISION-05",
