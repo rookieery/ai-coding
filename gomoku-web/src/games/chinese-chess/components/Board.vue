@@ -37,6 +37,9 @@ const props = defineProps<{
   selectedPiece?: BoardCoord | null;
   validMoves?: BoardCoord[];
   theme?: ThemeKey;
+  editMode?: boolean;
+  selectionArea?: { startRow: number; startCol: number; endRow: number; endCol: number } | null;
+  selectionStartCoord?: { row: number; col: number } | null;
 }>();
 
 const emit = defineEmits<{
@@ -82,8 +85,25 @@ const riverTextFillColor = computed(() => {
 // 当前主题键
 const currentTheme = computed(() => props.theme || 'default');
 
+const isInSelection = (row: number, col: number): boolean => {
+  const area = props.selectionArea;
+  if (!area) return false;
+  return row >= area.startRow && row <= area.endRow && col >= area.startCol && col <= area.endCol;
+};
+
+const isSelectionStart = (row: number, col: number): boolean => {
+  const s = props.selectionStartCoord;
+  if (!s) return false;
+  return s.row === row && s.col === col;
+};
+
 // 点击单元格处理
 const handleCellClick = (coord: BoardCoord) => {
+  if (props.editMode) {
+    emit('clickCell', coord);
+    return;
+  }
+
   const piece = props.board[coord.row][coord.col];
   // 如果已经选中了一个棋子
   if (selectedCoord.value) {
@@ -362,6 +382,7 @@ const isCheckHighlight = computed(() => {
             v-for="(cell, colIndex) in row"
             :key="`${rowIndex}-${colIndex}`"
             class="relative w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 xl:w-14 xl:h-14 flex items-center justify-center cursor-pointer group"
+            :class="isInSelection(rowIndex, colIndex) ? 'ring-2 ring-inset ring-indigo-400 bg-indigo-500/20' : ''"
             @click="handleCellClick({ col: colIndex, row: rowIndex })"
           >
 
@@ -425,6 +446,12 @@ const isCheckHighlight = computed(() => {
               v-else-if="!winner && (mode === 'pvp' || isAnalysisMode || currentPlayer !== aiPlayer)"
               class="relative z-10 w-[90%] h-[90%] rounded-full opacity-0 group-hover:opacity-40 transition-opacity"
               :class="currentPlayer === PlayerSide.RED ? `${themeColors.piecePrimary}` : `${themeColors.pieceSecondary}`"
+            ></div>
+
+            <!-- 框选起点标记 -->
+            <div
+              v-if="isSelectionStart(rowIndex, colIndex)"
+              class="absolute inset-0 z-20 rounded border-2 border-dashed border-indigo-500 bg-indigo-400/30 animate-pulse pointer-events-none"
             ></div>
           </div>
         </template>

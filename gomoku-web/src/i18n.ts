@@ -291,6 +291,13 @@ export interface Messages {
   chessVisionBoardConfirmed: string;
   chessVisionParseFailed: string;
   requestChessAiAnalysis: string;
+  chessVisionValidationPieceCount: string;
+  chessVisionValidationPosition: string;
+  chessVisionPlacementPositionWarning: string;
+  visionSelectModeStart: string;
+  visionSelectModeActive: string;
+  visionSelectFirstPoint: string;
+  visionSelectSecondPoint: string;
 }
 
 export type MessageKey = keyof Messages;

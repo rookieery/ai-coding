@@ -283,5 +283,12 @@
   "chessVisionAnalysisSummary": "棋局已确认：红方 {0} 子，黑方 {1} 子，当前轮到 {2} 方行棋",
   "chessVisionConfirmCancelled": "象棋棋谱确认已取消",
   "chessVisionBoardConfirmed": "象棋棋盘已确定",
-  "chessVisionParseFailed": "象棋棋局解析失败"
+  "chessVisionParseFailed": "象棋棋局解析失败",
+  "chessVisionValidationPieceCount": "「{1}」数量已达上限（{2} 个），无法继续添加",
+  "chessVisionValidationPosition": "「{0}」位置不合法（帅/将在九宫内、士/仕在九宫内、相/象不可过河），请调整",
+  "chessVisionPlacementPositionWarning": "「{0}」不能放在此处（帅/将和士/仕限九宫内，相/象不可过河）",
+  "visionSelectModeStart": "框选区域",
+  "visionSelectModeActive": "退出框选",
+  "visionSelectFirstPoint": "请在棋盘上点击第一个角点",
+  "visionSelectSecondPoint": "请在棋盘上点击第二个角点以完成框选"
 }

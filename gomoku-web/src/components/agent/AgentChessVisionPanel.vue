@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { X, ChevronDown, ChevronUp, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-vue-next';
 import html2canvas from 'html2canvas-pro';
 import Board from '../../games/chinese-chess/components/Board.vue';
@@ -34,6 +34,7 @@ const editMode = ref(false);
 const editTool = ref<number | 'eraser'>(1);
 const showBatchMove = ref(false);
 const batchMoveOffset = ref(1);
+const selectMode = ref(false);
 
 const selectionStart = ref<{ row: number; col: number } | null>(null);
 const selectionEnd = ref<{ row: number; col: number } | null>(null);
@@ -44,6 +45,22 @@ const board = ref<number[][]>(
     ? props.candidates[0].map(row => [...row])
     : Array.from({ length: BOARD_ROWS }, () => Array(BOARD_COLS).fill(0))
 );
+
+const validationError = ref<string | null>(null);
+const placementWarning = ref<string | null>(null);
+let placementWarningTimer: ReturnType<typeof setTimeout> | null = null;
+
+const showPlacementWarning = (msg: string) => {
+  placementWarning.value = msg;
+  if (placementWarningTimer) clearTimeout(placementWarningTimer);
+  placementWarningTimer = setTimeout(() => {
+    placementWarning.value = null;
+  }, 3000);
+};
+
+watch(board, () => {
+  if (validationError.value) validationError.value = null;
+}, { deep: true });
 
 const CODE_TO_PIECE_TYPE: Record<number, PieceType> = {
   1: PieceType.KING, 2: PieceType.ADVISOR, 3: PieceType.ELEPHANT,
@@ -61,6 +78,25 @@ const PIECE_CODE_I18N_KEYS: Record<number, string> = {
 
 const RED_TOOLS = [1, 2, 3, 4, 5, 6, 7];
 const BLACK_TOOLS = [8, 9, 10, 11, 12, 13, 14];
+
+const pieceCounts = computed<Record<number, number>>(() => {
+  const counts: Record<number, number> = {};
+  for (let r = 0; r < BOARD_ROWS; r++) {
+    for (let c = 0; c < BOARD_COLS; c++) {
+      const code = board.value[r][c];
+      if (code !== 0) {
+        counts[code] = (counts[code] || 0) + 1;
+      }
+    }
+  }
+  return counts;
+});
+
+const isToolDisabled = (code: number): boolean => {
+  const rule = PIECE_VALIDATION[code];
+  if (!rule) return false;
+  return (pieceCounts.value[code] || 0) >= rule.maxCount;
+};
 
 const getPieceName = (code: number): string => {
   const key = PIECE_CODE_I18N_KEYS[code] as MessageKey;
@@ -105,15 +141,45 @@ const clearSelection = () => {
   selectionStart.value = null;
   selectionEnd.value = null;
   selectedArea.value = null;
+  selectMode.value = false;
+};
+
+const getPlacementPositionError = (code: number, row: number, col: number): string | null => {
+  const isRed = code <= 7;
+  const pieceType = CODE_TO_PIECE_TYPE[code];
+  const nameKey = PIECE_VALIDATION[code]?.nameKey;
+  if (!nameKey) return null;
+  const pieceName = t(nameKey as MessageKey);
+
+  if (pieceType === PieceType.KING) {
+    if (col < 3 || col > 5 || (isRed && (row < 7 || row > 9)) || (!isRed && (row < 0 || row > 2))) {
+      return t('chessVisionPlacementPositionWarning', pieceName);
+    }
+  }
+
+  if (pieceType === PieceType.ADVISOR) {
+    if (col < 3 || col > 5 || (isRed && (row < 7 || row > 9)) || (!isRed && (row < 0 || row > 2))) {
+      return t('chessVisionPlacementPositionWarning', pieceName);
+    }
+  }
+
+  if (pieceType === PieceType.ELEPHANT) {
+    if ((isRed && row < 5) || (!isRed && row > 4)) {
+      return t('chessVisionPlacementPositionWarning', pieceName);
+    }
+  }
+
+  return null;
 };
 
 const handleEditCell = (row: number, col: number) => {
   if (!editMode.value) return;
   if (row < 0 || row >= BOARD_ROWS || col < 0 || col >= BOARD_COLS) return;
 
-  if (selectedArea.value === null && showBatchMove.value) {
+  if (selectMode.value) {
     if (!selectionStart.value) {
       selectionStart.value = { row, col };
+      selectedArea.value = null;
       return;
     }
     const s = selectionStart.value;
@@ -128,9 +194,24 @@ const handleEditCell = (row: number, col: number) => {
 
   if (editTool.value === 'eraser') {
     board.value[row][col] = 0;
-  } else {
-    board.value[row][col] = editTool.value as number;
+    return;
   }
+
+  const toolCode = editTool.value as number;
+
+  if (isToolDisabled(toolCode)) {
+    const rule = PIECE_VALIDATION[toolCode];
+    showPlacementWarning(t('chessVisionValidationPieceCount', String(pieceCounts.value[toolCode] || 0), t(rule.nameKey as MessageKey), String(rule.maxCount)));
+    return;
+  }
+
+  const posError = getPlacementPositionError(toolCode, row, col);
+  if (posError) {
+    showPlacementWarning(posError);
+    return;
+  }
+
+  board.value[row][col] = toolCode;
 };
 
 const handleBoardClickCell = (coord: BoardCoord) => {
@@ -206,9 +287,111 @@ const handleBatchMove = (direction: 'up' | 'down' | 'left' | 'right') => {
 
 const hasSelectedArea = computed(() => selectedArea.value !== null);
 
+interface PieceValidationRule {
+  maxCount: number;
+  nameKey: string;
+}
+
+const PIECE_VALIDATION: Record<number, PieceValidationRule> = {
+  1: { maxCount: 1, nameKey: 'pieceRedKing' },
+  2: { maxCount: 2, nameKey: 'pieceRedAdvisor' },
+  3: { maxCount: 2, nameKey: 'pieceRedElephant' },
+  4: { maxCount: 2, nameKey: 'pieceRedKnight' },
+  5: { maxCount: 2, nameKey: 'pieceRedRook' },
+  6: { maxCount: 2, nameKey: 'pieceRedCannon' },
+  7: { maxCount: 5, nameKey: 'pieceRedPawn' },
+  8: { maxCount: 1, nameKey: 'pieceBlackKing' },
+  9: { maxCount: 2, nameKey: 'pieceBlackAdvisor' },
+  10: { maxCount: 2, nameKey: 'pieceBlackElephant' },
+  11: { maxCount: 2, nameKey: 'pieceBlackKnight' },
+  12: { maxCount: 2, nameKey: 'pieceBlackRook' },
+  13: { maxCount: 2, nameKey: 'pieceBlackCannon' },
+  14: { maxCount: 5, nameKey: 'pieceBlackPawn' },
+};
+
+const validateBoard = (): string | null => {
+  const counts: Record<number, number> = {};
+  for (let r = 0; r < BOARD_ROWS; r++) {
+    for (let c = 0; c < BOARD_COLS; c++) {
+      const code = board.value[r][c];
+      if (code === 0) continue;
+      counts[code] = (counts[code] || 0) + 1;
+    }
+  }
+
+  for (const [codeStr, count] of Object.entries(counts)) {
+    const code = Number(codeStr);
+    const rule = PIECE_VALIDATION[code];
+    if (!rule) continue;
+    if (count > rule.maxCount) {
+      return t('chessVisionValidationPieceCount', String(count), t(rule.nameKey as MessageKey), String(rule.maxCount));
+    }
+  }
+
+  for (let r = 0; r < BOARD_ROWS; r++) {
+    for (let c = 0; c < BOARD_COLS; c++) {
+      const code = board.value[r][c];
+      if (code === 0) continue;
+      const isRed = code <= 7;
+      const pieceType = CODE_TO_PIECE_TYPE[code];
+
+      if (pieceType === PieceType.KING) {
+        if (c < 3 || c > 5) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+        if (isRed && (r < 7 || r > 9)) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+        if (!isRed && (r < 0 || r > 2)) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+      }
+
+      if (pieceType === PieceType.ADVISOR) {
+        if (c < 3 || c > 5) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+        if (isRed && (r < 7 || r > 9)) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+        if (!isRed && (r < 0 || r > 2)) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+      }
+
+      if (pieceType === PieceType.ELEPHANT) {
+        if (isRed && r < 5) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+        if (!isRed && r > 4) {
+          return t('chessVisionValidationPosition', t(PIECE_VALIDATION[code].nameKey as MessageKey));
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+const handleConfirmReplay = () => {
+  const error = validateBoard();
+  if (error) {
+    validationError.value = error;
+    return;
+  }
+  validationError.value = null;
+  emit('confirm-replay', getCurrentBoard());
+};
+
 const boardRef = ref<InstanceType<typeof Board> | null>(null);
 
 const handleConfirmAnalysis = async () => {
+  const error = validateBoard();
+  if (error) {
+    validationError.value = error;
+    return;
+  }
+  validationError.value = null;
   let boardImageBase64 = '';
   const boardEl = boardRef.value?.$el as HTMLElement | undefined;
   if (boardEl) {
@@ -271,7 +454,14 @@ defineExpose({
     </div>
 
     <!-- Board area -->
-    <div class="flex-1 flex items-center justify-center overflow-auto p-4">
+    <div class="flex-1 flex items-center justify-center overflow-auto p-4 relative">
+      <div
+        v-if="placementWarning"
+        class="absolute top-2 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-xs font-medium shadow-lg transition-all duration-300"
+        :class="currentTheme === 'dark' ? 'bg-amber-900/90 text-amber-200 border border-amber-700' : 'bg-amber-50 text-amber-700 border border-amber-300'"
+      >
+        {{ placementWarning }}
+      </div>
       <Board
         ref="boardRef"
         :board="boardState"
@@ -287,6 +477,9 @@ defineExpose({
         :selectedPiece="null"
         :validMoves="[]"
         :theme="theme"
+        :editMode="editMode"
+        :selectionArea="selectedArea"
+        :selectionStartCoord="selectionStart"
         @clickCell="handleBoardClickCell"
         @selectPiece="handleBoardSelectPiece"
         @movePiece="handleBoardMovePiece"
@@ -334,12 +527,15 @@ defineExpose({
             <button
               v-for="code in RED_TOOLS"
               :key="code"
+              :disabled="isToolDisabled(code)"
               @click="editTool = code"
               class="w-8 h-8 rounded-lg text-xs font-bold transition-all duration-200 border-2 flex items-center justify-center"
               :class="[
-                editTool === code
-                  ? 'bg-red-100 border-red-400 text-red-700 dark:bg-red-900/60 dark:border-red-500 dark:text-red-300'
-                  : (currentTheme === 'dark' ? 'bg-stone-700 border-stone-600 text-stone-300 hover:bg-stone-600' : 'bg-stone-100 border-stone-200 text-stone-600 hover:bg-stone-200')
+                isToolDisabled(code)
+                  ? (currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-600 cursor-not-allowed' : 'bg-stone-200 border-stone-300 text-stone-400 cursor-not-allowed')
+                  : editTool === code
+                    ? 'bg-red-100 border-red-400 text-red-700 dark:bg-red-900/60 dark:border-red-500 dark:text-red-300'
+                    : (currentTheme === 'dark' ? 'bg-stone-700 border-stone-600 text-stone-300 hover:bg-stone-600' : 'bg-stone-100 border-stone-200 text-stone-600 hover:bg-stone-200')
               ]"
             >
               {{ getPieceName(code) }}
@@ -359,12 +555,15 @@ defineExpose({
             <button
               v-for="code in BLACK_TOOLS"
               :key="code"
+              :disabled="isToolDisabled(code)"
               @click="editTool = code"
               class="w-8 h-8 rounded-lg text-xs font-bold transition-all duration-200 border-2 flex items-center justify-center"
               :class="[
-                editTool === code
-                  ? 'bg-stone-800 border-stone-500 text-stone-100 dark:bg-stone-600 dark:border-stone-400 dark:text-stone-100'
-                  : (currentTheme === 'dark' ? 'bg-stone-700 border-stone-600 text-stone-300 hover:bg-stone-600' : 'bg-stone-100 border-stone-200 text-stone-600 hover:bg-stone-200')
+                isToolDisabled(code)
+                  ? (currentTheme === 'dark' ? 'bg-stone-800 border-stone-700 text-stone-600 cursor-not-allowed' : 'bg-stone-200 border-stone-300 text-stone-400 cursor-not-allowed')
+                  : editTool === code
+                    ? 'bg-stone-800 border-stone-500 text-stone-100 dark:bg-stone-600 dark:border-stone-400 dark:text-stone-100'
+                    : (currentTheme === 'dark' ? 'bg-stone-700 border-stone-600 text-stone-300 hover:bg-stone-600' : 'bg-stone-100 border-stone-200 text-stone-600 hover:bg-stone-200')
               ]"
             >
               {{ getPieceName(code) }}
@@ -398,16 +597,33 @@ defineExpose({
             class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium"
             :class="currentTheme === 'dark' ? 'text-stone-200' : 'text-stone-700'"
           >
-            {{ t('agentVisionBatchMove') }}
+            {{ t('chessVisionBatchMove') }}
             <component :is="showBatchMove ? ChevronUp : ChevronDown" class="w-3.5 h-3.5" />
           </button>
 
           <div v-if="showBatchMove" class="px-3 pb-3 space-y-2">
-            <p
-              class="text-[10px]"
-              :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
+            <!-- Select mode toggle -->
+            <button
+              @click="selectMode = !selectMode; if (!selectMode) clearSelection()"
+              class="w-full py-1.5 px-2 rounded-lg text-xs font-medium transition-all duration-200 border-2 flex items-center justify-center gap-1.5"
+              :class="[
+                selectMode
+                  ? (currentTheme === 'dark' ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-indigo-500 border-indigo-400 text-white')
+                  : (currentTheme === 'dark' ? 'bg-stone-700 border-stone-600 text-stone-300 hover:bg-stone-600' : 'bg-stone-100 border-stone-200 text-stone-600 hover:bg-stone-200')
+              ]"
             >
-              {{ t('visionBatchMoveHint') }}
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              {{ selectMode ? t('visionSelectModeActive') : t('visionSelectModeStart') }}
+            </button>
+
+            <p
+              v-if="selectMode && !hasSelectedArea"
+              class="text-[10px]"
+              :class="currentTheme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'"
+            >
+              {{ selectionStart ? t('visionSelectSecondPoint') : t('visionSelectFirstPoint') }}
             </p>
 
             <!-- Offset selector -->
@@ -505,13 +721,6 @@ defineExpose({
             >
               {{ t('visionSelectionActive') }}
             </div>
-            <div
-              v-else-if="selectionStart"
-              class="text-[10px] text-center"
-              :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'"
-            >
-              {{ t('visionBatchMoveHint') }}
-            </div>
           </div>
         </div>
       </template>
@@ -522,24 +731,31 @@ defineExpose({
       class="flex gap-3 px-4 py-3 border-t shrink-0"
       :class="currentTheme === 'dark' ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'"
     >
-      <button
-        @click="emit('confirm-replay', getCurrentBoard())"
-        class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all duration-200"
-        :class="currentTheme === 'dark'
-          ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
-          : 'bg-indigo-500 hover:bg-indigo-400 text-white'"
+      <div v-if="validationError" class="w-full text-xs text-center py-2 px-3 rounded-lg"
+        :class="currentTheme === 'dark' ? 'bg-red-900/40 text-red-300' : 'bg-red-50 text-red-600'"
       >
-        {{ t('agentVisionConfirmReplay') }}
-      </button>
-      <button
-        @click="handleConfirmAnalysis"
-        class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 border-2"
-        :class="currentTheme === 'dark'
-          ? 'border-indigo-500 text-indigo-400 hover:bg-indigo-600/20'
-          : 'border-indigo-400 text-indigo-600 hover:bg-indigo-50'"
-      >
-        {{ t('agentVisionConfirmAnalysis') }}
-      </button>
+        {{ validationError }}
+      </div>
+      <template v-else>
+        <button
+          @click="handleConfirmReplay"
+          class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all duration-200"
+          :class="currentTheme === 'dark'
+            ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            : 'bg-indigo-500 hover:bg-indigo-400 text-white'"
+        >
+          {{ t('chessVisionConfirmReplay') }}
+        </button>
+        <button
+          @click="handleConfirmAnalysis"
+          class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 border-2"
+          :class="currentTheme === 'dark'
+            ? 'border-indigo-500 text-indigo-400 hover:bg-indigo-600/20'
+            : 'border-indigo-400 text-indigo-600 hover:bg-indigo-50'"
+        >
+          {{ t('chessVisionConfirmAnalysis') }}
+        </button>
+      </template>
     </div>
   </div>
 </template>

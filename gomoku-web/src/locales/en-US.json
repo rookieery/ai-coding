@@ -283,5 +283,12 @@
   "chessVisionAnalysisSummary": "Board confirmed: {0} red pieces, {1} black pieces. Current turn: {2}",
   "chessVisionConfirmCancelled": "Chess board confirmation has been cancelled",
   "chessVisionBoardConfirmed": "Chess board confirmed",
-  "chessVisionParseFailed": "Failed to parse Chinese Chess board"
+  "chessVisionParseFailed": "Failed to parse Chinese Chess board",
+  "chessVisionValidationPieceCount": "\"{1}\" count has reached the limit ({2}), cannot add more",
+  "chessVisionValidationPosition": "\"{0}\" is in an invalid position, please adjust",
+  "chessVisionPlacementPositionWarning": "\"{0}\" cannot be placed here (King/Advisor must be in palace, Elephant cannot cross river)",
+  "visionSelectModeStart": "Select Area",
+  "visionSelectModeActive": "Exit Selection",
+  "visionSelectFirstPoint": "Click the first corner on the board",
+  "visionSelectSecondPoint": "Click the second corner to complete selection"
 }
