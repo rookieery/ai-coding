@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Undo2, Flag } from 'lucide-vue-next';
+import { Undo2, Flag, RotateCcw } from 'lucide-vue-next';
 import Board from '../games/gomoku/components/Board.vue';
 import { BOARD_SIZE, EMPTY, BLACK, WHITE, checkWin, checkDraw, type RuleMode, getForbiddenType } from '../games/gomoku/gameLogic';
 import { t, currentTheme } from '../i18n';
@@ -282,6 +282,16 @@ defineExpose({
         >
           <Undo2 class="w-3.5 h-3.5" />
           {{ t('undo') }}
+        </button>
+        <button
+          @click="resetGame"
+          class="flex items-center gap-1 px-2 py-1 text-xs rounded-md border transition-colors"
+          :class="currentTheme === 'dark'
+            ? 'bg-stone-700 border-stone-600 text-stone-300 hover:bg-stone-600'
+            : 'bg-stone-100 border-stone-300 text-stone-600 hover:bg-stone-200'"
+        >
+          <RotateCcw class="w-3.5 h-3.5" />
+          {{ t('chessNewGame') }}
         </button>
         <button
           @click="surrender"

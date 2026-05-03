@@ -366,6 +366,72 @@ const handleChessGameOver = (result: { winner: string; reason: string }) => {
   });
 };
 
+const handleChessAiFirstMove = async () => {
+  if (!chessPanelRef.value) return;
+
+  isAIThinking.value = true;
+  isThinking.value = true;
+  thinkingContent.value = t('chessLlmThinking');
+  answerContent.value = '';
+  showThinkingProcess.value = true;
+
+  await chatMessagesRef.value?.scrollToBottom();
+
+  try {
+    const board = chessPanelRef.value.getBoard();
+    const currentPlayer = chessPanelRef.value.getCurrentPlayer();
+    const moveHistory = convertMoveHistory(chessPanelRef.value.getMoveHistory());
+
+    const response = await chessLlmApi.generateMove({
+      board,
+      currentPlayer,
+      moveHistory,
+    });
+
+    const { move: aiMove, reason, situationAnalysis, isFallback } = response;
+
+    const combinedReasoning = situationAnalysis
+      ? `${t('chessLlmSituation')}: ${situationAnalysis}\n\n${t('chessLlmMoveReason')}: ${reason}`
+      : reason;
+
+    thinkingContent.value = combinedReasoning;
+
+    if (isFallback) {
+      showThinkingProcess.value = false;
+    }
+
+    messages.value.push({
+      role: 'agent',
+      text: reason,
+      reasoningContent: isFallback ? undefined : combinedReasoning,
+      isGameReasoning: true,
+    });
+
+    const placeResult = chessPanelRef.value.placeAiPiece(aiMove.from, aiMove.to);
+
+    if (placeResult?.check && !placeResult.gameOver) {
+      messages.value.push({
+        role: 'agent',
+        text: t('chessCheckMsg'),
+      });
+    }
+
+    resetThinkingState();
+    isAIThinking.value = false;
+
+    await chatMessagesRef.value?.scrollToBottom();
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
+    messages.value.push({
+      role: 'agent',
+      text: `${t('genericErrorPrefix')}${errorMessage}`,
+    });
+    resetThinkingState();
+    isAIThinking.value = false;
+    await chatMessagesRef.value?.scrollToBottom();
+  }
+};
+
 const handleExitClick = () => {
   showExitConfirm.value = true;
 };
@@ -803,6 +869,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
           @userMove="handleChessUserMove"
           @aiMove="handleChessAiMove"
           @gameOver="handleChessGameOver"
+          @aiFirstMove="handleChessAiFirstMove"
         />
         <AgentVisionPanel
           v-else-if="playMode === 'vision-confirm'"

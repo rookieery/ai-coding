@@ -37,16 +37,23 @@ const emit = defineEmits<{
   (e: 'userMove', move: { from: BoardCoord; to: BoardCoord; notation: string }): void;
   (e: 'aiMove', move: { from: BoardCoord; to: BoardCoord; notation: string }): void;
   (e: 'gameOver', result: { winner: 'red' | 'black' | 'draw'; reason: string }): void;
+  (e: 'aiFirstMove'): void;
 }>();
 
 const settings = useGlobalSettings();
 const theme = computed(() => settings.chessTheme.value);
 
+const aiFirst = ref(false);
+
+const effectivePlayerSide = computed(() =>
+  aiFirst.value ? 'black' : props.playerSide
+);
+
 const playerSideEnum = computed(() =>
-  props.playerSide === 'red' ? PlayerSide.RED : PlayerSide.BLACK
+  effectivePlayerSide.value === 'red' ? PlayerSide.RED : PlayerSide.BLACK
 );
 const aiSideEnum = computed(() =>
-  props.playerSide === 'red' ? PlayerSide.BLACK : PlayerSide.RED
+  effectivePlayerSide.value === 'red' ? PlayerSide.BLACK : PlayerSide.RED
 );
 
 const board = ref<BoardState>(createInitialBoard());
@@ -65,6 +72,10 @@ const isGameOverState = computed(() =>
   gameStatus.value === GameStatus.STALEMATE ||
   gameStatus.value === GameStatus.RESIGNED ||
   gameStatus.value === GameStatus.DRAW
+);
+
+const canToggleAiFirst = computed(() =>
+  moveHistory.value.length === 0 && !isGameOverState.value && gameStatus.value === GameStatus.NOT_STARTED
 );
 
 const roundNumber = computed(() => Math.floor(moveHistory.value.length / 2) + 1);
@@ -219,6 +230,7 @@ const resetGame = (): void => {
   moveHistory.value = [];
   selectedPiece.value = null;
   validMovesForSelected.value = [];
+  aiFirst.value = false;
 };
 
 const undoLastMove = (): void => {
@@ -257,6 +269,14 @@ const resign = (): void => {
   gameStatus.value = GameStatus.RESIGNED;
   winner.value = aiSideEnum.value;
   emitGameOver();
+};
+
+const toggleAiFirst = () => {
+  if (!canToggleAiFirst.value) return;
+  aiFirst.value = !aiFirst.value;
+  if (aiFirst.value) {
+    emit('aiFirstMove');
+  }
 };
 
 const placeUserPieceFromChat = (from: BoardCoord, to: BoardCoord): boolean => {
@@ -298,6 +318,37 @@ defineExpose({
               :class="currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500'">
           #{{ roundNumber }}
         </span>
+        <div class="flex items-center gap-2 px-2 py-1 rounded-md"
+             :class="currentTheme === 'dark' ? 'bg-stone-700/50' : 'bg-stone-100'">
+          <span class="text-xs"
+                :class="[
+                  currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500',
+                  !aiFirst && canToggleAiFirst ? 'font-medium' : ''
+                ]">
+            {{ t('agentAiSecond') }}
+          </span>
+          <button
+            @click="toggleAiFirst"
+            :disabled="!canToggleAiFirst"
+            class="relative w-9 h-5 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+            :class="[
+              aiFirst ? 'bg-indigo-600' : (currentTheme === 'dark' ? 'bg-stone-600' : 'bg-stone-300'),
+              !canToggleAiFirst ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            ]"
+          >
+            <span
+              class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full shadow transition-transform duration-200"
+              :class="[aiFirst ? 'translate-x-4 bg-white' : 'bg-white']"
+            ></span>
+          </button>
+          <span class="text-xs"
+                :class="[
+                  currentTheme === 'dark' ? 'text-stone-400' : 'text-stone-500',
+                  aiFirst && canToggleAiFirst ? 'font-medium' : ''
+                ]">
+            {{ t('agentAiFirst') }}
+          </span>
+        </div>
       </div>
       <div class="flex gap-2">
         <button
