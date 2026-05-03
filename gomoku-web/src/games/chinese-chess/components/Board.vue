@@ -40,6 +40,7 @@ const props = defineProps<{
   editMode?: boolean;
   selectionArea?: { startRow: number; startCol: number; endRow: number; endCol: number } | null;
   selectionStartCoord?: { row: number; col: number } | null;
+  flipped?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -296,7 +297,7 @@ const isCheckHighlight = computed(() => {
 </script>
 
 <template>
-  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md border-4" :class="[themeColors.boardBackground, themeColors.lineColor]">
+  <div class="relative p-2 sm:p-3 md:p-4 lg:p-5 rounded-md border-4 transition-transform duration-300" :class="[themeColors.boardBackground, themeColors.lineColor]" :style="flipped ? { transform: 'rotate(180deg)' } : undefined">
 
     <div class="flex flex-col">
       <!-- 棋盘主体 -->
@@ -352,18 +353,22 @@ const isCheckHighlight = computed(() => {
           <text x="191" y="500" text-anchor="middle" dominant-baseline="middle"
             font-size="58" :fill="riverTextFillColor"
             font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+            :transform="flipped ? 'rotate(180, 191, 500)' : undefined"
           >楚</text>
           <text x="289" y="500" text-anchor="middle" dominant-baseline="middle"
             font-size="58" :fill="riverTextFillColor"
             font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+            :transform="flipped ? 'rotate(180, 289, 500)' : undefined"
           >河</text>
           <text x="611" y="500" text-anchor="middle" dominant-baseline="middle"
             font-size="58" :fill="riverTextFillColor"
             font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+            :transform="flipped ? 'rotate(180, 611, 500)' : undefined"
           >汉</text>
           <text x="709" y="500" text-anchor="middle" dominant-baseline="middle"
             font-size="58" :fill="riverTextFillColor"
             font-family="STKaiti, KaiTi, Kaiti SC, cursive, serif" font-weight="bold"
+            :transform="flipped ? 'rotate(180, 709, 500)' : undefined"
           >界</text>
           <!-- 星位标记（炮和兵/卒位置） -->
           <path
@@ -406,11 +411,12 @@ const isCheckHighlight = computed(() => {
                 class="absolute inset-0 rounded-full border-2 border-red-500 animate-pulse"
               ></div>
               <!-- 棋子字符 -->
-              <span class="relative z-10 text-2xl sm:text-3xl font-bold" :class="pieceTextClass(cell.side)">{{ pieceChars[cell.side][cell.type] }}</span>
+              <span class="relative z-10 text-2xl sm:text-3xl font-bold transition-transform duration-300" :class="pieceTextClass(cell.side)" :style="flipped ? { transform: 'rotate(180deg)' } : undefined">{{ pieceChars[cell.side][cell.type] }}</span>
               <!-- 步数标记 -->
               <span
                 v-if="showSteps && stepMap.has(`${colIndex},${rowIndex}`)"
-                class="absolute -top-1 -right-1 text-xs bg-white dark:bg-stone-800 rounded-full w-4 h-4 flex items-center justify-center"
+                class="absolute -top-1 -right-1 text-xs bg-white dark:bg-stone-800 rounded-full w-4 h-4 flex items-center justify-center transition-transform duration-300"
+                :style="flipped ? { transform: 'rotate(180deg)' } : undefined"
               >
                 {{ stepMap.get(`${colIndex},${rowIndex}`) }}
               </span>
@@ -425,12 +431,13 @@ const isCheckHighlight = computed(() => {
             <!-- 思考路径标记 -->
             <div
               v-else-if="thinkingMap.has(`${colIndex},${rowIndex}`)"
-              class="relative z-10 w-[90%] h-[90%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm"
+              class="relative z-10 w-[90%] h-[90%] rounded-full opacity-60 flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm transition-transform duration-300"
               :class="[
                 thinkingMap.get(`${colIndex},${rowIndex}`)!.side === PlayerSide.RED
                   ? `${themeColors.piecePrimary}`
                   : `${themeColors.pieceSecondary}`,
               ]"
+              :style="flipped ? { transform: 'rotate(180deg)' } : undefined"
             >
               {{ thinkingMap.get(`${colIndex},${rowIndex}`)!.index }}
             </div>

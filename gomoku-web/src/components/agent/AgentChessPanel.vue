@@ -398,6 +398,7 @@ defineExpose({
         :selectedPiece="selectedPiece"
         :validMoves="validMovesForSelected"
         :theme="theme"
+        :flipped="aiFirst"
         @selectPiece="handleSelectPiece"
         @movePiece="handleMovePiece"
       />
