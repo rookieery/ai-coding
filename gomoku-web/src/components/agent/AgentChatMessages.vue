@@ -127,7 +127,7 @@ defineExpose({
                 ? (currentTheme === 'dark' ? 'cursor-not-allowed bg-stone-700 text-stone-500' : 'cursor-not-allowed bg-stone-200 text-stone-400')
                 : 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'"
             >
-              {{ t('chessPlayModeTitle') }}
+              {{ t('chessSelectGameChess') }}
             </button>
           </div>
 

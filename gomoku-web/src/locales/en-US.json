@@ -219,7 +219,7 @@
   "agentAiThinkingMove": "AI is thinking about its move...",
   "agentGameSelectorPrompt": "Which game would you like to play?",
   "agentGameGomoku": "Gomoku",
-  "agentGameChineseChess": "Chinese Chess (Coming Soon)",
+  "agentGameChineseChess": "Chinese Chess",
   "agentExitConfirmTitle": "Return to Home",
   "agentExitConfirmMessage": "Returning to home will clear the current game. Are you sure?",
   "agentExitConfirmWarning": "This action cannot be undone.",
