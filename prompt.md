@@ -41,6 +41,16 @@ You MUST only complete ONE user story per session. After setting "passes": true 
 ## Testing & Validation
 1. Strict Build Check: Before marking ANY UI or structural task as "passes": true, you MUST run npm run typecheck or verify that the Vue component compiles without Vite import errors. Do not rely solely on isolated unit tests for architectural changes.
 
+### CRITICAL: Browser Automation & Server Lifecycle
+If you need to start a dev server (e.g., `npx vite`) and use browser tools (like Chrome-devtools-mcp or puppeteer) to test the UI, you MUST strictly follow this lifecycle to prevent breaking the automated loop:
+
+1. **Start the Server**: Start the dev server in the background and explicitly track its PID or Job ID.
+2. **Isolate Browser**: ALWAYS ensure you are not conflicting with existing browser instances. If an error like "browser is already running" occurs, you must forcefully kill existing Chrome processes (using `taskkill /F /IM chrome.exe`) before retrying.
+3. **CLEANUP (ABSOLUTELY MANDATORY)**: As soon as your UI verification is complete, you MUST do two things:
+   - Close the browser tab/window using the appropriate MCP tool.
+   - Kill the specific background dev server you started in step 1 using its PID or Job ID.
+Do NOT leave any background servers or browser windows running when setting `"passes": true` and concluding a story.
+
 ## JSON File Handling (CRITICAL)
 
 When updating `prd.json` or any JSON file:
