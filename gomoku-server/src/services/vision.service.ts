@@ -5,6 +5,7 @@
 
 import OpenAI from 'openai';
 import { logger } from '../utils/logger';
+import { ChatStreamEvent } from './chat.service';
 
 interface BoardRecognitionResult {
   boardType: string;
@@ -162,6 +163,61 @@ export class VisionService {
     } catch (error) {
       logger.error('Vision API call failed:', error);
       throw error;
+    }
+  }
+
+  async *createStreamRecognition(imageBase64: string): AsyncGenerator<ChatStreamEvent, void, unknown> {
+    if (!this.client) {
+      throw new Error('Vision service not configured: missing API key or base URL');
+    }
+
+    if (!this.config.model) {
+      throw new Error('Vision service not configured: missing model endpoint ID');
+    }
+
+    logger.info('Calling Doubao vision API for streaming board recognition');
+
+    const stream = await this.client.chat.completions.create({
+      model: this.config.model,
+      messages: [
+        { role: 'system', content: VISION_SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {
+                url: imageBase64.startsWith('data:')
+                  ? imageBase64
+                  : `data:image/png;base64,${imageBase64}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 4000,
+      temperature: 0.4,
+      top_p: 0.9,
+      stream: true,
+    });
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta;
+      if (!delta) continue;
+
+      if ((delta as Record<string, unknown>).reasoning_content) {
+        yield {
+          type: 'thinking',
+          text: (delta as Record<string, unknown>).reasoning_content as string,
+        };
+      }
+
+      if (delta.content) {
+        yield {
+          type: 'answer',
+          text: delta.content,
+        };
+      }
     }
   }
 
