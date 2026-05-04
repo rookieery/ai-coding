@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { unifiedVisionService } from '../services/unified-vision.service';
+import { visionService } from '../services/vision.service';
+import { chessVisionService } from '../services/chess-vision.service';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -51,6 +53,72 @@ router.post('/recognize', async (req: Request, res: Response) => {
       success: false,
       message: `Failed to recognize board: ${errorMessage}`,
     });
+  }
+});
+
+/**
+ * @route   POST /api/vision/recognize/stream
+ * @desc    Stream board recognition with SSE (thinking/answer/board_data events)
+ * @access  Public
+ */
+router.post('/recognize/stream', async (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  let clientDisconnected = false;
+  req.on('close', () => {
+    clientDisconnected = true;
+  });
+
+  try {
+    const { imageBase64 } = req.body as RecognizeRequest;
+
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
+      res.write(`data: ${JSON.stringify({ error: 'Bad Request', message: 'imageBase64 is required and must be a string' })}\n\n`);
+      res.end();
+      return;
+    }
+
+    logger.info('Received streaming board recognition request');
+
+    const { boardType, stream } = await unifiedVisionService.createStreamRecognition(imageBase64);
+
+    let answerContent = '';
+
+    for await (const event of stream) {
+      if (clientDisconnected) break;
+
+      if (event.type === 'answer') {
+        answerContent += event.text;
+      }
+
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    }
+
+    if (!clientDisconnected) {
+      const parsed = boardType === 'chinese_chess'
+        ? chessVisionService.parseVisionResponse(answerContent)
+        : visionService.parseVisionResponse(answerContent);
+
+      if (parsed) {
+        res.write(`data: ${JSON.stringify({
+          type: 'board_data',
+          data: { boardType, candidates: parsed.candidates },
+        })}\n\n`);
+      }
+
+      res.write('data: [DONE]\n\n');
+    }
+
+    res.end();
+  } catch (error) {
+    logger.error('Streaming board recognition error:', error);
+    if (!clientDisconnected) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.write(`data: ${JSON.stringify({ error: 'Internal Server Error', message: `Failed to stream board recognition: ${errorMessage}` })}\n\n`);
+    }
+    res.end();
   }
 });
 

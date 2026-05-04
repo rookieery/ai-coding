@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { logger } from '../utils/logger';
 import { visionService } from './vision.service';
 import { chessVisionService } from './chess-vision.service';
+import { ChatStreamEvent } from './chat.service';
 
 type BoardType = 'gomoku' | 'chinese_chess';
 
@@ -107,6 +108,25 @@ export class UnifiedVisionService {
 
     const result = await visionService.recognizeBoard(imageBase64);
     return { boardType: 'gomoku', candidates: result.candidates };
+  }
+
+  async createStreamRecognition(imageBase64: string): Promise<{
+    boardType: BoardType;
+    stream: AsyncGenerator<ChatStreamEvent, void, unknown>;
+  }> {
+    const boardType = await this.detectBoardType(imageBase64);
+
+    if (boardType === 'chinese_chess') {
+      return {
+        boardType,
+        stream: chessVisionService.createStreamChessRecognition(imageBase64),
+      };
+    }
+
+    return {
+      boardType,
+      stream: visionService.createStreamRecognition(imageBase64),
+    };
   }
 }
 

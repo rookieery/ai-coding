@@ -221,7 +221,7 @@ export class VisionService {
     }
   }
 
-  private parseVisionResponse(content: string): BoardRecognitionResult | null {
+  parseVisionResponse(content: string): BoardRecognitionResult | null {
     try {
       // First, try to extract JSON from markdown code blocks (```json ... ```)
       const codeBlockMatch = content.match(/```json\s*([\s\S]*?)```/);

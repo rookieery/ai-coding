@@ -239,7 +239,7 @@ export class ChessVisionService {
     }
   }
 
-  private parseVisionResponse(content: string): ChessBoardRecognitionResult | null {
+  parseVisionResponse(content: string): ChessBoardRecognitionResult | null {
     try {
       const codeBlockMatch = content.match(/```json\s*([\s\S]*?)```/);
       if (codeBlockMatch) {
