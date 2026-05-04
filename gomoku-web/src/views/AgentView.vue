@@ -656,7 +656,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     chatInputRef.value?.resetTextareaHeight();
 
     isThinking.value = true;
-    thinkingContent.value = t('visionParsingBoard');
+    thinkingContent.value = '';
     answerContent.value = '';
     showThinkingProcess.value = true;
     activeAbortController.value = new AbortController();
@@ -664,38 +664,58 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     await nextTick();
     chatMessagesRef.value?.scrollToBottom();
 
-    try {
-      const result = await visionApi.recognizeBoardFromBase64(payload.imageBase64, activeAbortController.value.signal);
-
-      if (result.boardType === 'chinese_chess') {
-        enterChessVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
-      } else {
-        enterVisionConfirmMode(result.candidates, payload.imageBase64, userText || undefined);
-      }
-
-      resetThinkingState();
-
-      messages.value.push({
-        role: 'agent',
-        text: t('agentVisionConfirmEntered'),
-      });
-
-      await nextTick();
-      chatMessagesRef.value?.scrollToBottom();
-    } catch (error) {
-      if ((error as Error).name === 'AbortError') {
+    await visionApi.recognizeBoardStream(
+      payload.imageBase64,
+      (chunk) => {
+        if (chunk.type === 'thinking' && chunk.text) {
+          thinkingContent.value += chunk.text;
+          chatMessagesRef.value?.scrollToBottom();
+        } else if (chunk.type === 'answer' && chunk.text) {
+          answerContent.value += chunk.text;
+          chatMessagesRef.value?.scrollToBottom();
+        }
+      },
+      (error) => {
+        if (error.name === 'AbortError') {
+          resetThinkingState();
+          return;
+        }
+        const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
+        messages.value.push({
+          role: 'agent',
+          text: `${t('genericErrorPrefix')}${errorMessage}`,
+        });
         resetThinkingState();
-        return;
-      }
-      const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
-      messages.value.push({
-        role: 'agent',
-        text: `${t('genericErrorPrefix')}${errorMessage}`,
-      });
-      resetThinkingState();
-      await nextTick();
-      chatMessagesRef.value?.scrollToBottom();
-    }
+        nextTick(() => chatMessagesRef.value?.scrollToBottom());
+      },
+      (boardData) => {
+        if (!boardData) {
+          messages.value.push({
+            role: 'agent',
+            text: `${t('genericErrorPrefix')}${t('visionParseFailed')}`,
+          });
+          resetThinkingState();
+          nextTick(() => chatMessagesRef.value?.scrollToBottom());
+          return;
+        }
+
+        if (boardData.boardType === 'chinese_chess') {
+          enterChessVisionConfirmMode(boardData.candidates, payload.imageBase64!, userText || undefined);
+        } else {
+          enterVisionConfirmMode(boardData.candidates, payload.imageBase64!, userText || undefined);
+        }
+
+        resetThinkingState();
+
+        messages.value.push({
+          role: 'agent',
+          text: t('agentVisionConfirmEntered'),
+        });
+
+        nextTick(() => chatMessagesRef.value?.scrollToBottom());
+      },
+      activeAbortController.value.signal
+    );
 
     return;
   }

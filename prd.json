@@ -2,16 +2,10 @@
   "branchName": "feature/vision-streaming-cot",
   "stories": [
     {
-      "id": "S3",
-      "title": "前端 - Vision API 增加流式识别 SSE 客户端方法",
-      "description": "在 gomoku-web/src/api/vision-api.ts 中新增 recognizeBoardStream() 方法。使用 fetch 调用 POST /api/vision/recognize/stream，通过 ReadableStream reader 和 TextDecoder 解析 SSE 数据（复用 chat-api.ts 中 sendMessageStream 的 SSE 解析模式）。支持三种回调：onChunk(chunk: { type: 'thinking' | 'answer' | 'board_data', text?: string, data?: RecognitionResult })、onError(error: Error)、onComplete(boardData?: RecognitionResult)。其中 board_data 事件携带解析后的棋盘数据，通过 onComplete 回调传递给调用方。支持 AbortSignal 用于取消请求。预估新增约 80 行代码。",
-      "passes": true
-    },
-    {
       "id": "S4",
       "title": "前端 - AgentView 集成流式视觉识别交互展示",
       "description": "修改 gomoku-web/src/views/AgentView.vue 中 handleSend() 方法的图片处理分支（约 line 636-700）。将原有的 visionApi.recognizeBoardFromBase64() 非流式调用替换为 visionApi.recognizeBoardStream() 流式调用。在 onChunk 回调中：thinking 类型事件累积到 thinkingContent.value（已有的响应式变量），answer 类型事件累积到 answerContent.value。利用已有的 ThinkingProcess.vue 组件实时展示思考过程（AgentChatMessages.vue 的流式区域，line 148-165，当 isThinking=true 时自动渲染）。在 onComplete 回调中：从 boardData 获取解析后的棋盘 JSON 数据，调用 enterVisionConfirmMode() 或 enterChessVisionConfirmMode() 进入棋盘候选方案确认模式，最后调用 resetThinkingState() 清理流式状态。确保此修改仅影响图片处理分支，DeepSeek 纯文本流式回答走 executeStreamingChat() 方法，完全独立不受影响。预估修改约 50 行代码。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S5",
