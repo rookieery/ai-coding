@@ -2,16 +2,10 @@
   "branchName": "feature/vision-streaming-cot",
   "stories": [
     {
-      "id": "S2",
-      "title": "后端 - UnifiedVisionService 增加流式入口并新增 SSE 路由",
-      "description": "在 gomoku-server/src/services/unified-vision.service.ts 中新增 createStreamRecognition() 方法：先通过现有的非流式 detectBoardType() 检测棋盘类型（该步骤简单快速，无需流式），再根据 boardType 调用 visionService.createStreamRecognition() 或 chessVisionService.createStreamChessRecognition() 并透传事件。在 gomoku-server/src/routes/vision.routes.ts 中新增 POST /api/vision/recognize/stream 路由，设置 SSE 响应头（Content-Type: text/event-stream、Cache-Control: no-cache、Connection: keep-alive），流式输出 thinking/answer 事件。流式完成后，从累积的 answer 内容中调用现有的 parseVisionResponse() 方法解析棋盘 JSON 数据，发送 { type: 'board_data', data: { boardType, candidates } } 事件，最后发送 data: [DONE] 标记。保留原有非流式 POST /api/vision/recognize 路由不变。预估 unified-vision.service.ts 新增约 30 行，vision.routes.ts 新增约 60 行。",
-      "passes": true
-    },
-    {
       "id": "S3",
       "title": "前端 - Vision API 增加流式识别 SSE 客户端方法",
       "description": "在 gomoku-web/src/api/vision-api.ts 中新增 recognizeBoardStream() 方法。使用 fetch 调用 POST /api/vision/recognize/stream，通过 ReadableStream reader 和 TextDecoder 解析 SSE 数据（复用 chat-api.ts 中 sendMessageStream 的 SSE 解析模式）。支持三种回调：onChunk(chunk: { type: 'thinking' | 'answer' | 'board_data', text?: string, data?: RecognitionResult })、onError(error: Error)、onComplete(boardData?: RecognitionResult)。其中 board_data 事件携带解析后的棋盘数据，通过 onComplete 回调传递给调用方。支持 AbortSignal 用于取消请求。预估新增约 80 行代码。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "S4",
