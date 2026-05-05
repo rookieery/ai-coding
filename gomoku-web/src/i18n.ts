@@ -243,6 +243,9 @@ export interface Messages {
   visionBoardLoaded: string;
   visionParseFailed: string;
   visionAnalyzingPosition: string;
+  visionRenderingBoard: string;
+  visionRenderingGomokuBoard: string;
+  visionRenderingChessBoard: string;
   imageUploadGuidance: string;
   close: string;
   visionConfirmTitle: string;

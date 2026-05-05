@@ -661,6 +661,8 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     showThinkingProcess.value = true;
     activeAbortController.value = new AbortController();
 
+    let visionBoardType: 'gomoku' | 'chinese_chess' | null = null;
+
     await nextTick();
     chatMessagesRef.value?.scrollToBottom();
 
@@ -669,9 +671,23 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
       (chunk) => {
         if (chunk.type === 'thinking' && chunk.text) {
           thinkingContent.value += chunk.text;
+          if (!visionBoardType) {
+            const thinking = thinkingContent.value.toLowerCase();
+            if (thinking.includes('中国象棋') || thinking.includes('chinese_chess')) {
+              visionBoardType = 'chinese_chess';
+            } else if (thinking.includes('五子棋') || thinking.includes('gomoku')) {
+              visionBoardType = 'gomoku';
+            }
+          }
           chatMessagesRef.value?.scrollToBottom();
         } else if (chunk.type === 'answer' && chunk.text) {
-          answerContent.value += chunk.text;
+          if (!answerContent.value) {
+            answerContent.value = visionBoardType === 'chinese_chess'
+              ? t('visionRenderingChessBoard')
+              : visionBoardType === 'gomoku'
+                ? t('visionRenderingGomokuBoard')
+                : t('visionRenderingBoard');
+          }
           chatMessagesRef.value?.scrollToBottom();
         }
       },
