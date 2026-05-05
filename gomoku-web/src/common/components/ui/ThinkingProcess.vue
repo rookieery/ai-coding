@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-vue-next';
 import { currentTheme, t } from '@/src/i18n';
 
@@ -21,8 +21,19 @@ const emit = defineEmits<{
   toggle: [show: boolean];
 }>();
 
+const scrollRef = ref<HTMLElement | null>(null);
+
 const hasContent = computed(() => {
   return props.content.trim().length > 0;
+});
+
+watch(() => props.content, () => {
+  if (!props.isThinking || !scrollRef.value) return;
+  nextTick(() => {
+    if (scrollRef.value) {
+      scrollRef.value.scrollTop = scrollRef.value.scrollHeight;
+    }
+  });
 });
 
 const handleToggle = () => {
@@ -75,7 +86,7 @@ const headerClasses = computed(() => {
 
     <!-- 内容区 -->
     <transition name="slide">
-      <div v-if="show && hasContent" class="px-4 py-3 max-h-96 overflow-y-auto">
+      <div v-if="show && hasContent" ref="scrollRef" class="px-4 py-3 max-h-96 overflow-y-auto">
         <div :class="contentClasses">
           {{ content }}
         </div>
