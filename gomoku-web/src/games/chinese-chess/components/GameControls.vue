@@ -17,6 +17,7 @@ const props = defineProps<{
   showThinking: boolean;
   showSteps: boolean;
   isAiThinking: boolean;
+  boardPieceCount: number;
   theme?: ThemeKey;
 }>();
 
@@ -202,14 +203,14 @@ const emit = defineEmits(['setMode', 'showHint', 'undo', 'resetGame', 'setAiDiff
       <div class="group relative">
         <button
           @click="emit('requestAiAnalysis')"
-          :disabled="moveHistoryLength === 0 || isAiThinking"
+          :disabled="(moveHistoryLength === 0 && boardPieceCount === 0) || isAiThinking"
           class="flex items-center justify-center w-10 h-10 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           :class="currentTheme === 'dark' ? 'bg-indigo-900/50 border-indigo-700 text-indigo-400 hover:bg-indigo-900/70 disabled:hover:bg-indigo-900/50' : 'bg-indigo-100 border-indigo-300 text-indigo-700 hover:bg-indigo-200 disabled:hover:bg-indigo-100'"
         >
           <Sparkles class="w-5 h-5" />
         </button>
         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-lg">
-          {{ moveHistoryLength === 0 ? t('chessAiAnalysisEmptyBoard') : t('requestChessAiAnalysis') }}
+          {{ (moveHistoryLength === 0 && boardPieceCount === 0) ? t('chessAiAnalysisEmptyBoard') : t('requestChessAiAnalysis') }}
           <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-800"></div>
         </div>
       </div>

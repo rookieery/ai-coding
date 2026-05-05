@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import type { BoardState } from '../games/chinese-chess/types';
 
 const pendingVisionCandidates = ref<number[][][] | null>(null);
+const pendingReplayFlag = ref<boolean>(false);
 const resolveConfirmation = ref<((pieces: number[][]) => void) | null>(null);
 
 const pendingQuestion = ref<string | null>(null);
@@ -43,12 +44,19 @@ const setVisionCandidatesForReplay = (candidates: number[][][]) => {
   pendingVisionCandidates.value = candidates.map(matrix =>
     matrix.map(row => [...row])
   );
+  pendingReplayFlag.value = true;
 };
 
 const consumeVisionCandidates = (): number[][][] | null => {
   const current = pendingVisionCandidates.value;
   pendingVisionCandidates.value = null;
   return current;
+};
+
+const consumeReplayFlag = (): boolean => {
+  const flag = pendingReplayFlag.value;
+  pendingReplayFlag.value = false;
+  return flag;
 };
 
 /** Legacy: only for GameView direct-jump flow. The new AgentVisionPanel flow no longer calls this. */
@@ -124,6 +132,7 @@ const consumeChessAnalysis = (): ChessAnalysisData | null => {
 
 const clearPendingRequest = () => {
   pendingVisionCandidates.value = null;
+  pendingReplayFlag.value = false;
   pendingQuestion.value = null;
   pendingImageBase64.value = null;
   pendingAnalysis.value = null;
@@ -142,6 +151,7 @@ export const useVisionBridge = () => ({
   setVisionCandidates,
   setVisionCandidatesForReplay,
   consumeVisionCandidates,
+  consumeReplayFlag,
   requestBoardConfirmation,
   confirmBoard,
   hasPendingConfirmation,

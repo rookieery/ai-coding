@@ -284,7 +284,7 @@ const handleCopySuccess = () => {
 };
 
 const handleRequestAiAnalysis = async () => {
-  if (gameState.moveHistory.value.length === 0) return;
+  if (gameState.moveHistory.value.length === 0 && gameState.boardPieceCount.value === 0) return;
   const el = boardRef.value?.$el as HTMLElement | undefined;
   if (!el) return;
 
@@ -365,6 +365,7 @@ onDeactivated(() => {
       :showThinking="gameAI.showThinking.value"
       :showSteps="gameState.showSteps.value"
       :isAiThinking="isAnyAiThinking"
+      :boardPieceCount="gameState.boardPieceCount.value"
       :theme="theme"
       @setMode="handleSetMode"
       @setAiDifficulty="handleSetAiDifficulty"

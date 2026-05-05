@@ -50,6 +50,16 @@ export function useGameState() {
 
   const aiPlayer = computed(() => aiRole.value === 'first' ? BLACK : WHITE);
 
+  const boardPieceCount = computed(() => {
+    let count = 0;
+    for (const row of board.value) {
+      for (const cell of row) {
+        if (cell !== EMPTY) count++;
+      }
+    }
+    return count;
+  });
+
   const forbiddenPoints = computed(() => {
     const points: {r: number, c: number}[] = [];
     if (ruleMode.value !== 'renju') return points;
@@ -238,14 +248,22 @@ export function useGameState() {
   };
 
   const loadVisionCandidates = () => {
-    const candidates = useVisionBridge().consumeVisionCandidates();
+    const bridge = useVisionBridge();
+    const candidates = bridge.consumeVisionCandidates();
+    const isReplay = bridge.consumeReplayFlag();
     if (candidates && candidates.length > 0) {
-      visionCandidates.value = candidates;
-      selectedCandidateIndex.value = 0;
-      isVisionConfirming.value = true;
-      isVisionEditMode.value = false;
-      editTool.value = 'black';
-      loadBoardState(candidates[0]);
+      if (isReplay) {
+        loadBoardState(candidates[0]);
+        visionCandidates.value = null;
+        isVisionConfirming.value = false;
+      } else {
+        visionCandidates.value = candidates;
+        selectedCandidateIndex.value = 0;
+        isVisionConfirming.value = true;
+        isVisionEditMode.value = false;
+        editTool.value = 'black';
+        loadBoardState(candidates[0]);
+      }
     }
     return candidates;
   };
@@ -542,6 +560,7 @@ export function useGameState() {
     showSteps,
 
     aiPlayer,
+    boardPieceCount,
     forbiddenPoints,
 
     // Vision confirmation state

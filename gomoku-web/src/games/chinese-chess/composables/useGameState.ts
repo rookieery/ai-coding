@@ -46,6 +46,16 @@ export function useGameState() {
 
   const aiPlayer = computed(() => aiRole.value === 'red' ? PlayerSide.RED : PlayerSide.BLACK);
 
+  const boardPieceCount = computed(() => {
+    let count = 0;
+    for (const row of board.value) {
+      for (const cell of row) {
+        if (cell) count++;
+      }
+    }
+    return count;
+  });
+
   const executeMove = (
     from: BoardCoord,
     to: BoardCoord,
@@ -280,6 +290,7 @@ export function useGameState() {
 
     gameStatus.value = GameStatus.IN_PROGRESS;
     mode.value = 'pvp';
+    isAnalysisMode.value = true;
   };
 
   const toFrontendGame = (name: string, isPublic: boolean, gameType: string): ChineseChessFrontendGame => {
@@ -314,6 +325,7 @@ export function useGameState() {
     validMoves,
     winningLine,
     aiPlayer,
+    boardPieceCount,
 
     executeMove,
     handleSelectPiece,
