@@ -2,16 +2,10 @@
   "branchName": "feature/vision-streaming-cot",
   "stories": [
     {
-      "id": "S4",
-      "title": "前端 - AgentView 集成流式视觉识别交互展示",
-      "description": "修改 gomoku-web/src/views/AgentView.vue 中 handleSend() 方法的图片处理分支（约 line 636-700）。将原有的 visionApi.recognizeBoardFromBase64() 非流式调用替换为 visionApi.recognizeBoardStream() 流式调用。在 onChunk 回调中：thinking 类型事件累积到 thinkingContent.value（已有的响应式变量），answer 类型事件累积到 answerContent.value。利用已有的 ThinkingProcess.vue 组件实时展示思考过程（AgentChatMessages.vue 的流式区域，line 148-165，当 isThinking=true 时自动渲染）。在 onComplete 回调中：从 boardData 获取解析后的棋盘 JSON 数据，调用 enterVisionConfirmMode() 或 enterChessVisionConfirmMode() 进入棋盘候选方案确认模式，最后调用 resetThinkingState() 清理流式状态。确保此修改仅影响图片处理分支，DeepSeek 纯文本流式回答走 executeStreamingChat() 方法，完全独立不受影响。预估修改约 50 行代码。",
-      "passes": true
-    },
-    {
       "id": "S5",
       "title": "端到端测试与 DeepSeek 兼容性验证",
       "description": "使用 gomoku-web/screenshots/ 目录下的测试图片（5a50454aeb7cba2b908409dacc53ce7e.jpg 和 微信图片_20260426150103_162_41.jpg），分别对五子棋和中国象棋棋盘图片进行完整的流式识别测试。验证项：①思考过程实时流式展示且动画流畅；②ThinkingProcess 组件可正常展开/收起，显示字符计数；③流式完成后棋盘 JSON 解析准确，候选方案正确展示；④AbortSignal 取消功能正常。同时发送纯文本消息测试 DeepSeek 流式回答，验证思考过程和回答内容的流式展示完全正常，不受视觉流式改造影响。启动前后端服务进行实际操作验证。",
-      "passes": false
+      "passes": true
     }
   ]
 }
