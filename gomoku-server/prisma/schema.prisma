@@ -3,8 +3,6 @@
 
 generator client {
   provider      = "prisma-client-js"
-  engineType    = "binary"  // <-- 加上这一行，强制使用独立二进制文件
-  binaryTargets = ["native", "linux-musl"] // 只保留这两个即可
 }
 
 datasource db {

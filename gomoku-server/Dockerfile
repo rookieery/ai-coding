@@ -1,45 +1,47 @@
-# 构建阶段
-FROM node:18-alpine AS builder
+# ---------------- 构建阶段 ----------------
+FROM node:18-bullseye-slim AS builder
 WORKDIR /app
 
-# 复制包管理文件
+# 1. 安装 Prisma 必需的 OpenSSL
+RUN apt-get update -y && apt-get install -y openssl
+
+# 2. 复制包管理文件
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# 安装依赖
-RUN npm ci --only=production
+# 3. 安装所有依赖 (去掉 --only=production 以确保能拉取 typescript 进行编译)
+RUN npm ci
 
-# 复制源代码
+# 4. 复制源代码
 COPY src ./src
 COPY prisma ./prisma
 
-# 生成Prisma客户端
+# 5. 生成 Prisma 客户端并构建 TypeScript
 RUN npx prisma generate
-
-# 构建TypeScript
 RUN npm run build
 
-# 运行阶段
-FROM node:18-alpine
+# ---------------- 运行阶段 ----------------
+FROM node:18-bullseye-slim
 WORKDIR /app
 
-# 创建非root用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -G nodejs
-USER nodejs
+# 1. 安装运行时需要的 OpenSSL 和用于健康检查的 curl
+RUN apt-get update -y && apt-get install -y openssl curl && rm -rf /var/lib/apt/lists/*
 
-# 复制生产依赖和构建产物
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+# 2. 使用 Node 镜像自带的非 root 用户 (Debian 镜像自带 node 用户，无需手动 adduser)
+USER node
 
-# 暴露端口
+# 3. 复制生产依赖和构建产物，并赋予 node 用户权限
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --from=builder --chown=node:node /app/package.json ./package.json
+COPY --from=builder --chown=node:node /app/prisma ./prisma
+
+# 4. 暴露端口 (确保你的代码里监听的是 3001，如果是 3000 请改成 3000)
 EXPOSE 3001
 
-# 健康检查
+# 5. 健康检查 (将 wget 替换为 curl，更适配 Debian 系统)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
+  CMD curl -f http://localhost:3001/api/health || exit 1
 
-# 启动应用
+# 6. 启动应用
 CMD ["npm", "start"]

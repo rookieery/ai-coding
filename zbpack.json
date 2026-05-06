@@ -1,8 +1,0 @@
-{
-  "install": {
-    "packages": [
-      "openssl",
-      "openssl1.1-compat"
-    ]
-  }
-}
