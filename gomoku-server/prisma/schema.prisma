@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  engineType    = "binary"  // <-- 加上这一行，强制使用独立二进制文件
+  binaryTargets = ["native", "linux-musl"] // 只保留这两个即可
 }
 
 datasource db {
