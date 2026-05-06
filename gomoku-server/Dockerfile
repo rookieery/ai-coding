@@ -43,5 +43,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/api/health || exit 1
 
-# 6. 启动应用
-CMD ["npm", "start"]
+# 6. 启动应用（先同步数据库表结构，再启动服务）
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/app.js"]
