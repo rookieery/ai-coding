@@ -4,7 +4,8 @@
   "zeabur": {
     "install": {
       "packages": [
-        "openssl"
+        "openssl",
+        "openssl1.1-compat"
       ]
     }
   },
