@@ -1,6 +1,13 @@
 {
   "name": "gomoku-server",
   "version": "0.1.0",
+  "zeabur": {
+    "install": {
+      "packages": [
+        "openssl"
+      ]
+    }
+  },
   "description": "Backend server for Gomoku game with user and game record management",
   "main": "dist/app.js",
   "scripts": {
