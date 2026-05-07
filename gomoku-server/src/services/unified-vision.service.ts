@@ -68,6 +68,7 @@ export class UnifiedVisionService {
       this.client = new OpenAI({
         apiKey: this.config.apiKey,
         baseURL: this.config.baseUrl,
+        timeout: 120000,
       });
       logger.info('Unified vision service initialized');
     } else {

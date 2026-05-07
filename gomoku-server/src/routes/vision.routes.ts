@@ -81,7 +81,14 @@ router.post('/recognize/stream', (req: Request, res: Response) => {
   let clientDisconnected = false;
   res.on('close', () => {
     clientDisconnected = true;
+    clearInterval(keepaliveTimer);
   });
+
+  const keepaliveTimer = setInterval(() => {
+    if (!clientDisconnected) {
+      res.write(': keepalive\n\n');
+    }
+  }, 15000);
 
   let answerContent = '';
 
@@ -97,6 +104,7 @@ router.post('/recognize/stream', (req: Request, res: Response) => {
       res.write(`data: ${JSON.stringify(event)}\n\n`);
     },
   ).then(() => {
+    clearInterval(keepaliveTimer);
     logger.info(`Stream completed, answer length: ${answerContent.length}`);
     if (clientDisconnected) {
       res.end();
@@ -118,6 +126,7 @@ router.post('/recognize/stream', (req: Request, res: Response) => {
     res.write('data: [DONE]\n\n');
     res.end();
   }).catch((error) => {
+    clearInterval(keepaliveTimer);
     logger.error('Streaming board recognition error:', error);
     if (!clientDisconnected) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
