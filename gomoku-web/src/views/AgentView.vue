@@ -666,72 +666,76 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     await nextTick();
     chatMessagesRef.value?.scrollToBottom();
 
-    await visionApi.recognizeBoardStream(
-      payload.imageBase64,
-      (chunk) => {
-        if (chunk.type === 'thinking' && chunk.text) {
-          thinkingContent.value += chunk.text;
-          if (!visionBoardType) {
-            const thinking = thinkingContent.value.toLowerCase();
-            if (thinking.includes('中国象棋') || thinking.includes('chinese_chess')) {
-              visionBoardType = 'chinese_chess';
-            } else if (thinking.includes('五子棋') || thinking.includes('gomoku')) {
-              visionBoardType = 'gomoku';
+    try {
+      await visionApi.recognizeBoardStream(
+        payload.imageBase64,
+        (chunk) => {
+          if (chunk.type === 'thinking' && chunk.text) {
+            thinkingContent.value += chunk.text;
+            if (!visionBoardType) {
+              const thinking = thinkingContent.value.toLowerCase();
+              if (thinking.includes('中国象棋') || thinking.includes('chinese_chess')) {
+                visionBoardType = 'chinese_chess';
+              } else if (thinking.includes('五子棋') || thinking.includes('gomoku')) {
+                visionBoardType = 'gomoku';
+              }
             }
+            chatMessagesRef.value?.scrollToBottom();
+          } else if (chunk.type === 'answer' && chunk.text) {
+            if (!answerContent.value) {
+              answerContent.value = visionBoardType === 'chinese_chess'
+                ? t('visionRenderingChessBoard')
+                : visionBoardType === 'gomoku'
+                  ? t('visionRenderingGomokuBoard')
+                  : t('visionRenderingBoard');
+            }
+            chatMessagesRef.value?.scrollToBottom();
           }
-          chatMessagesRef.value?.scrollToBottom();
-        } else if (chunk.type === 'answer' && chunk.text) {
-          if (!answerContent.value) {
-            answerContent.value = visionBoardType === 'chinese_chess'
-              ? t('visionRenderingChessBoard')
-              : visionBoardType === 'gomoku'
-                ? t('visionRenderingGomokuBoard')
-                : t('visionRenderingBoard');
-          }
-          chatMessagesRef.value?.scrollToBottom();
-        }
-      },
-      (error) => {
-        if (error.name === 'AbortError') {
-          resetThinkingState();
-          return;
-        }
-        const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
-        messages.value.push({
-          role: 'agent',
-          text: `${t('genericErrorPrefix')}${errorMessage}`,
-        });
-        resetThinkingState();
-        nextTick(() => chatMessagesRef.value?.scrollToBottom());
-      },
-      (boardData) => {
-        if (!boardData) {
+        },
+        (error) => {
+          const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
           messages.value.push({
             role: 'agent',
-            text: `${t('genericErrorPrefix')}${t('visionParseFailed')}`,
+            text: `${t('genericErrorPrefix')}${errorMessage}`,
           });
           resetThinkingState();
           nextTick(() => chatMessagesRef.value?.scrollToBottom());
-          return;
-        }
+        },
+        (boardData) => {
+          if (!boardData) {
+            messages.value.push({
+              role: 'agent',
+              text: `${t('genericErrorPrefix')}${t('visionParseFailed')}`,
+            });
+            resetThinkingState();
+            nextTick(() => chatMessagesRef.value?.scrollToBottom());
+            return;
+          }
 
-        if (boardData.boardType === 'chinese_chess') {
-          enterChessVisionConfirmMode(boardData.candidates, payload.imageBase64!, userText || undefined);
-        } else {
-          enterVisionConfirmMode(boardData.candidates, payload.imageBase64!, userText || undefined);
-        }
+          if (boardData.boardType === 'chinese_chess') {
+            enterChessVisionConfirmMode(boardData.candidates, payload.imageBase64!, userText || undefined);
+          } else {
+            enterVisionConfirmMode(boardData.candidates, payload.imageBase64!, userText || undefined);
+          }
 
+          resetThinkingState();
+
+          messages.value.push({
+            role: 'agent',
+            text: t('agentVisionConfirmEntered'),
+          });
+
+          nextTick(() => chatMessagesRef.value?.scrollToBottom());
+        },
+        activeAbortController.value.signal
+      );
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') {
         resetThinkingState();
-
-        messages.value.push({
-          role: 'agent',
-          text: t('agentVisionConfirmEntered'),
-        });
-
-        nextTick(() => chatMessagesRef.value?.scrollToBottom());
-      },
-      activeAbortController.value.signal
-    );
+        return;
+      }
+      throw error;
+    }
 
     return;
   }
