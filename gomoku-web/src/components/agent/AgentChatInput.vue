@@ -26,12 +26,41 @@ const { textareaRef, adjustTextareaHeight, resetTextareaHeight } = useAutoResize
 const selectedImageBase64 = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-const fileToBase64 = (file: File): Promise<string> => {
+const compressImage = (file: File, maxWidth = 1920, quality = 0.8): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsDataURL(file);
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+      if (width > maxWidth || height > maxWidth) {
+        const ratio = Math.min(maxWidth / width, maxWidth / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load image'));
+    };
+
+    img.src = url;
   });
 };
 
@@ -40,7 +69,7 @@ const handleFileSelect = async (event: Event) => {
   const file = target.files?.[0];
   if (file && file.type.startsWith('image/')) {
     try {
-      selectedImageBase64.value = await fileToBase64(file);
+      selectedImageBase64.value = await compressImage(file);
     } catch {
       selectedImageBase64.value = null;
     }
@@ -58,7 +87,7 @@ const handlePaste = async (event: ClipboardEvent) => {
       const file = item.getAsFile();
       if (file) {
         try {
-          selectedImageBase64.value = await fileToBase64(file);
+          selectedImageBase64.value = await compressImage(file);
         } catch {
           selectedImageBase64.value = null;
         }
