@@ -1,27 +1,29 @@
 import { ref, onUnmounted } from 'vue';
 
 interface TypewriterQueueOptions {
-  charsPerFrame?: number;
-  maxCharsPerFrame?: number;
+  charsPerSecond?: number;
+  maxCharsPerSecond?: number;
   speedUpThreshold?: number;
   onUpdate?: () => void;
 }
 
 export function useTypewriterQueue(options: TypewriterQueueOptions = {}) {
   const {
-    charsPerFrame = 3,
-    maxCharsPerFrame = 30,
-    speedUpThreshold = 50,
+    charsPerSecond = 80,
+    maxCharsPerSecond = 400,
+    speedUpThreshold = 200,
     onUpdate,
   } = options;
 
   const output = ref('');
   let buffer = '';
   let animationFrameId: number | null = null;
+  let lastTime = 0;
 
   const push = (text: string) => {
     buffer += text;
     if (!animationFrameId) {
+      lastTime = performance.now();
       startAnimation();
     }
   };
@@ -49,23 +51,28 @@ export function useTypewriterQueue(options: TypewriterQueueOptions = {}) {
   };
 
   const startAnimation = () => {
-    const tick = () => {
+    const tick = (now: number) => {
       if (!buffer) {
         animationFrameId = null;
         return;
       }
 
+      const elapsed = Math.min(now - lastTime, 100);
+      lastTime = now;
+
       const queueLength = buffer.length;
-      let charsToTake = charsPerFrame;
+      let currentSpeed = charsPerSecond;
 
       if (queueLength > speedUpThreshold) {
         const ratio = queueLength / speedUpThreshold;
-        charsToTake = Math.min(maxCharsPerFrame, Math.ceil(charsPerFrame * ratio));
+        currentSpeed = Math.min(maxCharsPerSecond, charsPerSecond * ratio);
       }
 
-      const taken = buffer.substring(0, charsToTake);
+      let charsToTake = Math.max(1, Math.round(currentSpeed * elapsed / 1000));
+      charsToTake = Math.min(charsToTake, queueLength);
+
+      output.value += buffer.substring(0, charsToTake);
       buffer = buffer.substring(charsToTake);
-      output.value += taken;
 
       onUpdate?.();
 

@@ -14,16 +14,16 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
   let abortController: AbortController | null = null;
 
   const thinkingQueue = useTypewriterQueue({
-    charsPerFrame: 8,
-    maxCharsPerFrame: 50,
-    speedUpThreshold: 80,
+    charsPerSecond: 200,
+    maxCharsPerSecond: 800,
+    speedUpThreshold: 300,
     onUpdate: () => externalScrollToBottom?.(),
   });
 
   const answerQueue = useTypewriterQueue({
-    charsPerFrame: 3,
-    maxCharsPerFrame: 40,
-    speedUpThreshold: 50,
+    charsPerSecond: 80,
+    maxCharsPerSecond: 400,
+    speedUpThreshold: 200,
     onUpdate: () => externalScrollToBottom?.(),
   });
 
