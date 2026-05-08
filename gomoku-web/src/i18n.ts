@@ -325,6 +325,8 @@ export interface Messages {
   chessEnterPlayMode: string;
   chessResignGame: string;
   chessNewGame: string;
+  musicOn: string;
+  musicOff: string;
 }
 
 export type MessageKey = keyof Messages;

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed } from 'vue';
+import { ref, onUnmounted, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { currentTheme, toggleTheme, toggleLocale, t } from './i18n';
-import { Moon, Sun, Globe, User, LogOut, Settings, ChevronDown } from 'lucide-vue-next';
+import { Moon, Sun, Globe, LogOut, Settings, ChevronDown, Volume2, VolumeX } from 'lucide-vue-next';
 import { useGlobalAuth } from './composables/useAuth';
+import { useBackgroundMusic } from './composables/useBackgroundMusic';
 import SettingsModal from './common/components/ui/SettingsModal.vue';
 
 const route = useRoute();
@@ -20,6 +21,13 @@ const isUserDropdownOpen = ref(false);
 
 // 个人设置弹窗状态
 const isSettingsModalOpen = ref(false);
+
+// 背景音乐
+const { isPlaying: isMusicPlaying, toggle: toggleMusic, init: initMusic } = useBackgroundMusic();
+
+onMounted(() => {
+  initMusic();
+});
 
 const switchLang = () => {
   toggleLocale();
@@ -109,6 +117,10 @@ onUnmounted(() => {
       </div>
       
       <div class="flex items-center gap-4">
+        <button @click="toggleMusic" class="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" :title="isMusicPlaying ? t('musicOn') : t('musicOff')">
+          <Volume2 v-if="isMusicPlaying" class="w-5 h-5" />
+          <VolumeX v-else class="w-5 h-5" />
+        </button>
         <button @click="switchLang" class="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors" :title="t('language')">
           <Globe class="w-5 h-5" />
         </button>

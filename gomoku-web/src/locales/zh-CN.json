@@ -318,5 +318,7 @@
   "chessAiThinkingStatus": "AI 正在思考...",
   "chessEnterPlayMode": "进入对弈",
   "chessResignGame": "认输",
-  "chessNewGame": "新局"
+  "chessNewGame": "新局",
+  "musicOn": "背景音乐已开启",
+  "musicOff": "背景音乐已关闭"
 }

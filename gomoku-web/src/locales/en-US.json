@@ -318,5 +318,7 @@
   "chessAiThinkingStatus": "AI is thinking...",
   "chessEnterPlayMode": "Enter Battle",
   "chessResignGame": "Resign",
-  "chessNewGame": "New Game"
+  "chessNewGame": "New Game",
+  "musicOn": "Music On",
+  "musicOff": "Music Off"
 }
