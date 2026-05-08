@@ -59,6 +59,10 @@ const {
   regenerateStreamingAnswer,
   regenerateAnswer,
   stopGeneration,
+  pushThinkingContent,
+  setThinkingContent,
+  setAnswerContent,
+  flushStreamingBuffers,
 } = useAgentChat({
   scrollToBottom: async () => {
     await chatMessagesRef.value?.scrollToBottom();
@@ -69,8 +73,8 @@ const { leftPanelWidth, isDragging, startDrag } = useSplitDrag();
 
 const resetThinkingState = () => {
   isThinking.value = false;
-  thinkingContent.value = '';
-  answerContent.value = '';
+  setThinkingContent('');
+  setAnswerContent('');
   showThinkingProcess.value = true;
   activeAbortController.value = null;
 };
@@ -136,8 +140,8 @@ const handleUserMove = async (r: number, c: number, userCoord?: string) => {
   const moveHistory = gomokuPanelRef.value.getMoveHistory();
 
   isThinking.value = true;
-  thinkingContent.value = t('agentAiThinkingMove');
-  answerContent.value = '';
+  setThinkingContent(t('agentAiThinkingMove'));
+  setAnswerContent('');
   showThinkingProcess.value = true;
   activeAbortController.value = new AbortController();
 
@@ -153,7 +157,7 @@ const handleUserMove = async (r: number, c: number, userCoord?: string) => {
     if (response.success && response.data) {
       const { x, y, reason, isFallback } = response.data;
 
-      thinkingContent.value = reason;
+      setThinkingContent(reason);
 
       if (isFallback) {
         showThinkingProcess.value = false;
@@ -194,8 +198,8 @@ const handleAiFirstMove = async () => {
   const moveHistory = gomokuPanelRef.value.getMoveHistory();
 
   isThinking.value = true;
-  thinkingContent.value = t('agentAiThinkingMove');
-  answerContent.value = '';
+  setThinkingContent(t('agentAiThinkingMove'));
+  setAnswerContent('');
   showThinkingProcess.value = true;
   activeAbortController.value = new AbortController();
 
@@ -223,7 +227,7 @@ const handleAiFirstMove = async () => {
           text: t('agentAiFirstMoveNotification', moveCoord)
         });
       } else {
-        thinkingContent.value = reason;
+        setThinkingContent(reason);
         messages.value.push({
           role: 'agent',
           text: reason,
@@ -293,8 +297,8 @@ const handleChessUserMove = async (move: { from: { row: number; col: number }; t
 
   isAIThinking.value = true;
   isThinking.value = true;
-  thinkingContent.value = t('chessLlmThinking');
-  answerContent.value = '';
+  setThinkingContent(t('chessLlmThinking'));
+  setAnswerContent('');
   showThinkingProcess.value = true;
 
   await chatMessagesRef.value?.scrollToBottom();
@@ -316,7 +320,7 @@ const handleChessUserMove = async (move: { from: { row: number; col: number }; t
       ? `${t('chessLlmSituation')}: ${situationAnalysis}\n\n${t('chessLlmMoveReason')}: ${reason}`
       : reason;
 
-    thinkingContent.value = combinedReasoning;
+    setThinkingContent(combinedReasoning);
 
     if (isFallback) {
       showThinkingProcess.value = false;
@@ -371,8 +375,8 @@ const handleChessAiFirstMove = async () => {
 
   isAIThinking.value = true;
   isThinking.value = true;
-  thinkingContent.value = t('chessLlmThinking');
-  answerContent.value = '';
+  setThinkingContent(t('chessLlmThinking'));
+  setAnswerContent('');
   showThinkingProcess.value = true;
 
   await chatMessagesRef.value?.scrollToBottom();
@@ -394,7 +398,7 @@ const handleChessAiFirstMove = async () => {
       ? `${t('chessLlmSituation')}: ${situationAnalysis}\n\n${t('chessLlmMoveReason')}: ${reason}`
       : reason;
 
-    thinkingContent.value = combinedReasoning;
+    setThinkingContent(combinedReasoning);
 
     if (isFallback) {
       showThinkingProcess.value = false;
@@ -470,8 +474,8 @@ const handleConfirmAnalysis = async (pieces: number[][], boardImageBase64: strin
   currentUserQuery.value = question || t('agentVisionDefaultAnalysis');
 
   isThinking.value = true;
-  thinkingContent.value = '';
-  answerContent.value = '';
+  setThinkingContent('');
+  setAnswerContent('');
   showThinkingProcess.value = true;
 
   await executeStreamingChat(combinedPrompt);
@@ -531,8 +535,8 @@ const handleChessConfirmAnalysis = async (pieces: number[][], boardImageBase64: 
   currentUserQuery.value = question || 'AI Tactical Analysis';
 
   isThinking.value = true;
-  thinkingContent.value = '';
-  answerContent.value = '';
+  setThinkingContent('');
+  setAnswerContent('');
   showThinkingProcess.value = true;
 
   await executeStreamingChat(combinedPrompt);
@@ -589,8 +593,8 @@ const processPendingAnalysis = async () => {
     currentUserQuery.value = t('chessVisionDefaultAnalysis');
 
     isThinking.value = true;
-    thinkingContent.value = '';
-    answerContent.value = '';
+    setThinkingContent('');
+    setAnswerContent('');
     showThinkingProcess.value = true;
 
     await chatMessagesRef.value?.scrollToBottom();
@@ -618,8 +622,8 @@ const processPendingAnalysis = async () => {
   currentUserQuery.value = analysis.question;
 
   isThinking.value = true;
-  thinkingContent.value = t('visionAnalyzingPosition');
-  answerContent.value = '';
+  setThinkingContent(t('visionAnalyzingPosition'));
+  setAnswerContent('');
   showThinkingProcess.value = true;
 
   await chatMessagesRef.value?.scrollToBottom();
@@ -656,8 +660,8 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     chatInputRef.value?.resetTextareaHeight();
 
     isThinking.value = true;
-    thinkingContent.value = '';
-    answerContent.value = '';
+    setThinkingContent('');
+    setAnswerContent('');
     showThinkingProcess.value = true;
     activeAbortController.value = new AbortController();
 
@@ -671,7 +675,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
         payload.imageBase64,
         (chunk) => {
           if (chunk.type === 'thinking' && chunk.text) {
-            thinkingContent.value += chunk.text;
+            pushThinkingContent(chunk.text);
             if (!visionBoardType) {
               const thinking = thinkingContent.value.toLowerCase();
               if (thinking.includes('中国象棋') || thinking.includes('chinese_chess')) {
@@ -680,19 +684,18 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
                 visionBoardType = 'gomoku';
               }
             }
-            chatMessagesRef.value?.scrollToBottom();
           } else if (chunk.type === 'answer' && chunk.text) {
             if (!answerContent.value) {
-              answerContent.value = visionBoardType === 'chinese_chess'
+              setAnswerContent(visionBoardType === 'chinese_chess'
                 ? t('visionRenderingChessBoard')
                 : visionBoardType === 'gomoku'
                   ? t('visionRenderingGomokuBoard')
-                  : t('visionRenderingBoard');
+                  : t('visionRenderingBoard'));
             }
-            chatMessagesRef.value?.scrollToBottom();
           }
         },
         (error) => {
+          flushStreamingBuffers();
           const errorMessage = error instanceof Error ? error.message : t('visionParseFailed');
           messages.value.push({
             role: 'agent',
@@ -702,6 +705,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
           nextTick(() => chatMessagesRef.value?.scrollToBottom());
         },
         (boardData) => {
+          flushStreamingBuffers();
           if (!boardData) {
             messages.value.push({
               role: 'agent',

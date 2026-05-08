@@ -2,17 +2,33 @@ import { ref } from 'vue';
 import { t } from '../i18n';
 import { chatApi, type ChatMessage } from '../api/chat-api';
 import type { AgentMessage } from '../types/agent';
+import { useTypewriterQueue } from './useTypewriterQueue';
 
 export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> }) {
   const externalScrollToBottom = options?.scrollToBottom;
 
   const messages = ref<AgentMessage[]>([]);
   const isThinking = ref(false);
-  const thinkingContent = ref('');
-  const answerContent = ref('');
   const showThinkingProcess = ref(true);
   const currentUserQuery = ref('');
   let abortController: AbortController | null = null;
+
+  const thinkingQueue = useTypewriterQueue({
+    charsPerFrame: 8,
+    maxCharsPerFrame: 50,
+    speedUpThreshold: 80,
+    onUpdate: () => externalScrollToBottom?.(),
+  });
+
+  const answerQueue = useTypewriterQueue({
+    charsPerFrame: 3,
+    maxCharsPerFrame: 40,
+    speedUpThreshold: 50,
+    onUpdate: () => externalScrollToBottom?.(),
+  });
+
+  const thinkingContent = thinkingQueue.output;
+  const answerContent = answerQueue.output;
 
   const scrollToBottom = async () => {
     if (externalScrollToBottom) {
@@ -29,12 +45,19 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
 
   const resetStreamingState = () => {
     isThinking.value = true;
-    thinkingContent.value = '';
-    answerContent.value = '';
+    thinkingQueue.reset();
+    answerQueue.reset();
     showThinkingProcess.value = true;
   };
 
+  const flushStreamingBuffers = () => {
+    thinkingQueue.flush();
+    answerQueue.flush();
+  };
+
   const finalizeStreamingResponse = () => {
+    flushStreamingBuffers();
+
     if (answerContent.value.trim()) {
       messages.value.push({
         role: 'agent',
@@ -54,8 +77,8 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
       messages.value = messages.value.slice(-50);
     }
 
-    thinkingContent.value = '';
-    answerContent.value = '';
+    thinkingQueue.reset();
+    answerQueue.reset();
     isThinking.value = false;
     showThinkingProcess.value = true;
     abortController = null;
@@ -72,16 +95,16 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
         },
         (chunk) => {
           if (chunk.type === 'thinking') {
-            thinkingContent.value += chunk.text;
+            thinkingQueue.push(chunk.text);
           } else if (chunk.type === 'answer') {
-            answerContent.value += chunk.text;
+            answerQueue.push(chunk.text);
             if (showThinkingProcess.value) {
               showThinkingProcess.value = false;
             }
           }
-          scrollToBottom();
         },
         (error) => {
+          flushStreamingBuffers();
           const errorMessage = error instanceof Error ? error.message : t('connectionError');
           messages.value.push({
             role: 'agent',
@@ -99,6 +122,7 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
         finalizeStreamingResponse();
         return;
       }
+      flushStreamingBuffers();
       const errorMessage = error instanceof Error ? error.message : t('connectionError');
       messages.value.push({
         role: 'agent',
@@ -178,5 +202,10 @@ export function useAgentChat(options?: { scrollToBottom?: () => Promise<void> })
     regenerateStreamingAnswer,
     regenerateAnswer,
     stopGeneration,
+    pushThinkingContent: thinkingQueue.push,
+    setThinkingContent: thinkingQueue.set,
+    pushAnswerContent: answerQueue.push,
+    setAnswerContent: answerQueue.set,
+    flushStreamingBuffers,
   };
 }
