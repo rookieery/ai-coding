@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed, onMounted } from 'vue';
+import { ref, onUnmounted, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { currentTheme, toggleTheme, toggleLocale, t } from './i18n';
 import { Moon, Sun, Globe, LogOut, Settings, ChevronDown, Volume2, VolumeX } from 'lucide-vue-next';
@@ -23,10 +23,14 @@ const isUserDropdownOpen = ref(false);
 const isSettingsModalOpen = ref(false);
 
 // 背景音乐
-const { isPlaying: isMusicPlaying, toggle: toggleMusic, init: initMusic } = useBackgroundMusic();
+const { isPlaying: isMusicPlaying, toggle: toggleMusic, init: initMusic, onAuthChange } = useBackgroundMusic();
 
 onMounted(() => {
-  initMusic();
+  initMusic(isAuthenticated.value);
+});
+
+watch(isAuthenticated, (val) => {
+  onAuthChange(val);
 });
 
 const switchLang = () => {

@@ -1,37 +1,83 @@
 import { ref } from 'vue';
-import bgMusic from '../music/bg.mp3';
+import unLoginMusic from '../music/unLogin.mp3';
+import loginInMusic from '../music/login_in.mp3';
 
 const isPlaying = ref(true);
 
 let audio: HTMLAudioElement | null = null;
+let currentSrc: string | null = null;
+let pendingPlay = false;
 
-function getAudio(): HTMLAudioElement {
-  if (!audio) {
-    audio = new Audio(bgMusic);
+function getAudio(src: string): HTMLAudioElement {
+  if (!audio || currentSrc !== src) {
+    audio = new Audio(src);
     audio.loop = true;
     audio.volume = 0.3;
+    currentSrc = src;
   }
   return audio;
 }
 
+function tryPlay(el: HTMLAudioElement) {
+  el.play().then(() => {
+    pendingPlay = false;
+  }).catch(() => {
+    pendingPlay = true;
+  });
+}
+
+function setupInteractionListener() {
+  const resume = () => {
+    if (pendingPlay && audio) {
+      audio.play().catch(() => {});
+      pendingPlay = false;
+    }
+    document.removeEventListener('click', resume);
+    document.removeEventListener('keydown', resume);
+  };
+  document.addEventListener('click', resume, { once: true });
+  document.addEventListener('keydown', resume, { once: true });
+}
+
+function switchTrack(src: string) {
+  if (currentSrc === src && audio) return;
+
+  if (audio) {
+    audio.pause();
+  }
+
+  const el = getAudio(src);
+  currentSrc = src;
+
+  if (isPlaying.value) {
+    tryPlay(el);
+  }
+}
+
 export function useBackgroundMusic() {
   const toggle = () => {
-    const el = getAudio();
+    if (!audio) return;
     if (isPlaying.value) {
-      el.pause();
+      audio.pause();
       isPlaying.value = false;
+      pendingPlay = false;
     } else {
-      el.play().catch(() => {});
+      tryPlay(audio);
       isPlaying.value = true;
     }
   };
 
-  const init = () => {
-    const el = getAudio();
-    el.play().catch(() => {
-      isPlaying.value = false;
-    });
+  const init = (isAuthenticated: boolean) => {
+    const src = isAuthenticated ? loginInMusic : unLoginMusic;
+    const el = getAudio(src);
+    tryPlay(el);
+    setupInteractionListener();
   };
 
-  return { isPlaying, toggle, init };
+  const onAuthChange = (isAuthenticated: boolean) => {
+    const src = isAuthenticated ? loginInMusic : unLoginMusic;
+    switchTrack(src);
+  };
+
+  return { isPlaying, toggle, init, onAuthChange };
 }
