@@ -10,9 +10,11 @@ let pendingPlay = false;
 
 function getAudio(src: string): HTMLAudioElement {
   if (!audio || currentSrc !== src) {
-    audio = new Audio(src);
+    audio = new Audio();
+    audio.preload = 'auto';
     audio.loop = true;
     audio.volume = 0.3;
+    audio.src = src;
     currentSrc = src;
   }
   return audio;
