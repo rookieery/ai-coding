@@ -42,11 +42,20 @@
 
 ---
 
-## 4. 交付与自省 (Self-Correction Checklist)
+## 4. 项目记忆系统与文档规范 (Project Memory System)
+- **人类可读文档 (Human Docs)**：了解高层业务与技术架构，请参考 `@.docs/business-overview.md`、`@.docs/frontend-technical.md`、`@.docs/backend-technical.md` 以及 `@.docs/ai-system.md`。
+- **AI 专属速查表 (Agent Maps)**：在进行任何功能修改前，**必须优先查阅** `@.docs/agent-file-map.md`、`@.docs/agent-api-reference.md`、`@.docs/agent-data-models.md` 和 `@.docs/agent-component-map.md` 来快速定位目标文件、API 契约和数据流动，拒绝无头绪的全局扫描。
+- **文档先行法则 (Docs-First)**：任何对 API、数据模型、核心组件或业务逻辑的修改，必须同步反映在 `.docs/` 下的对应文档中。
+- **技能强制触发 (Mandatory Skill Execution)**：在每次完成代码开发、Bug 修复或业务逻辑重构准备结束当前任务前，你**必须主动执行 `/sync-docs` 技能**来维持代码与文档的绝对同步。
+
+---
+
+## 5. 交付与自省 (Self-Correction Checklist)
 在完成代码编写准备输出前，你必须在后台进行一次自我审查。如果触发以下任何一条，请自行推翻重写，再输出最终结果：
 1. **代码整洁**：有没有残留的测试打印、被注释掉的废弃代码？
 2. **前端合规**：是否有漏掉的中文硬编码？Tailwind 类名是否都使用了语义化变量？
 3. **架构合理**：当前文件是否过于臃肿，需要拆分？核心业务逻辑是否都放在了 Service 层？
 4. **安全健壮**：所有的新增入参是否都做了边界校验？数据库操作是否考虑了并发或事务 (Transaction)？
+5. **文档一致性**：是否已经调用 `/sync-docs` 技能更新了 `.docs/` 目录下的速查索引与技术文档？
 
 > **确认阅读**：如果你理解并接受上述所有规范，在后续的开发任务中，请直接输出符合标准的代码，无需在每次回复中重复这些规则。

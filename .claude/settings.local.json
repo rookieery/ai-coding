@@ -8,5 +8,17 @@
     "additionalDirectories": [
       "d:\\code\\gomoku-training\\scripts"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if git diff --quiet .docs/; then echo 'Docs are up to date.'; else echo '检测到项目已修改，请执行 /sync-docs 更新索引。'; exit 2; fi"
+          }
+        ]
+      }
+    ]
   }
 }
