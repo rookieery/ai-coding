@@ -74,6 +74,9 @@ gomoku-web/src/
 | Composable | 职责 |
 |-----------|------|
 | `useAgentChat` | AI 聊天：SSE 流式消息、打字机效果、历史管理 |
+| `useAgentGomoku` | 五子棋对弈：用户落子→AI回应、AI先手、走子拦截 |
+| `useAgentChess` | 象棋对弈：用户走子→AI回应、AI先手、将军检测、走子拦截 |
+| `useAgentVision` | 视觉识别：五子棋/象棋确认回放、确认分析、挂起分析处理 |
 | `useAutoResize` | 聊天输入框自动调整高度 |
 | `useBackgroundMusic` | 背景音乐播放器 |
 | `useClipboard` | 剪贴板操作 |

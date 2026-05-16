@@ -1,22 +1,15 @@
 <script setup lang="ts">
 import { ref, nextTick, computed, onMounted, onActivated } from 'vue';
-import { useRouter } from 'vue-router';
 import { ArrowLeft } from 'lucide-vue-next';
 import { currentTheme, t } from '../i18n';
-import { gomokuAiApi } from '../api/gomoku-ai-api';
 import { visionApi } from '../api/vision-api';
 import { useGlobalAgentPlay } from '../composables/useAgentPlay';
 import { useAgentChat } from '../composables/useAgentChat';
 import { useSplitDrag } from '../composables/useSplitDrag';
 import { useVisionBridge } from '../composables/useVisionBridge';
-import { BOARD_SIZE } from '../games/gomoku/gameLogic';
-import { parseMoveText } from '../games/gomoku/moveParser';
-import { parseChessMoveText } from '../games/chinese-chess/moveParser';
-import { convertBoardStateToCodes } from '../games/chinese-chess/utils';
-import { PlayerSide, PieceType } from '../games/chinese-chess/types';
-import type { MoveHistory } from '../games/chinese-chess/types';
-import { chessLlmApi } from '../games/chinese-chess/api/chessLlmApi';
-import type { ChessLLMMoveRecord } from '../games/chinese-chess/api/chessLlmApi';
+import { useAgentGomoku } from '../composables/useAgentGomoku';
+import { useAgentChess } from '../composables/useAgentChess';
+import { useAgentVision } from '../composables/useAgentVision';
 import AgentGomokuPanel from '../components/AgentGomokuPanel.vue';
 import AgentChessPanel from '../components/agent/AgentChessPanel.vue';
 import AgentVisionPanel from '../components/agent/AgentVisionPanel.vue';
@@ -41,32 +34,31 @@ const gameSelectorActive = ref(false);
 const isExitingGomoku = ref(false);
 const activeAbortController = ref<AbortController | null>(null);
 
-const { playMode, enterGomokuMode, enterChessMode, enterVisionConfirmMode, enterChessVisionConfirmMode, exitPlayMode, visionCandidates, chessVisionCandidates, pendingImageBase64, pendingQuestion, isAIThinking } = useGlobalAgentPlay();
-const { consumePendingAnalysis, setVisionCandidatesForReplay, setChessVisionCandidatesForReplay, clearPendingRequest, consumeChessAnalysis } = useVisionBridge();
-const router = useRouter();
-
-const isSplitLayout = computed(() => playMode.value === 'gomoku' || playMode.value === 'chinese-chess' || playMode.value === 'vision-confirm' || playMode.value === 'chess-vision-confirm' || isExitingGomoku.value);
+const {
+  playMode, enterGomokuMode, enterChessMode,
+  enterVisionConfirmMode, enterChessVisionConfirmMode,
+  exitPlayMode, visionCandidates, chessVisionCandidates,
+  pendingImageBase64, pendingQuestion, isAIThinking,
+} = useGlobalAgentPlay();
 
 const {
-  messages,
-  isThinking,
-  thinkingContent,
-  answerContent,
-  showThinkingProcess,
-  currentUserQuery,
-  sendMessage,
-  executeStreamingChat,
-  regenerateStreamingAnswer,
-  regenerateAnswer,
-  stopGeneration,
-  pushThinkingContent,
-  setThinkingContent,
-  setAnswerContent,
-  flushStreamingBuffers,
+  consumePendingAnalysis, setVisionCandidatesForReplay,
+  setChessVisionCandidatesForReplay, clearPendingRequest, consumeChessAnalysis,
+} = useVisionBridge();
+
+const isSplitLayout = computed(() =>
+  playMode.value === 'gomoku' || playMode.value === 'chinese-chess' ||
+  playMode.value === 'vision-confirm' || playMode.value === 'chess-vision-confirm' ||
+  isExitingGomoku.value
+);
+
+const {
+  messages, isThinking, thinkingContent, answerContent, showThinkingProcess,
+  currentUserQuery, sendMessage, executeStreamingChat,
+  regenerateStreamingAnswer, regenerateAnswer, stopGeneration,
+  pushThinkingContent, setThinkingContent, setAnswerContent, flushStreamingBuffers,
 } = useAgentChat({
-  scrollToBottom: async () => {
-    await chatMessagesRef.value?.scrollToBottom();
-  },
+  scrollToBottom: async () => { await chatMessagesRef.value?.scrollToBottom(); },
 });
 
 const { leftPanelWidth, isDragging, startDrag } = useSplitDrag();
@@ -86,6 +78,35 @@ const handleStop = () => {
   }
   stopGeneration();
 };
+
+// --- Game Composables ---
+
+const { handleUserMove, handleAiFirstMove, handleSurrender, tryInterceptMove: tryInterceptGomokuMove } = useAgentGomoku({
+  messages, chatMessagesRef, gomokuPanelRef, isThinking, activeAbortController,
+  setThinkingContent, setAnswerContent, showThinkingProcess, resetThinkingState,
+});
+
+const {
+  handleChessUserMove, handleChessAiMove, handleChessGameOver,
+  handleChessAiFirstMove, tryInterceptMove: tryInterceptChessMove,
+} = useAgentChess({
+  messages, chatMessagesRef, chessPanelRef, isThinking, isAIThinking,
+  setThinkingContent, setAnswerContent, showThinkingProcess, resetThinkingState,
+});
+
+const {
+  handleConfirmReplay, handleConfirmAnalysis, handleVisionConfirmClose,
+  handleChessConfirmReplay, handleChessConfirmAnalysis, handleChessVisionConfirmClose,
+  processPendingAnalysis,
+} = useAgentVision({
+  messages, chatMessagesRef, isThinking, isExitingGomoku, pendingQuestion,
+  setThinkingContent, setAnswerContent, showThinkingProcess, currentUserQuery,
+  executeStreamingChat, exitPlayMode, setVisionCandidatesForReplay,
+  setChessVisionCandidatesForReplay, clearPendingRequest,
+  consumePendingAnalysis, consumeChessAnalysis,
+});
+
+// --- UI Handlers ---
 
 const handleEnterGomokuMode = () => {
   gameSelectorActive.value = true;
@@ -124,441 +145,8 @@ const handleGameSelection = async (gameType: string, msg: AgentMessage) => {
   chatMessagesRef.value?.scrollToBottom();
 };
 
-const handleUserMove = async (r: number, c: number, userCoord?: string) => {
-  const colLetter = String.fromCharCode(65 + c);
-  const rowNumber = BOARD_SIZE - r;
-  const moveCoord = userCoord || `${colLetter}${rowNumber}`;
-
-  messages.value.push({
-    role: 'user',
-    text: t('agentUserMoveNotification', moveCoord)
-  });
-
-  if (!gomokuPanelRef.value) return;
-
-  const board = gomokuPanelRef.value.getBoard();
-  const moveHistory = gomokuPanelRef.value.getMoveHistory();
-
-  isThinking.value = true;
-  setThinkingContent(t('agentAiThinkingMove'));
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-  activeAbortController.value = new AbortController();
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  try {
-    const response = await gomokuAiApi.generateMove({
-      board,
-      currentPlayer: 'white',
-      moveHistory,
-    }, activeAbortController.value.signal);
-
-    if (response.success && response.data) {
-      const { x, y, reason, isFallback } = response.data;
-
-      setThinkingContent(reason);
-
-      if (isFallback) {
-        showThinkingProcess.value = false;
-      }
-
-      messages.value.push({
-        role: 'agent',
-        text: reason,
-        reasoningContent: isFallback ? undefined : reason,
-        isGameReasoning: true,
-      });
-
-      gomokuPanelRef.value.placeAiPiece(y, x);
-
-      resetThinkingState();
-
-      await chatMessagesRef.value?.scrollToBottom();
-    }
-  } catch (error) {
-    if ((error as Error).name === 'AbortError') {
-      resetThinkingState();
-      return;
-    }
-    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
-    messages.value.push({
-      role: 'agent',
-      text: `${t('genericErrorPrefix')}${errorMessage}`,
-    });
-    resetThinkingState();
-    await chatMessagesRef.value?.scrollToBottom();
-  }
-};
-
-const handleAiFirstMove = async () => {
-  if (!gomokuPanelRef.value) return;
-
-  const board = gomokuPanelRef.value.getBoard();
-  const moveHistory = gomokuPanelRef.value.getMoveHistory();
-
-  isThinking.value = true;
-  setThinkingContent(t('agentAiThinkingMove'));
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-  activeAbortController.value = new AbortController();
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  try {
-    const response = await gomokuAiApi.generateMove({
-      board,
-      currentPlayer: 'black',
-      moveHistory,
-    }, activeAbortController.value.signal);
-
-    if (response.success && response.data) {
-      const { x, y, reason, isFallback } = response.data;
-
-      gomokuPanelRef.value.placeAiPiece(y, x);
-
-      const colLetter = String.fromCharCode(65 + x);
-      const rowNumber = BOARD_SIZE - y;
-      const moveCoord = `${colLetter}${rowNumber}`;
-
-      if (isFallback) {
-        messages.value.push({
-          role: 'agent',
-          text: t('agentAiFirstMoveNotification', moveCoord)
-        });
-      } else {
-        setThinkingContent(reason);
-        messages.value.push({
-          role: 'agent',
-          text: reason,
-          reasoningContent: reason,
-          isGameReasoning: true,
-        });
-      }
-
-      resetThinkingState();
-
-      await chatMessagesRef.value?.scrollToBottom();
-    }
-  } catch (error) {
-    if ((error as Error).name === 'AbortError') {
-      resetThinkingState();
-      return;
-    }
-    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
-    messages.value.push({
-      role: 'agent',
-      text: `${t('genericErrorPrefix')}${errorMessage}`,
-    });
-    resetThinkingState();
-    await chatMessagesRef.value?.scrollToBottom();
-  }
-};
-
-const handleSurrender = () => {
-  messages.value.push({
-    role: 'agent',
-    text: t('agentSurrenderNotification')
-  });
-};
-
-const PIECE_TYPE_INDEX: Record<string, number> = {
-  [PieceType.KING]: 0,
-  [PieceType.ADVISOR]: 1,
-  [PieceType.ELEPHANT]: 2,
-  [PieceType.KNIGHT]: 3,
-  [PieceType.ROOK]: 4,
-  [PieceType.CANNON]: 5,
-  [PieceType.PAWN]: 6,
-};
-
-const pieceToCode = (type: PieceType, side: PlayerSide): number => {
-  const base = side === PlayerSide.RED ? 1 : 8;
-  return base + (PIECE_TYPE_INDEX[type] ?? 0);
-};
-
-const convertMoveHistory = (history: MoveHistory[]): ChessLLMMoveRecord[] =>
-  history.map(m => ({
-    from: m.from,
-    to: m.to,
-    piece: pieceToCode(m.piece, m.side),
-    capturedPiece: m.capturedPiece
-      ? pieceToCode(m.capturedPiece.type, m.capturedPiece.side)
-      : undefined,
-  }));
-
-const handleChessUserMove = async (move: { from: { row: number; col: number }; to: { row: number; col: number }; notation: string }) => {
-  messages.value.push({
-    role: 'user',
-    text: t('chessUserMoveMsg', move.notation)
-  });
-
-  if (!chessPanelRef.value) return;
-
-  isAIThinking.value = true;
-  isThinking.value = true;
-  setThinkingContent(t('chessLlmThinking'));
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  try {
-    const board = chessPanelRef.value.getBoard();
-    const currentPlayer = chessPanelRef.value.getCurrentPlayer();
-    const moveHistory = convertMoveHistory(chessPanelRef.value.getMoveHistory());
-
-    const response = await chessLlmApi.generateMove({
-      board,
-      currentPlayer,
-      moveHistory,
-    });
-
-    const { move: aiMove, reason, situationAnalysis, isFallback } = response;
-
-    const combinedReasoning = situationAnalysis
-      ? `${t('chessLlmSituation')}: ${situationAnalysis}\n\n${t('chessLlmMoveReason')}: ${reason}`
-      : reason;
-
-    setThinkingContent(combinedReasoning);
-
-    if (isFallback) {
-      showThinkingProcess.value = false;
-    }
-
-    messages.value.push({
-      role: 'agent',
-      text: reason,
-      reasoningContent: isFallback ? undefined : combinedReasoning,
-      isGameReasoning: true,
-    });
-
-    const placeResult = chessPanelRef.value.placeAiPiece(aiMove.from, aiMove.to);
-
-    if (placeResult?.check && !placeResult.gameOver) {
-      messages.value.push({
-        role: 'agent',
-        text: t('chessCheckMsg'),
-      });
-    }
-
-    resetThinkingState();
-    isAIThinking.value = false;
-
-    await chatMessagesRef.value?.scrollToBottom();
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
-    messages.value.push({
-      role: 'agent',
-      text: `${t('genericErrorPrefix')}${errorMessage}`,
-    });
-    resetThinkingState();
-    isAIThinking.value = false;
-    await chatMessagesRef.value?.scrollToBottom();
-  }
-};
-
-const handleChessAiMove = (_move: { from: { row: number; col: number }; to: { row: number; col: number }; notation: string }) => {
-  // AI move display is handled in handleChessUserMove flow
-};
-
-const handleChessGameOver = (result: { winner: string; reason: string }) => {
-  isAIThinking.value = false;
-  messages.value.push({
-    role: 'agent',
-    text: t('chessCheckmateMsg', result.winner)
-  });
-};
-
-const handleChessAiFirstMove = async () => {
-  if (!chessPanelRef.value) return;
-
-  isAIThinking.value = true;
-  isThinking.value = true;
-  setThinkingContent(t('chessLlmThinking'));
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  try {
-    const board = chessPanelRef.value.getBoard();
-    const currentPlayer = chessPanelRef.value.getCurrentPlayer();
-    const moveHistory = convertMoveHistory(chessPanelRef.value.getMoveHistory());
-
-    const response = await chessLlmApi.generateMove({
-      board,
-      currentPlayer,
-      moveHistory,
-    });
-
-    const { move: aiMove, reason, situationAnalysis, isFallback } = response;
-
-    const combinedReasoning = situationAnalysis
-      ? `${t('chessLlmSituation')}: ${situationAnalysis}\n\n${t('chessLlmMoveReason')}: ${reason}`
-      : reason;
-
-    setThinkingContent(combinedReasoning);
-
-    if (isFallback) {
-      showThinkingProcess.value = false;
-    }
-
-    messages.value.push({
-      role: 'agent',
-      text: reason,
-      reasoningContent: isFallback ? undefined : combinedReasoning,
-      isGameReasoning: true,
-    });
-
-    const placeResult = chessPanelRef.value.placeAiPiece(aiMove.from, aiMove.to);
-
-    if (placeResult?.check && !placeResult.gameOver) {
-      messages.value.push({
-        role: 'agent',
-        text: t('chessCheckMsg'),
-      });
-    }
-
-    resetThinkingState();
-    isAIThinking.value = false;
-
-    await chatMessagesRef.value?.scrollToBottom();
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : t('llmMoveFailed');
-    messages.value.push({
-      role: 'agent',
-      text: `${t('genericErrorPrefix')}${errorMessage}`,
-    });
-    resetThinkingState();
-    isAIThinking.value = false;
-    await chatMessagesRef.value?.scrollToBottom();
-  }
-};
-
 const handleExitClick = () => {
   showExitConfirm.value = true;
-};
-
-const handleConfirmReplay = (pieces: number[][]) => {
-  setVisionCandidatesForReplay([pieces]);
-  exitPlayMode();
-  router.push({ name: 'game' });
-};
-
-const handleConfirmAnalysis = async (pieces: number[][], boardImageBase64: string) => {
-  const question = pendingQuestion.value;
-
-  exitPlayMode();
-
-  await nextTick();
-
-  const displayText = question
-    ? `${t('agentVisionBoardConfirmed')}，${question}`
-    : t('agentVisionBoardConfirmed');
-
-  messages.value.push({
-    role: 'user',
-    text: displayText,
-    hasImage: true,
-    imageBase64: boardImageBase64 || undefined,
-  });
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  const boardJson = JSON.stringify(pieces);
-  const combinedPrompt = question
-    ? `这是当前15x15棋盘的精确数据：${boardJson}，请结合数据回答：${question}`
-    : `这是当前15x15棋盘的精确数据：${boardJson}，${t('agentVisionDefaultAnalysis')}`;
-
-  currentUserQuery.value = question || t('agentVisionDefaultAnalysis');
-
-  isThinking.value = true;
-  setThinkingContent('');
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-
-  await executeStreamingChat(combinedPrompt);
-};
-
-const handleVisionConfirmClose = () => {
-  isExitingGomoku.value = true;
-  exitPlayMode();
-  clearPendingRequest();
-
-  messages.value.push({
-    role: 'agent',
-    text: t('agentVisionConfirmCancelled'),
-  });
-
-  nextTick(() => {
-    chatMessagesRef.value?.scrollToBottom();
-  });
-
-  setTimeout(() => {
-    isExitingGomoku.value = false;
-  }, 400);
-};
-
-const handleChessConfirmReplay = (pieces: number[][]) => {
-  setChessVisionCandidatesForReplay([pieces]);
-  exitPlayMode();
-  router.push({ name: 'chinese-chess' });
-};
-
-const handleChessConfirmAnalysis = async (pieces: number[][], boardImageBase64: string) => {
-  const question = pendingQuestion.value;
-
-  exitPlayMode();
-
-  await nextTick();
-
-  const displayText = question
-    ? `${t('agentVisionBoardConfirmed')}，${question}`
-    : t('agentVisionBoardConfirmed');
-
-  messages.value.push({
-    role: 'user',
-    text: displayText,
-    hasImage: true,
-    imageBase64: boardImageBase64 || undefined,
-  });
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  const boardJson = JSON.stringify(pieces);
-  const encodingExplain = '编码说明: 0=空, 1=红帅 2=红仕 3=红相 4=红马 5=红车 6=红炮 7=红兵, 8=黑将 9=黑士 10=黑象 11=黑马 12=黑车 13=黑炮 14=黑卒';
-  const combinedPrompt = question
-    ? `这是当前10x9中国象棋棋盘的精确数据（${encodingExplain}）：${boardJson}，请结合数据回答：${question}`
-    : `这是当前10x9中国象棋棋盘的精确数据（${encodingExplain}）：${boardJson}，请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向`;
-
-  currentUserQuery.value = question || 'AI Tactical Analysis';
-
-  isThinking.value = true;
-  setThinkingContent('');
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-
-  await executeStreamingChat(combinedPrompt);
-};
-
-const handleChessVisionConfirmClose = () => {
-  isExitingGomoku.value = true;
-  exitPlayMode();
-  clearPendingRequest();
-
-  messages.value.push({
-    role: 'agent',
-    text: t('agentVisionConfirmCancelled'),
-  });
-
-  nextTick(() => {
-    chatMessagesRef.value?.scrollToBottom();
-  });
-
-  setTimeout(() => {
-    isExitingGomoku.value = false;
-  }, 400);
 };
 
 const confirmExit = () => {
@@ -566,72 +154,16 @@ const confirmExit = () => {
   gameSelectorActive.value = false;
   isExitingGomoku.value = true;
   exitPlayMode();
-  setTimeout(() => {
-    isExitingGomoku.value = false;
-  }, 400);
+  setTimeout(() => { isExitingGomoku.value = false; }, 400);
 };
 
 const cancelExit = () => {
   showExitConfirm.value = false;
 };
 
-const processPendingAnalysis = async () => {
-  const chessAnalysis = consumeChessAnalysis();
-  if (chessAnalysis) {
-    await nextTick();
-
-    const boardCodes = convertBoardStateToCodes(chessAnalysis.board);
-    const sideText = chessAnalysis.currentPlayer === PlayerSide.RED ? 'red' : 'black';
-
-    messages.value.push({
-      role: 'user',
-      text: t('chessVisionDefaultAnalysis'),
-      hasImage: true,
-      imageBase64: chessAnalysis.imageBase64,
-    });
-
-    currentUserQuery.value = t('chessVisionDefaultAnalysis');
-
-    isThinking.value = true;
-    setThinkingContent('');
-    setAnswerContent('');
-    showThinkingProcess.value = true;
-
-    await chatMessagesRef.value?.scrollToBottom();
-
-    const boardJson = JSON.stringify(boardCodes);
-    const encodingExplain = '编码说明: 0=空, 1=红帅 2=红仕 3=红相 4=红马 5=红车 6=红炮 7=红兵, 8=黑将 9=黑士 10=黑象 11=黑马 12=黑车 13=黑炮 14=黑卒';
-    const combinedPrompt = `这是当前10x9中国象棋棋盘的精确数据（${encodingExplain}）：${boardJson}，当前轮到${sideText}方行棋，请分析当前中国象棋棋局的攻防态势，指出双方的优劣势和关键位置，评估子力对比，给出后续推荐的行棋方向`;
-
-    await executeStreamingChat(combinedPrompt);
-    return;
-  }
-
-  const analysis = consumePendingAnalysis();
-  if (!analysis) return;
-
-  await nextTick();
-
-  messages.value.push({
-    role: 'user',
-    text: analysis.question,
-    hasImage: true,
-    imageBase64: analysis.imageBase64,
-  });
-
-  currentUserQuery.value = analysis.question;
-
-  isThinking.value = true;
-  setThinkingContent(t('visionAnalyzingPosition'));
-  setAnswerContent('');
-  showThinkingProcess.value = true;
-
-  await chatMessagesRef.value?.scrollToBottom();
-
-  const boardJson = JSON.stringify(analysis.pieces);
-  const combinedPrompt = `这是当前15x15棋盘的精确数据：${boardJson}，请结合数据回答：${analysis.question}`;
-
-  executeStreamingChat(combinedPrompt);
+const clearInput = () => {
+  query.value = '';
+  chatInputRef.value?.resetTextareaHeight();
 };
 
 onMounted(processPendingAnalysis);
@@ -656,9 +188,7 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
       imageBase64: payload.imageBase64,
     });
 
-    query.value = '';
-    chatInputRef.value?.resetTextareaHeight();
-
+    clearInput();
     isThinking.value = true;
     setThinkingContent('');
     setAnswerContent('');
@@ -744,66 +274,15 @@ const handleSend = async (payload: { text: string; imageBase64: string | null })
     return;
   }
 
-  // Intercept chess move commands in chinese-chess mode
   if (playMode.value === 'chinese-chess') {
-    const board = chessPanelRef.value?.getBoard();
-    if (board) {
-      const parsed = parseChessMoveText(payload.text, board);
-      if (parsed) {
-        const { from, to } = parsed;
-
-        if (chessPanelRef.value?.isValidMove(from, to)) {
-          query.value = '';
-          chatInputRef.value?.resetTextareaHeight();
-          chessPanelRef.value.placeUserPieceFromChat(from, to);
-        } else {
-          messages.value.push({ role: 'user', text: payload.text });
-          messages.value.push({ role: 'agent', text: t('chessInvalidMoveMsg') });
-          query.value = '';
-          chatInputRef.value?.resetTextareaHeight();
-        }
-        return;
-      }
-    }
+    if (tryInterceptChessMove(payload.text, clearInput)) return;
   }
 
-  // Intercept chess move commands in gomoku mode
   if (playMode.value === 'gomoku') {
-    const parsed = parseMoveText(payload.text);
-    if (parsed) {
-      const { r, c, coord } = parsed;
-
-      // Validate the move
-      if (gomokuPanelRef.value?.isValidMove(r, c)) {
-        // Clear input
-        query.value = '';
-        chatInputRef.value?.resetTextareaHeight();
-
-        // Execute the move (handleUserMove will add the notification message)
-        gomokuPanelRef.value.placeUserPieceFromChat(r, c, coord);
-      } else {
-        // Invalid move - show error message
-        messages.value.push({
-          role: 'user',
-          text: payload.text
-        });
-        messages.value.push({
-          role: 'agent',
-          text: t('agentInvalidMove', coord)
-        });
-
-        query.value = '';
-        chatInputRef.value?.resetTextareaHeight();
-      }
-      return;
-    }
+    if (tryInterceptGomokuMove(payload.text, clearInput)) return;
   }
 
-  // Default: regular chat message
-  sendMessage(payload.text, () => {
-    query.value = '';
-    chatInputRef.value?.resetTextareaHeight();
-  });
+  sendMessage(payload.text, () => { clearInput(); });
 };
 </script>
 

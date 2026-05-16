@@ -91,6 +91,9 @@
 |---------|---------|
 | AI 聊天（SSE、打字机） | `gomoku-web/src/composables/useAgentChat.ts` |
 | Agent 游戏模式管理 | `gomoku-web/src/composables/useAgentPlay.ts` |
+| Agent 五子棋对弈逻辑（落子/AI回应/走子拦截） | `gomoku-web/src/composables/useAgentGomoku.ts` |
+| Agent 象棋对弈逻辑（走子/AI回应/将军检测） | `gomoku-web/src/composables/useAgentChess.ts` |
+| Agent 视觉识别（确认回放/分析/挂起请求） | `gomoku-web/src/composables/useAgentVision.ts` |
 | 认证状态（登录/注册/Token） | `gomoku-web/src/composables/useAuth.ts` |
 | 背景音乐 | `gomoku-web/src/composables/useBackgroundMusic.ts` |
 | 剪贴板 | `gomoku-web/src/composables/useClipboard.ts` |

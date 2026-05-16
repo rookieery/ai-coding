@@ -171,9 +171,16 @@ AgentGomokuPanel.vue / AgentChessPanel.vue ← 加载棋盘状态
 ## 关键 Composable 依赖关系
 
 ```
-useAgentChat
-  ├── useTypewriterQueue  (打字机效果)
-  └── chat-api.ts         (SSE 流式调用)
+AgentView.vue (协调者)
+  ├── useAgentGomoku     (五子棋对弈: 落子/AI回应/走子拦截)
+  │     └── gomoku-ai-api.ts
+  ├── useAgentChess      (象棋对弈: 走子/AI回应/将军检测)
+  │     └── chessLlmApi.ts
+  ├── useAgentVision     (视觉识别: 确认回放/分析/挂起请求)
+  │     └── useVisionBridge (共享状态桥)
+  ├── useAgentChat       (AI 聊天: SSE 流式/打字机效果)
+  │     └── useTypewriterQueue
+  └── useSplitDrag       (分屏面板拖拽)
 
 useAuth
   ├── auth-api.ts         (认证 API)
