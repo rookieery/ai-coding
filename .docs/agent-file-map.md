@@ -51,7 +51,16 @@
 | Toast 通知 | `gomoku-web/src/games/gomoku/components/NotificationToast.vue` |
 | 全屏视觉确认面板 | `gomoku-web/src/games/gomoku/components/VisionConfirmationPanel.vue` |
 
-### 五子棋 AI 引擎
+### 五子棋 AI 引擎（核心逻辑模块）
+| 要改什么 | 文件路径 |
+|---------|---------|
+| 公共 API 门面（re-export + findBestMove） | `gomoku-web/src/games/gomoku/gameLogic.ts` |
+| 常量、类型、胜负判定、禁手检测 | `gomoku-web/src/games/gomoku/gameConstants.ts` |
+| 棋型评分、单点/全局评估、强迫着检测 | `gomoku-web/src/games/gomoku/gameEvaluation.ts` |
+| 候选着法生成（含禁手过滤） | `gomoku-web/src/games/gomoku/gameMoves.ts` |
+| Zobrist 哈希、置换表、PVS 搜索、VCF 算杀 | `gomoku-web/src/games/gomoku/gameSearch.ts` |
+
+### 五子棋 AI 引擎（辅助工具模块）
 | 要改什么 | 文件路径 |
 |---------|---------|
 | 入门/中级 AI（启发式） | `gomoku-web/src/games/gomoku/utils/ai.ts` |
