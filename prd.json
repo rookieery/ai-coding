@@ -1,4 +1,191 @@
 {
-  "branchName": "feature/vision-streaming-cot",
-  "stories": []
+  "branchName": "feature/online-multiplayer",
+  "stories": [
+    {
+      "id": "ONLINE-01-Dependencies",
+      "title": "安装 Socket.io 依赖（前后端）",
+      "description": "基础设施任务。\n\n1. 后端（gomoku-server）：执行 `npm install socket.io`。\n2. 前端（gomoku-web）：执行 `npm install socket.io-client`。\n3. 验证安装成功，无版本冲突。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-02-Prisma-Schema",
+      "title": "修改 Prisma Schema：新增 Room 表、RoomMessage 表，修改 User 和 Match 表关系",
+      "description": "数据库变更任务。在 gomoku-server/prisma/schema.prisma 中执行以下修改：\n\n**现有代码上下文**：\n- User model 已有 `games Game[] @relation(\"UserGames\")`，必须保留。\n- Match model 中 `playerBlackId` 和 `playerWhiteId` 字段已存在（可选 String），但 User 关系被注释掉了（`// playerBlack User? @relation(...)`），需要取消注释。\n- Match 已有 `blackCaptures`/`whiteCaptures` 字段，必须保留。\n\n**修改步骤**：\n1. User model 新增关系字段：`hostedRooms Room[] @relation(\"HostRooms\")`, `guestedRooms Room[] @relation(\"GuestRooms\")`, `roomMessages RoomMessage[]`, `blackMatches Match[] @relation(\"BlackMatches\")`, `whiteMatches Match[] @relation(\"WhiteMatches\")`。删除旧的 `// matches Match[] @relation(\"UserMatches\")` 注释行。\n\n2. Match model 取消注释关系：`playerBlack User? @relation(\"BlackMatches\", fields: [playerBlackId], references: [id], onDelete: SetNull)` 和 `playerWhite User? @relation(\"WhiteMatches\", fields: [playerWhiteId], references: [id], onDelete: SetNull)`。保留所有现有字段不变。**onDelete: SetNull** 确保用户被删除时，Match 记录中的 playerBlackId/playerWhiteId 被置空，对局记录保留不丢失。\n\n3. 新增 Room model：id, name, status(String, default \"waiting\"), gameType(String, default \"gomoku\"), boardSize(Int, default 15), ruleMode(String, default \"standard\"), maxSpectators(Int, default 50), isPublic(Boolean, default true), hostId(String?), host(User?, \"HostRooms\", fields:[hostId], references:[id]), hostColor(String, default \"black\"), guestId(String?), guest(User?, \"GuestRooms\", fields:[guestId], references:[id]), boardState(String, default \"[]\"), moves(String, default \"[]\"), currentPlayer(String, default \"black\"), winner(String?), lastMoveAt(DateTime?), disconnectTimeoutAt(DateTime?), moveCount(Int, default 0), spectatorCount(Int, default 0), isRanked(Boolean, default false), matchId(String?), createdAt, updatedAt, messages(RoomMessage[])。添加索引：status, hostId, isPublic+status。\n\n4. 新增 RoomMessage model：id, roomId, room(Room, fields:[roomId], references:[id], onDelete: Cascade), userId(String?), user(User?, fields:[userId], references:[id], onDelete: SetNull), username(String), content(String), channel(String, default \"players\"), createdAt。添加索引：roomId+channel+createdAt, roomId+createdAt。\n\n5. 运行 `npx prisma migrate dev --name add_room_and_online_tables` 生成迁移。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-03-Socket-Types",
+      "title": "创建 Socket 事件类型定义",
+      "description": "纯类型定义任务。在 gomoku-server/src/socket/types.ts 中定义所有 Socket 事件的 payload 类型：\n\n1. 客户端→服务端事件类型：RoomCreatePayload(name, ruleMode, isRanked), RoomJoinPayload(roomId), RoomLeavePayload(roomId), RoomWatchPayload(roomId), RoomListPayload(page?, pageSize?), GameMovePayload(roomId, r, c), GameResignPayload(roomId), ChatSendPayload(roomId, content, channel), MatchQueuePayload(ruleMode), MatchCancelPayload。\n\n2. 服务端→客户端事件类型：RoomCreatedPayload(room), RoomUpdatedPayload(room), RoomJoinedPayload(room, color), RoomLeftPayload(roomId), RoomRemovedPayload(roomId), RoomListResponse(rooms, pagination), GameMoveBroadcast(roomId, r, c, player, boardState), GameOverPayload(roomId, winner, reason), ChatMessagePayload(roomId, message), MatchFoundPayload(roomId, opponent), MatchWaitingPayload(position), ErrorPayload(code, message), DisconnectWarningPayload(roomId, remainingSeconds)。\n\n3. 共享接口：RoomInfo(id, name, status, gameType, boardSize, ruleMode, hostId, hostName, hostColor, guestId, guestName, currentPlayer, moveCount, spectatorCount, isRanked, createdAt), MessageInfo(id, userId, username, content, channel, createdAt)。\n\n4. 导出 ServerEvents 和 ClientEvents 接口供 Socket.io 泛型使用。\n\n预估代码约 150 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-04-Express-Socket-Integration",
+      "title": "重构 Express 启动方式以支持 Socket.io",
+      "description": "核心架构变更任务。修改 gomoku-server/src/app.ts：\n\n**现有代码上下文**（app.ts 关键结构）：\n- `export const prisma = new PrismaClient()` — 命名导出，不可更改。\n- `export default app` — 默认导出，不可更改。\n- `startServer()` 函数内部调用 `app.listen(PORT, callback)` — 需要重构。\n- 优雅关闭使用 `process.on('SIGINT/SIGTERM', ...)` — 需要扩展。\n\n**修改步骤**：\n1. 在 `startServer()` 内部，将 `app.listen(PORT, callback)` 替换为：\n   ```typescript\n   import { createServer } from 'http';\n   import { initializeSocket } from './socket';\n   // 在 startServer() 内：\n   const httpServer = createServer(app);\n   initializeSocket(httpServer);\n   httpServer.listen(PORT, callback);\n   ```\n2. 导出 httpServer：在文件顶层声明 `let httpServer: Server`，在 startServer 中赋值，然后 `export { httpServer }`。\n\n3. 优雅关闭扩展：在 SIGINT/SIGTERM handler 中，先调用 `io.close()` 再 `prisma.$disconnect()`。io 实例需要从 socket/index.ts 导出。\n\n4. 创建 gomoku-server/src/socket/index.ts 骨架：\n   - 导出 `io` 实例（供优雅关闭使用）。\n   - 导出 `initializeSocket(httpServer: Server)` 函数。\n   - 创建 Socket.io Server，CORS 配置复用 app.ts 中相同的 allowedOrigins 逻辑（提取为共享函数或直接引用 config）。\n   - transports: ['websocket', 'polling']。\n   - connection 事件暂时只打印日志。\n\n**影响分析**：不修改任何现有路由、中间件或 SSE 逻辑。SSE 基于 Express response，不经过 Socket.io，无冲突。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-05-Socket-Auth-Middleware",
+      "title": "创建 Socket.io 认证中间件",
+      "description": "安全中间件任务。在 gomoku-server/src/socket/middleware.ts 中实现：\n\n**现有代码上下文**（auth.ts）：\n- `verifyToken(token: string): any` — 返回解码后的 JWT payload（含 id, phone, username, role）或 null。不做数据库查询。\n- `authenticate` 中间件在 verifyToken 后还做了 `prisma.user.findUnique()` 确认用户存在。\n\n**实现要求**：\n1. `socketAuth` 中间件（用于 io.use()）：\n   - 从 socket.handshake.auth.token 或 socket.handshake.headers.authorization 提取 JWT。\n   - 调用 verifyToken 解码。\n   - 再做 prisma.user.findUnique 确认用户存在（与 authenticate 中间件一致）。\n   - 成功：将用户信息附加到 socket.data.user。\n   - 失败：返回 next(new Error('Authentication error'))。\n\n2. `optionalSocketAuth` 中间件（用于观战和浏览）：\n   - 尝试验证 token + DB 查询，成功则附加 socket.data.user。\n   - 失败不拒绝连接，socket.data.user 保持 undefined。\n\n3. 在 socket/index.ts 中注册：主命名空间使用 optionalSocketAuth，需要认证的事件在 handler 内部检查 socket.data.user。\n\n依赖：ONLINE-04。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-06-Room-Service",
+      "title": "创建房间 Service（RoomService）",
+      "description": "核心业务逻辑任务。在 gomoku-server/src/services/room.service.ts 中实现 RoomService 类：\n\n1. `createRoom(hostId, name, ruleMode)` — 创建房间并持久化到数据库，初始化 boardState 为 15x15 空数组（JSON.stringify），返回 RoomInfo。\n\n2. `joinRoom(roomId, userId)` — 加入房间：检查房间存在性、状态为 waiting、未被占满（guestId 为空）、不能加入自己的房间。**并发安全**：更新 guestId 时必须使用 Prisma 原子操作，将 `guestId: null` 作为 update 的 where 条件之一（`prisma.room.update({ where: { id: roomId, guestId: null }, data: { guestId: userId } })`），防止高并发下两个玩家同时加入同一房间的超卖问题。若 update 影响行数为 0 则抛出房间已满错误。成功后若双方齐备则将状态改为 playing，返回 RoomInfo + 颜色。\n\n3. `leaveRoom(roomId, userId)` — 离开房间：如果是 host 离开则销毁房间（status=finished）；如果是 guest 离开则清空 guestId，状态回到 waiting。\n\n4. `watchRoom(roomId, userId)` — 观战：检查房间存在性，递增 spectatorCount（不超过 maxSpectators），返回 RoomInfo。\n\n5. `unwatchRoom(roomId)` — 取消观战：递减 spectatorCount（不低于 0）。\n\n6. `getRoomList(page, pageSize)` — 分页获取公开房间列表（isPublic=true, status!=finished），按 createdAt 倒序。\n\n7. `getRoomById(roomId)` — 获取房间详情，包含 host 和 guest 的用户名。\n\n8. `toRoomInfo(room)` — 内部辅助方法，将 Prisma Room 实体转换为 RoomInfo 接口。\n\n依赖：ONLINE-02。预估代码约 200 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-07A-Room-Socket-Handler",
+      "title": "创建房间 Socket Handler",
+      "description": "事件处理任务。在 gomoku-server/src/socket/handlers/room.handler.ts 中实现：\n\n1. 导出 `registerRoomHandlers(io, socket)` 函数。\n2. `room:create` — 验证 socket.data.user 存在，调用 RoomService.createRoom，socket.join(roomId)，回发 room:created 给创建者，广播 room:updated 给大厅（后续优化）。\n3. `room:join` — 验证登录，调用 RoomService.joinRoom，socket.join(roomId)，广播 room:updated 给房间内所有人。\n4. `room:leave` — 调用 RoomService.leaveRoom，socket.leave(roomId)，若房间被销毁则广播 room:removed，否则广播 room:updated。\n5. `room:watch` — 验证登录，调用 RoomService.watchRoom，socket.join(roomId)，广播 room:updated。\n6. `room:list` — 调用 RoomService.getRoomList，回发 room:list 给请求者。\n7. 所有错误通过 socket.emit('error', { code, message }) 返回。\n8. 在 socket/index.ts 的 connection 中调用 registerRoomHandlers。\n\n依赖：ONLINE-05, ONLINE-06。预估代码约 150 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-07B-Room-REST-API",
+      "title": "创建房间 REST API + 路由注册",
+      "description": "REST 接口任务。\n\n1. 创建 gomoku-server/src/controllers/room.controller.ts：\n   - `getRooms` — GET /api/rooms，从 query 获取 page/pageSize，调用 RoomService.getRoomList，返回统一响应格式。\n   - `getRoomById` — GET /api/rooms/:id，调用 RoomService.getRoomById，返回统一响应格式。\n\n2. 创建 gomoku-server/src/routes/room.routes.ts：\n   - 使用 optionalAuthenticate 中间件（游客也可浏览房间）。\n   - `GET /` → getRooms\n   - `GET /:id` → getRoomById\n\n3. **修改 gomoku-server/src/routes/index.ts**：在现有路由列表末尾添加 `router.use('/rooms', roomRoutes)`。\n\n**现有代码上下文**：routes/index.ts 使用 `const router = Router()` + `router.use(...)` 模式注册路由。\n\n依赖：ONLINE-06。预估代码约 80 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-08-Online-Game-Service",
+      "title": "创建在线对弈 Service（OnlineGameService）",
+      "description": "核心对弈逻辑任务。在 gomoku-server/src/services/online-game.service.ts 中实现 OnlineGameService 类：\n\n**现有代码上下文**（前端 gameConstants.ts 中的纯函数，需移植到 Node.js）：\n- `BOARD_SIZE = 15`, `EMPTY = 0`, `BLACK = 1`, `WHITE = 2`\n- `checkWin(board: number[][], r: number, c: number, player: number, ruleMode?: 'standard'|'renju'): {r: number, c: number}[] | null` — 检查4个方向（水平、垂直、两条对角线）的五连，renju 模式黑棋只认恰好5连，标准模式认5连以上。返回获胜连线坐标数组或 null。\n- `checkDraw(board: number[][]): boolean` — `board.every(row => row.every(cell => cell !== EMPTY))`\n\n**实现要求**：\n1. `makeMove(roomId, userId, r, c)` — 落子验证与执行：\n   - 查询房间，检查 status=playing。\n   - 根据 hostColor 和 currentPlayer 判断当前用户对应颜色。\n   - 验证坐标合法性（0 <= r,c < 15，该位置为 EMPTY）。\n   - 更新 boardState（JSON.parse → 修改 → JSON.stringify）。\n   - 追加到 moves（{r, c, player, timestamp}）。\n   - 切换 currentPlayer，递增 moveCount，更新 lastMoveAt。\n   - 调用 checkWin，若五连则设置 winner 并 status=finished。\n   - 调用 checkDraw，若平局则 winner='draw' 并 status=finished。\n   - 更新数据库。\n   - 返回 { boardState, winner, isDraw, move }。\n\n2. `resign(roomId, userId)` — 设置对手为 winner，status=finished。\n\n3. `checkWin(board, r, c, player, ruleMode)` — 从 gameConstants.ts 原样移植，保持算法完全一致。纯函数，无外部依赖。\n\n4. `checkDraw(board)` — 从 gameConstants.ts 原样移植。\n\n依赖：ONLINE-02。预估代码约 180 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-09-Game-Socket-Handler",
+      "title": "创建对弈 Socket Handler",
+      "description": "对弈事件处理任务。在 gomoku-server/src/socket/handlers/game.handler.ts 中实现：\n\n1. 导出 `registerGameHandlers(io, socket)` 函数。\n\n2. `game:move` 处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 调用 OnlineGameService.makeMove。\n   - 广播 `game:move` 给房间内所有人（包括观战者），携带 { roomId, r, c, player, boardState }。\n   - 若游戏结束，额外广播 `game:over` 携带 { roomId, winner, reason }。\n   - 错误时返回 `error` 事件。\n\n3. `game:resign` 处理：\n   - 调用 OnlineGameService.resign。\n   - 广播 `game:over` 给房间内所有人，reason='resign'。\n\n4. 在 socket/index.ts 中注册 game handler。\n\n依赖：ONLINE-05, ONLINE-08。预估代码约 80 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-10-Frontend-Socket-Service",
+      "title": "前端：创建 Socket.io 客户端服务层 + config 配置",
+      "description": "前端基础设施任务。\n\n**A. 配置扩展** — 修改 gomoku-web/src/config.ts：\n在现有 config 对象中新增 `socket` 配置项：\n```typescript\nsocket: {\n  url: import.meta.env.VITE_SOCKET_URL || '',  // 空 string 表示使用当前 origin\n}\n```\n不修改现有的 api/app/logging 配置。\n\n**B. Socket 服务** — 创建 gomoku-web/src/services/socket.service.ts：\n1. 导出 `socketService` 单例对象：\n   - `connect(token: string)` — 使用 { auth: { token }, transports: ['websocket', 'polling'] } 建立连接。URL 从 config.socket.url 获取，为空则使用当前 origin。\n   - `disconnect()` — 断开连接。\n   - `on(event, callback)` — 监听事件。\n   - `off(event, callback)` — 取消监听。\n   - `emit(event, data)` — 发送事件。\n   - `isConnected` — getter。\n2. 自动重连：reconnection=true, reconnectionAttempts=5, reconnectionDelay=1000。\n3. 连接/断开/错误事件处理。\n\n依赖：ONLINE-01。预估代码约 80 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-11-Frontend-Room-API",
+      "title": "前端：创建房间 API 层和房间 Composable",
+      "description": "前端数据层任务。分两部分：\n\n**A. REST API 层** — gomoku-web/src/api/room-api.ts：\n1. `fetchRooms(page, pageSize)` — GET /api/rooms。\n2. `fetchRoomById(roomId)` — GET /api/rooms/:id。\n3. 复用项目现有的 getDefaultFetchOptions + getApiUrl 工具（来自 config.ts）。\n\n**B. Room Composable** — gomoku-web/src/composables/useRoom.ts：\n1. `rooms` ref — 房间列表。\n2. `currentRoom` ref — 当前所在房间。\n3. `isInRoom` computed — 是否在房间中。\n4. `loadRooms()` — 调用 room-api 获取房间列表。\n5. `createRoom(name, ruleMode)` — 通过 Socket 发送 room:create。\n6. `joinRoom(roomId)` — 通过 Socket 发送 room:join。\n7. `leaveRoom()` — 通过 Socket 发送 room:leave。\n8. `watchRoom(roomId)` — 通过 Socket 发送 room:watch。\n9. 监听 Socket 事件（room:created, room:updated, room:removed）自动更新本地状态。\n10. 组件卸载时自动清理 Socket 监听（使用 onUnmounted）。\n\n依赖：ONLINE-10, ONLINE-07B（REST API 需后端就绪）。预估代码约 120 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-12A-Room-Sub-Components",
+      "title": "前端：创建房间子组件（RoomList + RoomCard + CreateRoomModal）",
+      "description": "前端 UI 子组件任务。创建 3 个组件：\n\n**A. RoomCard.vue** — gomoku-web/src/games/gomoku/components/online/RoomCard.vue：\n1. Props: room (RoomInfo 类型)。\n2. 显示：房间名称、规则模式（无禁手/有禁手）、状态标签（等待中/对弈中）。\n3. 显示 host 名称、guest 名称（或「等待中...」）。\n4. 观战人数。\n5. 操作按钮：加入（status=waiting 时）/ 观战（status=playing 时），emit 对应事件。\n6. 所有文案使用 i18n。\n\n**B. RoomList.vue** — gomoku-web/src/games/gomoku/components/online/RoomList.vue：\n1. Props: rooms (RoomInfo[])。\n2. 渲染 RoomCard 列表（v-for）。\n3. 空状态显示 i18n('noRooms')。\n4. 向上透传 join/watch 事件。\n\n**C. CreateRoomModal.vue** — gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue：\n1. Props: visible (boolean)。\n2. Emits: close, create。\n3. 表单：房间名称输入框、规则模式选择（无禁手/有禁手）。\n4. 确认/取消按钮。\n5. 表单校验（名称不能为空）。\n\n依赖：ONLINE-11。所有文案使用 i18n，严禁硬编码中文。预估代码约 200 行（3 个文件合计）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-12B-Online-Lobby-View",
+      "title": "前端：创建在线大厅页面（OnlineLobbyView）",
+      "description": "前端页面组装任务。创建 gomoku-web/src/games/gomoku/views/OnlineLobbyView.vue：\n\n1. 页面布局：顶部标题栏（onlineTitle）+ 创建房间按钮 + 房间列表区域。\n2. 使用 useRoom composable 管理状态。\n3. 集成 CreateRoomModal：点击创建按钮显示弹窗，create 事件调用 useRoom.createRoom。\n4. 集成 RoomList + RoomCard：加载房间列表，点击加入/观战调用对应方法。\n5. 加入房间成功后跳转到 /online/room/:id（router.push）。\n6. 未登录用户：可浏览房间列表和观战，创建/加入时前端提示需登录（使用 useAuth）。\n7. 页面挂载时调用 loadRooms()，卸载时清理 Socket 监听。\n8. 实时更新：监听 room:updated 事件自动刷新列表。\n\n依赖：ONLINE-12A, ONLINE-11。所有文案使用 i18n。预估代码约 120 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-13-Frontend-Online-Game",
+      "title": "前端：在线对弈核心 composable（useOnlineGame）",
+      "description": "前端核心状态管理任务。在 gomoku-web/src/composables/useOnlineGame.ts 中实现在线对弈 composable：\n\n1. 状态管理：\n   - `boardState` ref — 15x15 棋盘数组。\n   - `currentPlayer` ref — 当前轮次（black/white）。\n   - `myColor` ref — 我的颜色（加入房间时确定）。\n   - `isMyTurn` computed — currentPlayer === myColor。\n   - `isSpectator` ref — 是否为观战者。\n   - `gameStatus` ref — 游戏状态（waiting/playing/finished）。\n   - `winner` ref — 获胜者。\n   - `moveCount` ref — 落子数。\n   - `lastMove` ref — 最后一步坐标 {r, c}。\n\n2. 方法：\n   - `initGame(roomInfo, isSpectator)` — 初始化棋盘状态，设置 myColor。**断线重连恢复**：当 roomInfo.moves 非空时，必须解析 moves 数组还原棋盘：遍历每一步 move 解析 { r, c, player }，逐步重建 boardState；根据最后一步的 player 设置 currentPlayer（切换到对手颜色）；恢复 moveCount 和 lastMove。这确保断线重连后能正确恢复残局状态。\n   - `makeMove(r, c)` — 仅在 isMyTurn 且非观战时可用，发送 game:move 到服务端，不直接修改本地棋盘。\n   - `resign()` — 发送 game:resign。\n   - `cleanup()` — 清理所有 Socket 监听。\n\n3. Socket 事件监听（onMounted 中注册，onUnmounted 中 cleanup）：\n   - `game:move` — 更新本地 boardState、currentPlayer、moveCount、lastMove。\n   - `game:over` — 设置 winner 和 gameStatus=finished。\n\n4. 观战模式：isSpectator=true 时 makeMove/resign 不执行（只读棋盘）。\n\n依赖：ONLINE-10。预估代码约 130 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-14A-Game-Sub-Components",
+      "title": "前端：创建对弈子组件（OnlineBoard + PlayerInfo + SpectatorList）",
+      "description": "前端 UI 子组件任务。创建 3 个组件：\n\n**A. OnlineBoard.vue** — gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue：\n1. Props: boardState (number[][]), currentPlayer (string), isMyTurn (boolean), isSpectator (boolean), lastMove ({r,c}|null)。\n2. Emits: move(r, c)。\n3. 复用现有 Board.vue 组件渲染棋盘（通过 props 传入数据）。\n4. 点击空位时 emit move 事件（仅 isMyTurn 且非观战时响应点击）。\n5. 高亮最后一步落子位置。\n6. 当前轮次指示器。\n\n**B. PlayerInfo.vue** — gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue：\n1. Props: username (string), color ('black'|'white'), isCurrentTurn (boolean), isDisconnected (boolean)。\n2. 显示：用户名、执子颜色标识、当前轮次高亮（isCurrentTurn 时边框/背景变化）。\n3. 断线状态显示（灰色遮罩 + 断线提示文案）。\n\n**C. SpectatorList.vue** — gomoku-web/src/games/gomoku/components/online/SpectatorList.vue：\n1. Props: spectatorCount (number)。\n2. 显示观战者数量（i18n: spectators）。\n3. 简洁展示，不需要展示具体用户名列表（MVP 阶段）。\n\n依赖：ONLINE-13。所有文案使用 i18n。预估代码约 160 行（3 个文件合计）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-14B-Online-Game-View",
+      "title": "前端：创建在线对弈页面（OnlineGameView）",
+      "description": "前端页面组装任务。创建 gomoku-web/src/games/gomoku/views/OnlineGameView.vue：\n\n1. 从路由参数获取 roomId（useRoute().params.id）。\n2. 使用 useOnlineGame 和 useChat composable。\n3. 布局：\n   - 顶部：房间名称 + 状态栏。\n   - 左侧：对手 PlayerInfo。\n   - 中间：OnlineBoard 棋盘。\n   - 右侧：自己 PlayerInfo + ChatPanel + SpectatorList。\n4. 状态处理：\n   - 等待对手加入时显示 i18n('waitingForOpponent')。\n   - 游戏结束时显示结果（youWin/youLose/gameDraw）+ 返回大厅按钮。\n5. 底部工具栏：认输按钮（仅对弈者可见）+ 离开房间按钮。\n6. 点击棋盘空位 → useOnlineGame.makeMove。\n7. 页面挂载时通过 room:join 或 room:watch 加入房间，初始化游戏状态。\n8. 页面卸载时调用 cleanup()。\n\n依赖：ONLINE-14A, ONLINE-13。所有文案使用 i18n。预估代码约 150 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-15-Frontend-Routes",
+      "title": "前端：注册路由 + 导航入口",
+      "description": "路由与导航任务。\n\n**现有代码上下文**（router/index.ts）：\n- 所有现有路由都有 `meta: { requiresAuth: true }`，路由守卫在 beforeEach 中检查 token。\n- 新增在线路由需要注意认证策略。\n\n**修改步骤**：\n1. 在 gomoku-web/src/router/index.ts 中新增路由：\n   - `/online` → OnlineLobbyView.vue，`meta: { requiresAuth: false }`（游客可浏览）。\n   - `/online/room/:id` → OnlineGameView.vue，`meta: { requiresAuth: false }`（游客可进入观战）。\n   - 认证检查在组件内部处理（创建/加入时检查 useAuth，未登录弹提示）。\n\n2. 在主导航组件中添加「在线对弈」入口：\n   - 找到合适的位置（GameControls.vue 或主导航栏）添加按钮/链接。\n   - 点击跳转到 /online。\n   - 使用 i18n 文案。\n\n**注意**：不修改现有路由的 meta 或守卫逻辑，只新增路由。\n\n依赖：ONLINE-12B, ONLINE-14B。预估代码约 30 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-16-Spectator-Backend",
+      "title": "后端：完善观战逻辑（断线/离开时观战者计数管理）",
+      "description": "观战后端完善任务。修改 gomoku-server/src/socket/handlers/room.handler.ts 和 game.handler.ts：\n\n1. `room:watch` 事件处理完善（在 room.handler.ts 中）：\n   - 验证房间存在且状态为 playing 或 waiting。\n   - 调用 RoomService.watchRoom。\n   - socket.join(roomId)。\n   - 广播 room:updated 给房间内所有人。\n\n2. Socket disconnect 中检测观战者（在 socket/index.ts 的 disconnect 处理中）：\n   - 如果该用户在某房间中但不是 host 也不是 guest，则为观战者。\n   - 调用 RoomService.unwatchRoom 递减 spectatorCount。\n   - 广播 room:updated。\n\n3. 观战者权限限制（在 game.handler.ts 中）：\n   - game:move 和 game:resign 处理中检查发送者是否为对弈者（host 或 guest）。\n   - 观战者发送 game:move 返回 error('onlineErrorNotYourTurn')。\n\n依赖：ONLINE-07A, ONLINE-09。预估代码约 50 行（增量修改）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-17-Chat-Handler",
+      "title": "后端：创建聊天 Socket Handler",
+      "description": "聊天后端任务。在 gomoku-server/src/socket/handlers/chat.handler.ts 中实现：\n\n1. 导出 `registerChatHandlers(io, socket)` 函数。\n\n2. `chat:send` 事件处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 验证用户在该房间内（通过 socket.rooms 检查）。\n   - 根据用户角色确定可用频道：\n     - 对弈者（host/guest）只能用 'players' 频道。\n     - 观战者只能用 'spectators' 频道。\n   - 消息内容校验：非空，trim 后长度 1-500。\n   - 将消息持久化到 RoomMessage 表。\n   - 广播 `chat:message` 到房间内对应频道的所有人。\n\n3. 频道隔离实现：利用 Socket.io Room 的子房间机制，每个房间 ID 拆分为两个 Socket Room：`{roomId}:players` 和 `{roomId}:spectators`。对弈者加入时同时 join `{roomId}` 和 `{roomId}:players`，观战者 join `{roomId}` 和 `{roomId}:spectators`。\n\n4. 在 socket/index.ts 中注册 chat handler。\n\n依赖：ONLINE-05。预估代码约 100 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-18-Frontend-Chat",
+      "title": "前端：创建聊天 composable + ChatPanel 组件",
+      "description": "前端聊天功能任务。分两部分：\n\n**A. useChat composable** — gomoku-web/src/composables/useChat.ts：\n1. Props 参数：roomId, isPlayer (boolean)。\n2. 状态：`messages` ref（分频道 Map：players 和 spectators）、`activeChannel` ref（根据角色自动设定）。\n3. `sendMessage(content)` — 通过 Socket 发送 chat:send，自动根据 isPlayer 选择频道。\n4. 监听 chat:message Socket 事件，追加到对应频道的消息列表。\n5. `messagesForActiveChannel` computed — 当前激活频道的消息。\n6. 组件卸载时清理 Socket 监听。\n\n**B. ChatPanel.vue** — gomoku-web/src/games/gomoku/components/online/ChatPanel.vue：\n1. Props: roomId (string), isPlayer (boolean)。\n2. 消息列表：显示用户名 + 消息内容 + 时间，自动滚动到底部（nextTick + scrollTop）。\n3. 输入框 + 发送按钮，回车发送。\n4. 观战者只显示观战频道，对弈者只显示对弈频道（无需 Tab 切换，MVP 简化）。\n5. 所有文案使用 i18n。\n\n依赖：ONLINE-10, ONLINE-17。预估代码约 100 行（composable）+ 100 行（组件）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-19-Disconnect-Service",
+      "title": "后端：创建断线重连管理 Service + 集成到 Socket 连接管理",
+      "description": "断线重连任务。分两部分：\n\n**A. DisconnectService** — gomoku-server/src/services/disconnect.service.ts：\n1. 内存 Map<roomId, { userId, timeout: NodeJS.Timeout, startedAt }> 管理断线状态。\n2. `startDisconnectTimer(roomId, userId, io)` — 对弈者断线时启动 60 秒倒计时：\n   - 存储到 Map。\n   - 使用 setTimeout，到期自动将断线方判负（更新数据库 room.winner/room.status），广播 game:over。\n   - 每秒广播 disconnect:warning { roomId, remainingSeconds } 给房间内其他人。\n3. `cancelDisconnectTimer(roomId, userId)` — 对弈者重连时取消倒计时：clearTimeout，从 Map 移除。\n4. `isDisconnected(roomId, userId)` — 检查用户是否处于断线状态。\n\n**B. 集成到 Socket 连接管理** — 修改 gomoku-server/src/socket/index.ts：\n1. Socket disconnect 事件：检测断开者是否为活跃房间的对弈者（host 或 guest），如果是且游戏正在进行（status=playing），触发 DisconnectService.startDisconnectTimer。**同时必须调用 MatchmakingService.dequeue(userId)**，清理该用户可能残留的匹配队列，防止断线玩家留在匹配池中变成僵尸玩家。\n2. Socket connection 事件：检查重连用户（通过 socket.data.user.id 匹配活跃房间的 host/guest），如果处于断线状态，触发 DisconnectService.cancelDisconnectTimer。\n\nMVP 限制：内存版，进程重启后断线状态丢失。\n\n依赖：ONLINE-09。预估代码约 120 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-20-I18N",
+      "title": "新增在线对弈相关 i18n 翻译词条（中英文）",
+      "description": "国际化任务。在 gomoku-web/src/locales/zh-CN.json 和 en-US.json 中添加所有在线对弈相关词条：\n\n需要覆盖的词条域（使用 online* 前缀）：\n1. 页面标题与导航：onlineTitle, onlineLobby。\n2. 房间操作：onlineCreateRoom, onlineJoinRoom, onlineWatchGame, onlineLeaveRoom, onlineRoomName, onlineRoomNamePlaceholder, onlineNoRooms。\n3. 游戏状态：onlineWaitingForOpponent, onlineOpponentJoined, onlineYourTurn, onlineOpponentTurn, onlineYouWin, onlineYouLose, onlineGameDraw。\n4. 断线：onlineOpponentDisconnected, onlineReconnectingCountdown。\n5. 操作：onlineResign。\n6. 聊天：onlineChatPlayersChannel, onlineChatSpectatorsChannel, onlineChatPlaceholder。\n7. 观战：onlineSpectators。\n8. 规则模式：onlineRuleStandard, onlineRuleRenju。\n9. 错误提示：onlineErrorNotLoggedIn, onlineErrorRoomFull, onlineErrorGameStarted, onlineErrorRoomNotFound, onlineErrorNotYourTurn, onlineErrorInvalidMove。\n10. 通用：onlineRankedGame, onlineCasualGame, onlineRatingLabel。\n11. 匹配：onlineMatchmakingTitle, onlineMatchmakingWaiting, onlineMatchmakingCancel, onlineMatchFound。\n\n要求：\n- 中文和英文词条 key 完全一致。\n- 英文翻译自然准确。\n- 条目按功能模块分组，使用 online 前缀避免与现有词条冲突。\n\n依赖：所有前端组件完成。预估新增词条约 30 条/语言。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-21-ELO-Service",
+      "title": "后端：创建 ELO 积分计算服务 + 单元测试",
+      "description": "积分系统任务（第二阶段）。分两部分：\n\n**A. EloService** — gomoku-server/src/services/elo.service.ts：\n1. `calculateNewRating(playerRating, opponentRating, result: 'win' | 'loss' | 'draw')` — 标准 ELO 公式：\n   - Expected = 1 / (1 + 10^((opponentRating - playerRating) / 400))\n   - K-factor 动态调整：前 30 局 K=40, rating < 2400 K=20, rating >= 2400 K=10。\n   - New = Old + K * (Actual - Expected)\n   - 返回 { newPlayerRating, newOpponentRating }\n2. `updateRatings(winnerId, loserId, isDraw)` — 更新数据库中 User 的 rating 字段。\n\n**B. 单元测试** — gomoku-server/src/__tests__/elo.test.ts：\n1. 初始积分对弈（1200 vs 1200）— 胜者加分、败者减分。\n2. 高分对低分 — 高分胜者加分少，低分败者减分少。\n3. 低分胜高分 — 积分变化大（爆冷）。\n4. 平局处理 — 双方积分向均值靠拢。\n5. K-factor 变化 — 不同 rating 区间的 K 值验证。\n6. 边界值 — rating 为 0、极大值。\n\n依赖：无（纯算法）。预估代码约 80 行（服务）+ 100 行（测试）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-22-ELO-Integration",
+      "title": "后端：将 ELO 积分更新集成到游戏结束流程 + 积分 REST API",
+      "description": "积分集成任务（第二阶段）。分两部分：\n\n**A. 游戏结束积分更新** — 修改 gomoku-server/src/services/online-game.service.ts：\n1. 在游戏结束处理中（makeMove 判定胜负、resign），如果房间 isRanked=true：\n   - 调用 EloService.updateRatings 更新双方积分。\n   - 创建 Match 记录保存对局数据（playerBlackId, playerWhiteId, result, moves 等）。\n   - 在 game:over 广播中携带双方积分变化信息。\n\n**B. 积分 REST API** — 扩展 gomoku-server/src/routes/room.routes.ts：\n1. `GET /api/users/:id/rating` — 获取用户积分信息（rating, 对局数, 胜率）。\n2. `GET /api/leaderboard` — 积分排行榜（Top 50，按 rating 倒序）。\n\n依赖：ONLINE-21, ONLINE-08。预估代码约 80 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-23-Matchmaking-Service",
+      "title": "后端：创建匹配服务（MatchmakingService）+ 单元测试",
+      "description": "匹配系统任务（第二阶段）。分两部分：\n\n**A. MatchmakingService** — gomoku-server/src/services/matchmaking.service.ts：\n1. 内存队列：Map<ruleMode, QueueEntry[]>，QueueEntry = { userId, rating, enqueuedAt }。\n2. `enqueue(userId, rating, ruleMode)` — 加入队列，检查防重复。\n3. `dequeue(userId)` — 离开队列。\n4. `findMatch()` — 遍历队列匹配：优先积分差 <= 200；超 30s 未匹配则每 10s 扩大 100 分范围。返回 { player1, player2 } | null。\n5. `getQueuePosition(userId)` — 获取队列位置。\n6. `getQueueSize(ruleMode)` — 队列长度。\n\n**B. 单元测试** — gomoku-server/src/__tests__/matchmaking.test.ts：\n1. 相同积分立即匹配。\n2. 积分差距过大不匹配。\n3. 等待超时扩大范围后匹配。\n4. 多人同时匹配的正确配对。\n5. 取消匹配后不再被匹配。\n6. 队列为空不报错。\n7. 防止重复入队。\n\n依赖：无（纯逻辑）。预估代码约 150 行（服务）+ 120 行（测试）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-24A-Matchmaking-Handler",
+      "title": "后端：创建匹配 Socket Handler",
+      "description": "后端事件处理任务（第二阶段）。在 gomoku-server/src/socket/handlers/match.handler.ts 中实现：\n\n1. 导出 `registerMatchHandlers(io, socket)` 函数。\n2. `match:queue` 处理：\n   - 验证 socket.data.user 存在。\n   - 获取用户 rating（从数据库或内存缓存）。\n   - 调用 MatchmakingService.enqueue(userId, rating, ruleMode)。\n   - 回发 match:waiting { position }。\n   - 调用 findMatch()，若匹配成功：\n     - 调用 RoomService.createRoom 创建排位房间（isRanked=true）。\n     - 向双方发送 match:found { roomId, opponent }。\n3. `match:cancel` 处理：\n   - 调用 MatchmakingService.dequeue(userId)。\n4. 定时器：每 5 秒调用 findMatch()（setInterval，在 initializeSocket 中启动）。\n5. 在 socket/index.ts 中注册 match handler。\n\n依赖：ONLINE-05, ONLINE-23。预估代码约 80 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-24B-Frontend-Matchmaking",
+      "title": "前端：创建匹配 composable + 匹配 UI 组件",
+      "description": "前端匹配功能任务（第二阶段）。分两部分：\n\n**A. useMatchmaking composable** — gomoku-web/src/composables/useMatchmaking.ts：\n1. `isMatching` ref — 是否匹配中。\n2. `queuePosition` ref — 队列位置。\n3. `startMatchmaking(ruleMode)` — 确保 Socket 已连接，发送 match:queue。\n4. `cancelMatchmaking()` — 发送 match:cancel。\n5. 监听 match:waiting 更新 queuePosition。\n6. 监听 match:found 自动跳转 router.push('/online/room/:id')。\n7. onUnmounted 时自动 cancelMatchmaking。\n\n**B. MatchmakingOverlay.vue** — gomoku-web/src/games/gomoku/components/online/MatchmakingOverlay.vue：\n1. Props: visible (boolean)。\n2. 全屏遮罩动画（寻找对手中...）。\n3. 显示等待时间（计算属性，从 startAt 计算）。\n4. 显示队列位置。\n5. 取消匹配按钮。\n6. 匹配成功时显示对手信息 + 自动 3 秒后跳转。\n\n**C. 集成到 OnlineLobbyView.vue**：\n1. 添加「排位赛」按钮，点击触发 useMatchmaking.startMatchmaking。\n2. 集成 MatchmakingOverlay。\n\n依赖：ONLINE-24A, ONLINE-10。所有文案使用 i18n。预估代码约 80 行（composable）+ 100 行（组件）。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-25-Frontend-Rating",
+      "title": "前端：创建积分显示组件（RatingDisplay）",
+      "description": "积分 UI 任务（第二阶段）。在 gomoku-web/src/games/gomoku/components/online/RatingDisplay.vue 中创建：\n\n1. Props: rating (number), change (number, 可选, 积分变化值)。\n2. 显示用户当前积分数字。\n3. 显示积分变化（+XX 绿色 / -XX 红色），change 为 0 或 undefined 时不显示。\n4. 在 PlayerInfo 组件中集成 RatingDisplay 展示对手积分。\n5. 修改 OnlineLobbyView.vue 在排位赛按钮旁显示当前用户积分。\n6. 可选：创建排行榜弹窗（GET /api/leaderboard）。\n\n所有文案使用 i18n。预估代码约 60 行。\n\n依赖：ONLINE-22。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-26-Room-State-Tests",
+      "title": "后端：房间状态机单元测试",
+      "description": "测试任务。在 gomoku-server/src/__tests__/room-state.test.ts 中编写房间状态机测试用例：\n\n1. 房间生命周期：waiting → playing → finished 正常流转。\n2. host 离开 → 房间被销毁（status=finished）。\n3. guest 离开 → 房间回到 waiting 状态。\n4. 房间已满时拒绝新玩家加入。\n5. 游戏进行中拒绝新玩家加入。\n6. 不能加入自己的房间。\n7. 房间不存在时的错误处理。\n8. 观战者计数正确增减。\n9. 观战者超过 maxSpectators 时拒绝。\n\n依赖：ONLINE-06。预估代码约 150 行。",
+      "passes": false
+    },
+    {
+      "id": "ONLINE-27-Online-Game-Tests",
+      "title": "后端：对弈逻辑单元测试",
+      "description": "测试任务。在 gomoku-server/src/__tests__/online-game.test.ts 中编写对弈逻辑测试用例：\n\n1. 合法落子 — 正常更新棋盘状态。\n2. 非法位置 — 已有棋子的位置不能落子。\n3. 越界坐标 — 超出棋盘范围的坐标被拒绝。\n4. 轮次错误 — 非当前玩家的落子被拒绝。\n5. 五连判定 — 水平、垂直、两条对角线的五连均能正确判定。\n6. 平局判定 — 棋盘下满无五连时判定平局。\n7. 认输 — 正确设置对手为 winner。\n8. 游戏已结束后不能再落子。\n\n**关键**：服务端 checkWin 必须与前端 gameConstants.ts 的 checkWin 结果完全一致。建议编写对比测试：构造已知五连棋盘，验证服务端算法返回相同的获胜坐标。\n\n依赖：ONLINE-08。预估代码约 200 行。",
+      "passes": false
+    }
+  ]
 }

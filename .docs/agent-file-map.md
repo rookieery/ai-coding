@@ -26,6 +26,8 @@
 | 管理后台页 | `gomoku-web/src/views/AdminView.vue` |
 | 独立五子棋页 | `gomoku-web/src/views/GameView.vue` |
 | 独立象棋页 | `gomoku-web/src/views/ChineseChessView.vue` |
+| 在线大厅页（规划中） | `gomoku-web/src/games/gomoku/views/OnlineLobbyView.vue` |
+| 在线对弈页（规划中） | `gomoku-web/src/games/gomoku/views/OnlineGameView.vue` |
 
 ### Agent 组件
 | 要改什么 | 文件路径 |
@@ -48,6 +50,13 @@
 | 保存棋局弹窗 | `gomoku-web/src/games/gomoku/components/SaveGameModal.vue` |
 | 棋局记录列表弹窗 | `gomoku-web/src/games/gomoku/components/GameRecordsModal.vue` |
 | 删除确认弹窗 | `gomoku-web/src/games/gomoku/components/DeleteConfirmModal.vue` |
+| 在线房间列表（规划中） | `gomoku-web/src/games/gomoku/components/online/RoomList.vue` |
+| 在线房间卡片（规划中） | `gomoku-web/src/games/gomoku/components/online/RoomCard.vue` |
+| 创建房间弹窗（规划中） | `gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue` |
+| 在线对弈棋盘（规划中） | `gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue` |
+| 聊天面板（规划中） | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
+| 玩家信息栏（规划中） | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
+| 观战者列表（规划中） | `gomoku-web/src/games/gomoku/components/online/SpectatorList.vue` |
 | Toast 通知 | `gomoku-web/src/games/gomoku/components/NotificationToast.vue` |
 | 全屏视觉确认面板 | `gomoku-web/src/games/gomoku/components/VisionConfirmationPanel.vue` |
 
@@ -92,6 +101,7 @@
 | 管理员 API | `gomoku-web/src/api/admin-api.ts` |
 | 视觉识别 API | `gomoku-web/src/api/vision-api.ts` |
 | 象棋编码转换 | `gomoku-web/src/api/chess-vision-api.ts` |
+| 房间 REST API（规划中） | `gomoku-web/src/api/room-api.ts` |
 | 五子棋 LLM API（游戏模块内） | `gomoku-web/src/games/gomoku/api/llmApi.ts` |
 | 象棋 LLM API（游戏模块内） | `gomoku-web/src/games/chinese-chess/api/chessLlmApi.ts` |
 
@@ -113,6 +123,10 @@
 | 打字机动画引擎 | `gomoku-web/src/composables/useTypewriterQueue.ts` |
 | 输入框自动高度 | `gomoku-web/src/composables/useAutoResize.ts` |
 | 视觉识别跨组件通信 | `gomoku-web/src/composables/useVisionBridge.ts` |
+| 在线对弈核心状态（规划中） | `gomoku-web/src/composables/useOnlineGame.ts` |
+| 房间列表/加入/离开（规划中） | `gomoku-web/src/composables/useRoom.ts` |
+| 实时聊天（规划中） | `gomoku-web/src/composables/useChat.ts` |
+| 匹配队列（规划中） | `gomoku-web/src/composables/useMatchmaking.ts` |
 
 ### 共享组件
 | 要改什么 | 文件路径 |
@@ -130,6 +144,7 @@
 | 中文翻译 | `gomoku-web/src/locales/zh-CN.json` |
 | 英文翻译 | `gomoku-web/src/locales/en-US.json` |
 | 密码校验 | `gomoku-web/src/utils/password.ts` |
+| Socket.io 客户端单例（规划中） | `gomoku-web/src/services/socket.service.ts` |
 
 ---
 
@@ -158,6 +173,7 @@
 | 棋局 CRUD | `gomoku-server/src/controllers/game.controller.ts` |
 | 五子棋棋局 | `gomoku-server/src/controllers/gomoku.controller.ts` |
 | 象棋棋局 | `gomoku-server/src/controllers/chinese-chess.controller.ts` |
+| 房间 REST 控制器（规划中） | `gomoku-server/src/controllers/room.controller.ts` |
 | AI 聊天 | `gomoku-server/src/controllers/chat.controller.ts` |
 | 五子棋 LLM AI | `gomoku-server/src/controllers/llm-ai.controller.ts` |
 | 象棋 LLM AI | `gomoku-server/src/controllers/chess-llm.controller.ts` |
@@ -175,6 +191,11 @@
 | 五子棋盘识别 | `gomoku-server/src/services/vision.service.ts` |
 | 象棋盘识别 | `gomoku-server/src/services/chess-vision.service.ts` |
 | 统一视觉识别（自动判断棋盘类型） | `gomoku-server/src/services/unified-vision.service.ts` |
+| 房间业务逻辑（规划中） | `gomoku-server/src/services/room.service.ts` |
+| 在线对弈逻辑（规划中） | `gomoku-server/src/services/online-game.service.ts` |
+| 断线重连管理（规划中） | `gomoku-server/src/services/disconnect.service.ts` |
+| ELO 积分计算（规划中） | `gomoku-server/src/services/elo.service.ts` |
+| 匹配服务（规划中） | `gomoku-server/src/services/matchmaking.service.ts` |
 
 ### 路由
 | 要改什么 | 文件路径 |
@@ -187,6 +208,7 @@
 | 视觉识别路由 | `gomoku-server/src/routes/vision.routes.ts` |
 | 五子棋路由 | `gomoku-server/src/routes/games/gomoku.routes.ts` |
 | 象棋路由 | `gomoku-server/src/routes/games/chinese-chess.routes.ts` |
+| 房间路由（规划中） | `gomoku-server/src/routes/room.routes.ts` |
 
 ### AI 工具模块
 | 要改什么 | 文件路径 |
@@ -197,6 +219,17 @@
 | 象棋 LLM 提示词构建 | `gomoku-server/src/utils/chessBoardPromptUtils.ts` |
 | 象棋候选走法生成 | `gomoku-server/src/utils/chessCandidateGenerator.ts` |
 | 象棋威胁检测 | `gomoku-server/src/utils/chessThreatDetector.ts` |
+
+### Socket.io（规划中）
+| 要改什么 | 文件路径 |
+|---------|---------|
+| Socket.io 初始化入口 | `gomoku-server/src/socket/index.ts` |
+| Socket 事件类型定义 | `gomoku-server/src/socket/types.ts` |
+| Socket 认证中间件 | `gomoku-server/src/socket/middleware.ts` |
+| 房间事件处理 | `gomoku-server/src/socket/handlers/room.handler.ts` |
+| 对弈事件处理 | `gomoku-server/src/socket/handlers/game.handler.ts` |
+| 聊天事件处理 | `gomoku-server/src/socket/handlers/chat.handler.ts` |
+| 匹配事件处理 | `gomoku-server/src/socket/handlers/match.handler.ts` |
 
 ### 工具与类型
 | 要改什么 | 文件路径 |
