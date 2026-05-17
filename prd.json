@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-05-Socket-Auth-Middleware",
-      "title": "创建 Socket.io 认证中间件",
-      "description": "安全中间件任务。在 gomoku-server/src/socket/middleware.ts 中实现：\n\n**现有代码上下文**（auth.ts）：\n- `verifyToken(token: string): any` — 返回解码后的 JWT payload（含 id, phone, username, role）或 null。不做数据库查询。\n- `authenticate` 中间件在 verifyToken 后还做了 `prisma.user.findUnique()` 确认用户存在。\n\n**实现要求**：\n1. `socketAuth` 中间件（用于 io.use()）：\n   - 从 socket.handshake.auth.token 或 socket.handshake.headers.authorization 提取 JWT。\n   - 调用 verifyToken 解码。\n   - 再做 prisma.user.findUnique 确认用户存在（与 authenticate 中间件一致）。\n   - 成功：将用户信息附加到 socket.data.user。\n   - 失败：返回 next(new Error('Authentication error'))。\n\n2. `optionalSocketAuth` 中间件（用于观战和浏览）：\n   - 尝试验证 token + DB 查询，成功则附加 socket.data.user。\n   - 失败不拒绝连接，socket.data.user 保持 undefined。\n\n3. 在 socket/index.ts 中注册：主命名空间使用 optionalSocketAuth，需要认证的事件在 handler 内部检查 socket.data.user。\n\n依赖：ONLINE-04。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-06-Room-Service",
       "title": "创建房间 Service（RoomService）",
       "description": "核心业务逻辑任务。在 gomoku-server/src/services/room.service.ts 中实现 RoomService 类：\n\n1. `createRoom(hostId, name, ruleMode)` — 创建房间并持久化到数据库，初始化 boardState 为 15x15 空数组（JSON.stringify），返回 RoomInfo。\n\n2. `joinRoom(roomId, userId)` — 加入房间：检查房间存在性、状态为 waiting、未被占满（guestId 为空）、不能加入自己的房间。**并发安全**：更新 guestId 时必须使用 Prisma 原子操作，将 `guestId: null` 作为 update 的 where 条件之一（`prisma.room.update({ where: { id: roomId, guestId: null }, data: { guestId: userId } })`），防止高并发下两个玩家同时加入同一房间的超卖问题。若 update 影响行数为 0 则抛出房间已满错误。成功后若双方齐备则将状态改为 playing，返回 RoomInfo + 颜色。\n\n3. `leaveRoom(roomId, userId)` — 离开房间：如果是 host 离开则销毁房间（status=finished）；如果是 guest 离开则清空 guestId，状态回到 waiting。\n\n4. `watchRoom(roomId, userId)` — 观战：检查房间存在性，递增 spectatorCount（不超过 maxSpectators），返回 RoomInfo。\n\n5. `unwatchRoom(roomId)` — 取消观战：递减 spectatorCount（不低于 0）。\n\n6. `getRoomList(page, pageSize)` — 分页获取公开房间列表（isPublic=true, status!=finished），按 createdAt 倒序。\n\n7. `getRoomById(roomId)` — 获取房间详情，包含 host 和 guest 的用户名。\n\n8. `toRoomInfo(room)` — 内部辅助方法，将 Prisma Room 实体转换为 RoomInfo 接口。\n\n依赖：ONLINE-02。预估代码约 200 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-07A-Room-Socket-Handler",
