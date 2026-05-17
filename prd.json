@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-07B-Room-REST-API",
-      "title": "创建房间 REST API + 路由注册",
-      "description": "REST 接口任务。\n\n1. 创建 gomoku-server/src/controllers/room.controller.ts：\n   - `getRooms` — GET /api/rooms，从 query 获取 page/pageSize，调用 RoomService.getRoomList，返回统一响应格式。\n   - `getRoomById` — GET /api/rooms/:id，调用 RoomService.getRoomById，返回统一响应格式。\n\n2. 创建 gomoku-server/src/routes/room.routes.ts：\n   - 使用 optionalAuthenticate 中间件（游客也可浏览房间）。\n   - `GET /` → getRooms\n   - `GET /:id` → getRoomById\n\n3. **修改 gomoku-server/src/routes/index.ts**：在现有路由列表末尾添加 `router.use('/rooms', roomRoutes)`。\n\n**现有代码上下文**：routes/index.ts 使用 `const router = Router()` + `router.use(...)` 模式注册路由。\n\n依赖：ONLINE-06。预估代码约 80 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-08-Online-Game-Service",
       "title": "创建在线对弈 Service（OnlineGameService）",
       "description": "核心对弈逻辑任务。在 gomoku-server/src/services/online-game.service.ts 中实现 OnlineGameService 类：\n\n**现有代码上下文**（前端 gameConstants.ts 中的纯函数，需移植到 Node.js）：\n- `BOARD_SIZE = 15`, `EMPTY = 0`, `BLACK = 1`, `WHITE = 2`\n- `checkWin(board: number[][], r: number, c: number, player: number, ruleMode?: 'standard'|'renju'): {r: number, c: number}[] | null` — 检查4个方向（水平、垂直、两条对角线）的五连，renju 模式黑棋只认恰好5连，标准模式认5连以上。返回获胜连线坐标数组或 null。\n- `checkDraw(board: number[][]): boolean` — `board.every(row => row.every(cell => cell !== EMPTY))`\n\n**实现要求**：\n1. `makeMove(roomId, userId, r, c)` — 落子验证与执行：\n   - 查询房间，检查 status=playing。\n   - 根据 hostColor 和 currentPlayer 判断当前用户对应颜色。\n   - 验证坐标合法性（0 <= r,c < 15，该位置为 EMPTY）。\n   - 更新 boardState（JSON.parse → 修改 → JSON.stringify）。\n   - 追加到 moves（{r, c, player, timestamp}）。\n   - 切换 currentPlayer，递增 moveCount，更新 lastMoveAt。\n   - 调用 checkWin，若五连则设置 winner 并 status=finished。\n   - 调用 checkDraw，若平局则 winner='draw' 并 status=finished。\n   - 更新数据库。\n   - 返回 { boardState, winner, isDraw, move }。\n\n2. `resign(roomId, userId)` — 设置对手为 winner，status=finished。\n\n3. `checkWin(board, r, c, player, ruleMode)` — 从 gameConstants.ts 原样移植，保持算法完全一致。纯函数，无外部依赖。\n\n4. `checkDraw(board)` — 从 gameConstants.ts 原样移植。\n\n依赖：ONLINE-02。预估代码约 180 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-09-Game-Socket-Handler",
