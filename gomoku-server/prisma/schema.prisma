@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -22,8 +22,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  games   Game[]  @relation("UserGames")
-  // matches Match[] @relation("UserMatches") // TODO: 启用Match关系
+  games         Game[]        @relation("UserGames")
+  hostedRooms   Room[]        @relation("HostRooms")
+  guestedRooms  Room[]        @relation("GuestRooms")
+  roomMessages  RoomMessage[]
+  blackMatches  Match[]       @relation("BlackMatches")
+  whiteMatches  Match[]       @relation("WhiteMatches")
 }
 
 model Game {
@@ -78,6 +82,60 @@ model Match {
   endedAt   DateTime?
 
   // 关系
-  // playerBlack User? @relation("BlackMatches", fields: [playerBlackId], references: [id])
-  // playerWhite User? @relation("WhiteMatches", fields: [playerWhiteId], references: [id])
+  playerBlack User? @relation("BlackMatches", fields: [playerBlackId], references: [id], onDelete: SetNull)
+  playerWhite User? @relation("WhiteMatches", fields: [playerWhiteId], references: [id], onDelete: SetNull)
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  name      String
+  status    String   @default("waiting")
+  gameType  String   @default("gomoku")
+  boardSize Int      @default(15)
+  ruleMode  String   @default("standard")
+  maxSpectators Int  @default(50)
+  isPublic  Boolean  @default(true)
+
+  hostId    String?
+  host      User?    @relation("HostRooms", fields: [hostId], references: [id], onDelete: SetNull)
+  hostColor String   @default("black")
+
+  guestId   String?
+  guest     User?    @relation("GuestRooms", fields: [guestId], references: [id], onDelete: SetNull)
+
+  boardState String  @default("[]")
+  moves      String  @default("[]")
+  currentPlayer String @default("black")
+  winner     String?
+  lastMoveAt DateTime?
+  disconnectTimeoutAt DateTime?
+  moveCount  Int     @default(0)
+  spectatorCount Int @default(0)
+  isRanked   Boolean @default(false)
+  matchId    String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  messages   RoomMessage[]
+
+  @@index([status])
+  @@index([hostId])
+  @@index([isPublic, status])
+}
+
+model RoomMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  username  String
+  content   String
+  channel   String   @default("players")
+  createdAt DateTime @default(now())
+
+  @@index([roomId, channel, createdAt])
+  @@index([roomId, createdAt])
 }

@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-01-Dependencies",
-      "title": "安装 Socket.io 依赖（前后端）",
-      "description": "基础设施任务。\n\n1. 后端（gomoku-server）：执行 `npm install socket.io`。\n2. 前端（gomoku-web）：执行 `npm install socket.io-client`。\n3. 验证安装成功，无版本冲突。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-02-Prisma-Schema",
       "title": "修改 Prisma Schema：新增 Room 表、RoomMessage 表，修改 User 和 Match 表关系",
       "description": "数据库变更任务。在 gomoku-server/prisma/schema.prisma 中执行以下修改：\n\n**现有代码上下文**：\n- User model 已有 `games Game[] @relation(\"UserGames\")`，必须保留。\n- Match model 中 `playerBlackId` 和 `playerWhiteId` 字段已存在（可选 String），但 User 关系被注释掉了（`// playerBlack User? @relation(...)`），需要取消注释。\n- Match 已有 `blackCaptures`/`whiteCaptures` 字段，必须保留。\n\n**修改步骤**：\n1. User model 新增关系字段：`hostedRooms Room[] @relation(\"HostRooms\")`, `guestedRooms Room[] @relation(\"GuestRooms\")`, `roomMessages RoomMessage[]`, `blackMatches Match[] @relation(\"BlackMatches\")`, `whiteMatches Match[] @relation(\"WhiteMatches\")`。删除旧的 `// matches Match[] @relation(\"UserMatches\")` 注释行。\n\n2. Match model 取消注释关系：`playerBlack User? @relation(\"BlackMatches\", fields: [playerBlackId], references: [id], onDelete: SetNull)` 和 `playerWhite User? @relation(\"WhiteMatches\", fields: [playerWhiteId], references: [id], onDelete: SetNull)`。保留所有现有字段不变。**onDelete: SetNull** 确保用户被删除时，Match 记录中的 playerBlackId/playerWhiteId 被置空，对局记录保留不丢失。\n\n3. 新增 Room model：id, name, status(String, default \"waiting\"), gameType(String, default \"gomoku\"), boardSize(Int, default 15), ruleMode(String, default \"standard\"), maxSpectators(Int, default 50), isPublic(Boolean, default true), hostId(String?), host(User?, \"HostRooms\", fields:[hostId], references:[id]), hostColor(String, default \"black\"), guestId(String?), guest(User?, \"GuestRooms\", fields:[guestId], references:[id]), boardState(String, default \"[]\"), moves(String, default \"[]\"), currentPlayer(String, default \"black\"), winner(String?), lastMoveAt(DateTime?), disconnectTimeoutAt(DateTime?), moveCount(Int, default 0), spectatorCount(Int, default 0), isRanked(Boolean, default false), matchId(String?), createdAt, updatedAt, messages(RoomMessage[])。添加索引：status, hostId, isPublic+status。\n\n4. 新增 RoomMessage model：id, roomId, room(Room, fields:[roomId], references:[id], onDelete: Cascade), userId(String?), user(User?, fields:[userId], references:[id], onDelete: SetNull), username(String), content(String), channel(String, default \"players\"), createdAt。添加索引：roomId+channel+createdAt, roomId+createdAt。\n\n5. 运行 `npx prisma migrate dev --name add_room_and_online_tables` 生成迁移。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-03-Socket-Types",

@@ -109,8 +109,10 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   if [[ "$TOOL" == "amp" ]]; then
     OUTPUT=$(cat "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr) || true
   else
-    # Claude Code: use --dangerously-skip-permissions for autonomous operation, --print for output
-    OUTPUT=$(claude --dangerously-skip-permissions --print < "$SCRIPT_DIR/prompt.md" 2>&1 | tee /dev/stderr) || true
+    # Claude Code: use --bare to skip hooks/LSP/plugins that bloat the request,
+    # and --print for non-interactive output. Bare mode avoids sending 22+ tool
+    # definitions that are incompatible with non-Anthropic API providers (e.g. Zhipu).
+    OUTPUT=$(claude --bare --dangerously-skip-permissions --print < "$SCRIPT_DIR/prompt.md" 2>&1 | tee /dev/stderr) || true
   fi
   
   # Check for completion signal
