@@ -319,3 +319,32 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 
 ### RoomInfo 扩展
 `RoomInfo` DTO 新增 `hostRating?: number` 和 `guestRating?: number` 可选字段，由 `toRoomInfo` 方法从 `host.rating` / `guest.rating` 映射。所有 Prisma include 查询已更新为 `select: { username: true, rating: true }`，前端 `RoomInfo` 接口同步扩展。
+
+---
+
+## 房间状态机单元测试
+
+### 概述
+RoomService 核心方法的 Jest 单元测试，通过 mock Prisma Client 验证房间生命周期、加入/离开逻辑、观战者管理等状态转换。
+
+### 核心文件
+| 文件 | 说明 |
+|------|------|
+| `__tests__/room-state.test.ts` | 房间状态机测试（21 个用例，约 350 行） |
+
+### 测试覆盖范围
+1. **房间生命周期** — waiting → playing → finished 正常流转
+2. **Host 离开** — 房间被销毁（status=finished），适用于 waiting 和 playing 状态
+3. **Guest 离开** — 房间回到 waiting 状态，棋盘重置
+4. **房间已满** — 拒绝新玩家加入（ROOM_FULL）
+5. **游戏进行中** — 拒绝新玩家加入（ROOM_NOT_WAITING）
+6. **不能加入自己的房间** — CANNOT_JOIN_OWN_ROOM
+7. **房间不存在** — ROOM_NOT_FOUND 错误处理（joinRoom、leaveRoom、watchRoom、getRoomById）
+8. **观战者计数** — watchRoom 递增、unwatchRoom 递减、floor 0 保护
+9. **观战者上限** — spectatorCount >= maxSpectators 时拒绝（SPECTATOR_LIMIT_REACHED）+ 原子竞争条件
+10. **非房间成员** — NOT_IN_ROOM 错误
+
+### 测试策略
+- Mock `../app` 模块的 `prisma.room` 对象（create、findUnique、findUniqueOrThrow、update、updateMany）
+- 使用 `buildRoom(overrides)` 辅助函数构建模拟 Prisma 返回值
+- 每个测试用例 `beforeEach` 清除所有 mock

@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-25-Frontend-Rating",
-      "title": "前端：创建积分显示组件（RatingDisplay）",
-      "description": "积分 UI 任务（第二阶段）。在 gomoku-web/src/games/gomoku/components/online/RatingDisplay.vue 中创建：\n\n1. Props: rating (number), change (number, 可选, 积分变化值)。\n2. 显示用户当前积分数字。\n3. 显示积分变化（+XX 绿色 / -XX 红色），change 为 0 或 undefined 时不显示。\n4. 在 PlayerInfo 组件中集成 RatingDisplay 展示对手积分。\n5. 修改 OnlineLobbyView.vue 在排位赛按钮旁显示当前用户积分。\n6. 可选：创建排行榜弹窗（GET /api/leaderboard）。\n\n所有文案使用 i18n。预估代码约 60 行。\n\n依赖：ONLINE-22。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-26-Room-State-Tests",
       "title": "后端：房间状态机单元测试",
       "description": "测试任务。在 gomoku-server/src/__tests__/room-state.test.ts 中编写房间状态机测试用例：\n\n1. 房间生命周期：waiting → playing → finished 正常流转。\n2. host 离开 → 房间被销毁（status=finished）。\n3. guest 离开 → 房间回到 waiting 状态。\n4. 房间已满时拒绝新玩家加入。\n5. 游戏进行中拒绝新玩家加入。\n6. 不能加入自己的房间。\n7. 房间不存在时的错误处理。\n8. 观战者计数正确增减。\n9. 观战者超过 maxSpectators 时拒绝。\n\n依赖：ONLINE-06。预估代码约 150 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-27-Online-Game-Tests",
