@@ -54,11 +54,11 @@ const myPlayerInfo = computed(() => {
   if (!roomInfo.value || !auth.user.value || isSpectator.value) return null;
   const userId = auth.user.value.id;
   if (userId === roomInfo.value.hostId) {
-    return { username: auth.user.value.username, color: roomInfo.value.hostColor };
+    return { username: auth.user.value.username, color: roomInfo.value.hostColor, rating: roomInfo.value.hostRating ?? auth.user.value.rating };
   }
   if (userId === roomInfo.value.guestId) {
     const guestColor: PlayerColor = roomInfo.value.hostColor === 'black' ? 'white' : 'black';
-    return { username: auth.user.value.username, color: guestColor };
+    return { username: auth.user.value.username, color: guestColor, rating: roomInfo.value.guestRating ?? auth.user.value.rating };
   }
   return null;
 });
@@ -71,6 +71,7 @@ const opponentInfo = computed(() => {
     return {
       username: roomInfo.value.hostName,
       color: roomInfo.value.hostColor,
+      rating: roomInfo.value.hostRating,
     };
   }
 
@@ -79,11 +80,13 @@ const opponentInfo = computed(() => {
     return {
       username: roomInfo.value.guestName ?? t('onlineWaitingPlayer'),
       color: oppColor,
+      rating: roomInfo.value.guestRating,
     };
   }
   return {
     username: roomInfo.value.hostName,
     color: roomInfo.value.hostColor,
+    rating: roomInfo.value.hostRating,
   };
 });
 
@@ -316,6 +319,7 @@ onUnmounted(() => {
               :color="opponentInfo.color"
               :is-current-turn="opponentTurn"
               :is-disconnected="false"
+              :rating="opponentInfo.rating"
             />
           </div>
 
@@ -337,6 +341,7 @@ onUnmounted(() => {
               :color="myPlayerInfo.color"
               :is-current-turn="myTurn"
               :is-disconnected="false"
+              :rating="myPlayerInfo.rating"
             />
             <PlayerInfo
               v-if="isSpectator && roomInfo?.guestName"
@@ -344,6 +349,7 @@ onUnmounted(() => {
               :color="(roomInfo.hostColor === 'black' ? 'white' : 'black') as PlayerColor"
               :is-current-turn="!opponentTurn"
               :is-disconnected="false"
+              :rating="roomInfo.guestRating"
             />
             <SpectatorList
               v-if="roomInfo"

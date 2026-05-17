@@ -7,7 +7,7 @@
  * Auth policy: guests can browse rooms and spectate; creating or joining
  * a room requires authentication (enforced client-side with a toast).
  */
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Plus, Swords } from 'lucide-vue-next';
 import { currentTheme, t } from '../../../i18n';
@@ -18,6 +18,7 @@ import { socketService } from '../../../services/socket.service';
 import RoomList from '../components/online/RoomList.vue';
 import CreateRoomModal from '../components/online/CreateRoomModal.vue';
 import MatchmakingOverlay from '../components/online/MatchmakingOverlay.vue';
+import RatingDisplay from '../components/online/RatingDisplay.vue';
 
 const router = useRouter();
 const room = useRoom();
@@ -28,6 +29,11 @@ const showCreateModal = ref(false);
 const errorMsg = ref('');
 /** True while we are waiting for the server to confirm a create / join. */
 const awaitingJoin = ref(false);
+
+const userRating = computed(() => {
+  const user = auth.user.value;
+  return user?.rating ?? 0;
+});
 
 // ── Handlers ────────────────────────────────────────────────────────────
 
@@ -121,6 +127,10 @@ onUnmounted(() => {
           {{ t('onlineTitle') }}
         </h1>
         <div class="flex items-center gap-3">
+          <RatingDisplay
+            v-if="auth.isAuthenticated.value && userRating > 0"
+            :rating="userRating"
+          />
           <button
             @click="handleRankedMatch"
             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white"

@@ -19,8 +19,10 @@ export interface RoomInfo {
   hostId: string | null;
   hostName: string;
   hostColor: PlayerColor;
+  hostRating?: number;
   guestId: string | null;
   guestName: string | null;
+  guestRating?: number;
   currentPlayer: PlayerColor;
   moveCount: number;
   spectatorCount: number;

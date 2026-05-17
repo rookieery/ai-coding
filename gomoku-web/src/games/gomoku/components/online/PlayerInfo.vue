@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { currentTheme, t } from '../../../../i18n';
 import type { PlayerColor } from '../../../../api/room-api';
+import RatingDisplay from './RatingDisplay.vue';
 
 const props = defineProps<{
   username: string;
   color: PlayerColor;
   isCurrentTurn: boolean;
   isDisconnected: boolean;
+  rating?: number;
+  ratingChange?: number;
 }>();
 </script>
 
@@ -35,19 +38,26 @@ const props = defineProps<{
       />
 
       <!-- Username + turn label -->
-      <div class="flex flex-col min-w-0">
+      <div class="flex flex-col min-w-0 flex-1">
         <span
           class="text-sm font-semibold truncate"
           :class="currentTheme === 'dark' ? 'text-stone-100' : 'text-stone-800'"
         >
           {{ username }}
         </span>
-        <span
-          v-if="isCurrentTurn && !isDisconnected"
-          class="text-xs font-medium text-emerald-500"
-        >
-          {{ t('onlineCurrentTurn') }}
-        </span>
+        <div class="flex items-center gap-2">
+          <span
+            v-if="isCurrentTurn && !isDisconnected"
+            class="text-xs font-medium text-emerald-500"
+          >
+            {{ t('onlineCurrentTurn') }}
+          </span>
+          <RatingDisplay
+            v-if="rating !== undefined"
+            :rating="rating"
+            :change="ratingChange"
+          />
+        </div>
       </div>
     </div>
 

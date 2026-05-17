@@ -47,11 +47,14 @@ App.vue
 │
 │   └── OnlineLobbyView.vue (在线大厅)
 │       ├── RoomList.vue → RoomCard.vue
-│       └── CreateRoomModal.vue
+│       ├── CreateRoomModal.vue
+│       ├── RatingDisplay.vue ★ 积分显示 (Trophy图标/积分值/变化徽章)
+│       └── MatchmakingOverlay.vue ★ 匹配遮罩
 │
 │   └── OnlineGameView.vue (在线对弈)
 │       ├── OnlineBoard.vue ★ 在线棋盘 (独立渲染, 支持回合控制)
-│       ├── PlayerInfo.vue ★ 玩家信息 (颜色/用户名/轮次/断线)
+│       ├── PlayerInfo.vue ★ 玩家信息 (颜色/用户名/轮次/断线/积分)
+│       │   └── RatingDisplay.vue (内嵌积分显示)
 │       ├── SpectatorList.vue ★ 观战者列表 (数量展示)
 │       └── ChatPanel.vue ★ 聊天面板 (频道隔离: 对弈者/观战者)
 ```

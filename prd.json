@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-24B-Frontend-Matchmaking",
-      "title": "前端：创建匹配 composable + 匹配 UI 组件",
-      "description": "前端匹配功能任务（第二阶段）。分两部分：\n\n**A. useMatchmaking composable** — gomoku-web/src/composables/useMatchmaking.ts：\n1. `isMatching` ref — 是否匹配中。\n2. `queuePosition` ref — 队列位置。\n3. `startMatchmaking(ruleMode)` — 确保 Socket 已连接，发送 match:queue。\n4. `cancelMatchmaking()` — 发送 match:cancel。\n5. 监听 match:waiting 更新 queuePosition。\n6. 监听 match:found 自动跳转 router.push('/online/room/:id')。\n7. onUnmounted 时自动 cancelMatchmaking。\n\n**B. MatchmakingOverlay.vue** — gomoku-web/src/games/gomoku/components/online/MatchmakingOverlay.vue：\n1. Props: visible (boolean)。\n2. 全屏遮罩动画（寻找对手中...）。\n3. 显示等待时间（计算属性，从 startAt 计算）。\n4. 显示队列位置。\n5. 取消匹配按钮。\n6. 匹配成功时显示对手信息 + 自动 3 秒后跳转。\n\n**C. 集成到 OnlineLobbyView.vue**：\n1. 添加「排位赛」按钮，点击触发 useMatchmaking.startMatchmaking。\n2. 集成 MatchmakingOverlay。\n\n依赖：ONLINE-24A, ONLINE-10。所有文案使用 i18n。预估代码约 80 行（composable）+ 100 行（组件）。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-25-Frontend-Rating",
       "title": "前端：创建积分显示组件（RatingDisplay）",
       "description": "积分 UI 任务（第二阶段）。在 gomoku-web/src/games/gomoku/components/online/RatingDisplay.vue 中创建：\n\n1. Props: rating (number), change (number, 可选, 积分变化值)。\n2. 显示用户当前积分数字。\n3. 显示积分变化（+XX 绿色 / -XX 红色），change 为 0 或 undefined 时不显示。\n4. 在 PlayerInfo 组件中集成 RatingDisplay 展示对手积分。\n5. 修改 OnlineLobbyView.vue 在排位赛按钮旁显示当前用户积分。\n6. 可选：创建排行榜弹窗（GET /api/leaderboard）。\n\n所有文案使用 i18n。预估代码约 60 行。\n\n依赖：ONLINE-22。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-26-Room-State-Tests",

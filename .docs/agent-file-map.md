@@ -55,7 +55,8 @@
 | 创建房间弹窗 | `gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue` |
 | 在线对弈棋盘 | `gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue` |
 | 聊天面板 | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
-| 玩家信息栏 | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
+| 玩家信息栏（含积分显示） | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
+| 积分显示组件（Trophy图标+积分值+变化徽章） | `gomoku-web/src/games/gomoku/components/online/RatingDisplay.vue` |
 | 观战者列表 | `gomoku-web/src/games/gomoku/components/online/SpectatorList.vue` |
 | 匹配遮罩层（等待/匹配成功/自动跳转） | `gomoku-web/src/games/gomoku/components/online/MatchmakingOverlay.vue` |
 | Toast 通知 | `gomoku-web/src/games/gomoku/components/NotificationToast.vue` |

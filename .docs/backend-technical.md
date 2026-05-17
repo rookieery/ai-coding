@@ -316,3 +316,6 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 
 ### RoomService 变更
 `createRoom(hostId, name, ruleMode, isRanked?)` 新增可选参数 `isRanked`（默认 `false`），用于创建排位赛房间。
+
+### RoomInfo 扩展
+`RoomInfo` DTO 新增 `hostRating?: number` 和 `guestRating?: number` 可选字段，由 `toRoomInfo` 方法从 `host.rating` / `guest.rating` 映射。所有 Prisma include 查询已更新为 `select: { username: true, rating: true }`，前端 `RoomInfo` 接口同步扩展。

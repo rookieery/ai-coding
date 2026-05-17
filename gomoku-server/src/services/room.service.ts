@@ -35,8 +35,8 @@ class RoomService {
         isRanked,
       },
       include: {
-        host: { select: { username: true } },
-        guest: { select: { username: true } },
+        host: { select: { username: true, rating: true } },
+        guest: { select: { username: true, rating: true } },
       },
     });
 
@@ -56,8 +56,8 @@ class RoomService {
     const existing = await prisma.room.findUnique({
       where: { id: roomId },
       include: {
-        host: { select: { username: true } },
-        guest: { select: { username: true } },
+        host: { select: { username: true, rating: true } },
+        guest: { select: { username: true, rating: true } },
       },
     });
 
@@ -88,8 +88,8 @@ class RoomService {
       where: { id: roomId },
       data: { status: 'playing' },
       include: {
-        host: { select: { username: true } },
-        guest: { select: { username: true } },
+        host: { select: { username: true, rating: true } },
+        guest: { select: { username: true, rating: true } },
       },
     });
 
@@ -108,8 +108,8 @@ class RoomService {
     const room = await prisma.room.findUnique({
       where: { id: roomId },
       include: {
-        host: { select: { username: true } },
-        guest: { select: { username: true } },
+        host: { select: { username: true, rating: true } },
+        guest: { select: { username: true, rating: true } },
       },
     });
 
@@ -190,8 +190,8 @@ class RoomService {
     const refreshed = await prisma.room.findUniqueOrThrow({
       where: { id: roomId },
       include: {
-        host: { select: { username: true } },
-        guest: { select: { username: true } },
+        host: { select: { username: true, rating: true } },
+        guest: { select: { username: true, rating: true } },
       },
     });
 
@@ -265,8 +265,8 @@ class RoomService {
     const room = await prisma.room.findUnique({
       where: { id: roomId },
       include: {
-        host: { select: { username: true } },
-        guest: { select: { username: true } },
+        host: { select: { username: true, rating: true } },
+        guest: { select: { username: true, rating: true } },
       },
     });
 
@@ -289,10 +289,10 @@ class RoomService {
       boardSize: number;
       ruleMode: string;
       hostId: string | null;
-      host: { username: string } | null;
+      host: { username: string; rating?: number } | null;
       hostColor: string;
       guestId: string | null;
-      guest: { username: string } | null;
+      guest: { username: string; rating?: number } | null;
       currentPlayer: string;
       moveCount: number;
       spectatorCount: number;
@@ -310,8 +310,10 @@ class RoomService {
       hostId: room.hostId,
       hostName: room.host?.username ?? '',
       hostColor: room.hostColor as PlayerColor,
+      hostRating: room.host?.rating,
       guestId: room.guestId,
       guestName: room.guest?.username ?? null,
+      guestRating: room.guest?.rating,
       currentPlayer: room.currentPlayer as PlayerColor,
       moveCount: room.moveCount,
       spectatorCount: room.spectatorCount,
