@@ -55,6 +55,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
           roomId,
           winner: result.winner,
           reason,
+          ratingChanges: result.ratingChanges,
         });
       }
 
@@ -93,6 +94,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
         roomId,
         winner: result.winner,
         reason: 'resign',
+        ratingChanges: result.ratingChanges,
       });
 
       logger.info(`game:resign — ${userId} resigned in room ${roomId}`);

@@ -1,5 +1,6 @@
 import { prisma } from '../app';
 import { logger } from '../utils/logger';
+import { onlineGameService } from './online-game.service';
 import type { PlayerColor, GameOverReason } from '../socket/types';
 import type { TypedServer } from '../socket/types';
 
@@ -85,11 +86,28 @@ class DisconnectService {
           },
         });
 
+        // ── Ranked game finalization ──────────────────────────────────────
+        let ratingChanges;
+        if (room.isRanked) {
+          try {
+            ratingChanges = await onlineGameService.finalizeRankedGame(
+              roomId,
+              winner,
+              false,
+            );
+          } catch (eloErr) {
+            logger.error(
+              `ELO finalization error on disconnect for room ${roomId}: ${eloErr instanceof Error ? eloErr.message : String(eloErr)}`,
+            );
+          }
+        }
+
         // Broadcast game:over with disconnect reason
         io.to(roomId).emit('game:over', {
           roomId,
           winner,
           reason: 'disconnect' as GameOverReason,
+          ratingChanges,
         });
 
         logger.info(

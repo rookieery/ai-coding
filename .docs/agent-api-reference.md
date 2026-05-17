@@ -154,6 +154,24 @@ data: [DONE]
 
 ---
 
+## 用户与积分 `/api/users`
+
+| 方法 | 路径 | 认证 | 参数 | 返回 | 说明 |
+|------|------|------|------|------|------|
+| GET | `/users/:id/rating` | 可选 | - | `{ success, data: { id, username, rating, avatar, totalGames, wins, losses, draws, winRate } }` | 用户积分信息 |
+| GET | `/users/leaderboard` | 可选 | - | `{ success, data: [{ rank, id, username, rating, avatar }] }` | 排行榜 Top 50 |
+
+---
+
+## 在线房间 `/api/rooms`
+
+| 方法 | 路径 | 认证 | 参数 | 返回 | 说明 |
+|------|------|------|------|------|------|
+| GET | `/rooms` | 可选 | `?page&pageSize` | `PaginatedResponse<RoomInfo>` | 公开房间列表 |
+| GET | `/rooms/:id` | 可选 | - | `{ success, data: RoomInfo }` | 房间详情 |
+
+---
+
 ## 通用响应格式
 
 ```typescript

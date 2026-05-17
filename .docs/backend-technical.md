@@ -211,7 +211,29 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 |------|------|
 | `services/elo.service.ts` | 纯函数 `calculateNewRating` + 数据库更新 `updateRatings` |
 | `services/elo.service.test.ts` | 24 个单元测试覆盖所有场景 |
+| `services/online-game.service.ts` | `finalizeRankedGame` — 排位赛结束时调用 ELO + 创建 Match 记录 |
+
+### ELO 集成流程
+排位赛（`isRanked=true`）在三种结束路径中自动更新积分：
+1. **makeMove 胜利/平局** — `online-game.service.ts` 的 `makeMove` 方法
+2. **认输** — `online-game.service.ts` 的 `resign` 方法
+3. **断线超时** — `disconnect.service.ts` 的定时器回调
+
+`finalizeRankedGame(roomId, winner, isDraw)` 公共方法统一处理：
+- 获取双方旧积分 → 调用 `eloService.updateRatings` → 创建 Match 记录 → 关联 Room.matchId
+- 返回 `RatingChanges`（含 black/white 各自的 oldRating, newRating, change）
+- `game:over` Socket 广播携带 `ratingChanges` 字段
+
+### Match 记录格式
+排位赛 Match 记录：`type='online'`，`result='black'|'white'|'draw'`，`playerBlackType/WhiteType='human'`，`duration` 秒数。
 
 ### API
 - `calculateNewRating(playerRating, opponentRating, result, playerGamesPlayed, opponentGamesPlayed)` — 纯函数，返回 `{ newPlayerRating, newOpponentRating }`
 - `eloService.updateRatings(winnerId, loserId, isDraw)` — 异步，更新数据库中 User.rating 字段
+- `onlineGameService.finalizeRankedGame(roomId, winner, isDraw)` — 排位赛积分终态化（ELO + Match + Room 链接）
+
+### 积分 REST API
+| 端点 | 说明 |
+|------|------|
+| `GET /api/users/:id/rating` | 获取用户积分信息（rating, totalGames, wins, losses, draws, winRate） |
+| `GET /api/users/leaderboard` | 积分排行榜（Top 50，按 rating 倒序，含 rank 字段） |

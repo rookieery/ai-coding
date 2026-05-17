@@ -129,10 +129,20 @@ export interface GameMoveBroadcast {
   boardState: number[][];
 }
 
+export interface RatingChangeEntry {
+  oldRating: number;
+  newRating: number;
+  change: number;
+}
+
 export interface GameOverPayload {
   roomId: string;
   winner: PlayerColor | 'draw' | null;
   reason: GameOverReason;
+  ratingChanges?: {
+    black: RatingChangeEntry;
+    white: RatingChangeEntry;
+  };
 }
 
 export interface ChatMessagePayload {

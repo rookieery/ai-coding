@@ -169,11 +169,12 @@
 | 要改什么 | 文件路径 |
 |---------|---------|
 | 认证（注册/登录/用户信息） | `gomoku-server/src/controllers/auth.controller.ts` |
+| 用户（积分查询/排行榜） | `gomoku-server/src/controllers/user.controller.ts` |
 | 管理员（用户列表/删除） | `gomoku-server/src/controllers/admin.controller.ts` |
 | 棋局 CRUD | `gomoku-server/src/controllers/game.controller.ts` |
 | 五子棋棋局 | `gomoku-server/src/controllers/gomoku.controller.ts` |
 | 象棋棋局 | `gomoku-server/src/controllers/chinese-chess.controller.ts` |
-| 房间 REST 控制器（规划中） | `gomoku-server/src/controllers/room.controller.ts` |
+| 房间 REST 控制器（房间列表/详情） | `gomoku-server/src/controllers/room.controller.ts` |
 | AI 聊天 | `gomoku-server/src/controllers/chat.controller.ts` |
 | 五子棋 LLM AI | `gomoku-server/src/controllers/llm-ai.controller.ts` |
 | 象棋 LLM AI | `gomoku-server/src/controllers/chess-llm.controller.ts` |
@@ -192,8 +193,8 @@
 | 象棋盘识别 | `gomoku-server/src/services/chess-vision.service.ts` |
 | 统一视觉识别（自动判断棋盘类型） | `gomoku-server/src/services/unified-vision.service.ts` |
 | 房间业务逻辑 | `gomoku-server/src/services/room.service.ts` |
-| 在线对弈逻辑 | `gomoku-server/src/services/online-game.service.ts` |
-| 断线重连管理（60s 倒计时 + 重连取消） | `gomoku-server/src/services/disconnect.service.ts` |
+| 在线对弈逻辑（含排位赛 ELO 集成） | `gomoku-server/src/services/online-game.service.ts` |
+| 断线重连管理（60s 倒计时 + 重连取消 + 排位赛 ELO） | `gomoku-server/src/services/disconnect.service.ts` |
 | ELO 积分计算（标准 ELO + K-factor 动态调整） | `gomoku-server/src/services/elo.service.ts` |
 | 匹配服务（stub：仅 dequeue） | `gomoku-server/src/services/matchmaking.service.ts` |
 
@@ -202,13 +203,14 @@
 |---------|---------|
 | 路由聚合 | `gomoku-server/src/routes/index.ts` |
 | 认证路由 | `gomoku-server/src/routes/auth.routes.ts` |
+| 用户路由（积分/排行榜） | `gomoku-server/src/routes/user.routes.ts` |
 | 管理员路由 | `gomoku-server/src/routes/admin.routes.ts` |
 | 棋局路由 | `gomoku-server/src/routes/game.routes.ts` |
 | 聊天路由 | `gomoku-server/src/routes/chat.routes.ts` |
 | 视觉识别路由 | `gomoku-server/src/routes/vision.routes.ts` |
 | 五子棋路由 | `gomoku-server/src/routes/games/gomoku.routes.ts` |
 | 象棋路由 | `gomoku-server/src/routes/games/chinese-chess.routes.ts` |
-| 房间路由（规划中） | `gomoku-server/src/routes/room.routes.ts` |
+| 房间路由（房间列表/详情） | `gomoku-server/src/routes/room.routes.ts` |
 
 ### AI 工具模块
 | 要改什么 | 文件路径 |

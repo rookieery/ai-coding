@@ -1,6 +1,7 @@
 import { prisma } from '../app';
 import { logger } from '../utils/logger';
-import type { RuleMode, PlayerColor } from '../socket/types';
+import { eloService } from './elo.service';
+import type { RuleMode, PlayerColor, RatingChangeEntry } from '../socket/types';
 
 // ── Constants (ported from frontend gameConstants.ts) ──────────────────
 
@@ -84,15 +85,22 @@ export function checkDraw(board: number[][]): boolean {
 
 // ── Service class ──────────────────────────────────────────────────────
 
+export interface RatingChanges {
+  black: RatingChangeEntry;
+  white: RatingChangeEntry;
+}
+
 export interface MoveResult {
   boardState: number[][];
   winner: PlayerColor | 'draw' | null;
   isDraw: boolean;
   move: { r: number; c: number; player: number; timestamp: number };
+  ratingChanges?: RatingChanges;
 }
 
 export interface ResignResult {
   winner: PlayerColor;
+  ratingChanges?: RatingChanges;
 }
 
 class OnlineGameService {
@@ -206,11 +214,22 @@ class OnlineGameService {
       `Move in room ${roomId}: (${r},${c}) by ${userId} — ${winner ? (isDraw ? 'draw' : `${winner} wins`) : 'ongoing'}`,
     );
 
+    // ── Ranked game finalization ────────────────────────────────────────────
+    let ratingChanges: RatingChanges | undefined;
+    if (winner !== null && room.isRanked) {
+      ratingChanges = await this.finalizeRankedGame(
+        room.id,
+        winner,
+        isDraw,
+      );
+    }
+
     return {
       boardState: board,
       winner,
       isDraw,
       move,
+      ratingChanges,
     };
   }
 
@@ -221,6 +240,10 @@ class OnlineGameService {
   async resign(roomId: string, userId: string): Promise<ResignResult> {
     const room = await prisma.room.findUnique({
       where: { id: roomId },
+      include: {
+        host: { select: { username: true } },
+        guest: { select: { username: true } },
+      },
     });
 
     if (!room) {
@@ -249,7 +272,133 @@ class OnlineGameService {
 
     logger.info(`Player ${userId} resigned in room ${roomId}. Winner: ${winner}`);
 
-    return { winner };
+    // ── Ranked game finalization ────────────────────────────────────────────
+    let ratingChanges: RatingChanges | undefined;
+    if (room.isRanked) {
+      ratingChanges = await this.finalizeRankedGame(room.id, winner, false);
+    }
+
+    return { winner, ratingChanges };
+  }
+
+  /**
+   * Finalize a ranked game: update ELO ratings, create a Match record,
+   * and link the Match to the Room.
+   * Safe to call from any game-end path (makeMove, resign, disconnect).
+   */
+  async finalizeRankedGame(
+    roomId: string,
+    winner: PlayerColor | 'draw',
+    isDraw: boolean,
+  ): Promise<RatingChanges | undefined> {
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: {
+        host: { select: { username: true } },
+        guest: { select: { username: true } },
+      },
+    });
+
+    if (!room || !room.hostId || !room.guestId) return undefined;
+
+    const blackUserId = this.getUserIdForColor(room, 'black');
+    const whiteUserId = this.getUserIdForColor(room, 'white');
+    if (!blackUserId || !whiteUserId) return undefined;
+
+    // Fetch old ratings before update
+    const [blackUser, whiteUser] = await Promise.all([
+      prisma.user.findUnique({ where: { id: blackUserId }, select: { rating: true } }),
+      prisma.user.findUnique({ where: { id: whiteUserId }, select: { rating: true } }),
+    ]);
+    if (!blackUser || !whiteUser) return undefined;
+
+    const oldBlackRating = blackUser.rating;
+    const oldWhiteRating = whiteUser.rating;
+
+    // Determine winner/loser IDs for ELO calculation
+    let winnerId: string;
+    let loserId: string;
+    if (isDraw) {
+      winnerId = blackUserId;
+      loserId = whiteUserId;
+    } else if (winner === 'black') {
+      winnerId = blackUserId;
+      loserId = whiteUserId;
+    } else {
+      winnerId = whiteUserId;
+      loserId = blackUserId;
+    }
+
+    const eloResult = await eloService.updateRatings(winnerId, loserId, isDraw);
+
+    // Map ELO results back to black/white
+    const newBlackRating =
+      blackUserId === winnerId ? eloResult.newPlayerRating : eloResult.newOpponentRating;
+    const newWhiteRating =
+      whiteUserId === winnerId ? eloResult.newPlayerRating : eloResult.newOpponentRating;
+
+    // Create Match record
+    const blackPlayerName =
+      room.hostColor === 'black'
+        ? (room.host?.username ?? '')
+        : (room.guest?.username ?? '');
+    const whitePlayerName =
+      room.hostColor === 'white'
+        ? (room.host?.username ?? '')
+        : (room.guest?.username ?? '');
+
+    const match = await prisma.match.create({
+      data: {
+        type: 'online',
+        mode: room.ruleMode,
+        boardSize: room.boardSize,
+        playerBlackId: blackUserId,
+        playerBlackName: blackPlayerName,
+        playerBlackType: 'human',
+        playerWhiteId: whiteUserId,
+        playerWhiteName: whitePlayerName,
+        playerWhiteType: 'human',
+        moves: room.moves,
+        result: isDraw ? 'draw' : winner,
+        duration: Math.round((Date.now() - room.createdAt.getTime()) / 1000),
+        endedAt: new Date(),
+      },
+    });
+
+    // Link Match to Room
+    await prisma.room.update({
+      where: { id: roomId },
+      data: { matchId: match.id },
+    });
+
+    logger.info(
+      `Ranked game finalized: room ${roomId}, match ${match.id}, ` +
+      `black ${oldBlackRating}->${newBlackRating}, white ${oldWhiteRating}->${newWhiteRating}`,
+    );
+
+    return {
+      black: {
+        oldRating: oldBlackRating,
+        newRating: newBlackRating,
+        change: newBlackRating - oldBlackRating,
+      },
+      white: {
+        oldRating: oldWhiteRating,
+        newRating: newWhiteRating,
+        change: newWhiteRating - oldWhiteRating,
+      },
+    };
+  }
+
+  /**
+   * Get the user ID playing the given color in the room.
+   */
+  private getUserIdForColor(
+    room: { hostId: string | null; guestId: string | null; hostColor: string },
+    color: PlayerColor,
+  ): string | null {
+    if (room.hostColor === color) return room.hostId;
+    return room.guestId;
   }
 
   /**
