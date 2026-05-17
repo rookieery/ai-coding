@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-09-Game-Socket-Handler",
-      "title": "创建对弈 Socket Handler",
-      "description": "对弈事件处理任务。在 gomoku-server/src/socket/handlers/game.handler.ts 中实现：\n\n1. 导出 `registerGameHandlers(io, socket)` 函数。\n\n2. `game:move` 处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 调用 OnlineGameService.makeMove。\n   - 广播 `game:move` 给房间内所有人（包括观战者），携带 { roomId, r, c, player, boardState }。\n   - 若游戏结束，额外广播 `game:over` 携带 { roomId, winner, reason }。\n   - 错误时返回 `error` 事件。\n\n3. `game:resign` 处理：\n   - 调用 OnlineGameService.resign。\n   - 广播 `game:over` 给房间内所有人，reason='resign'。\n\n4. 在 socket/index.ts 中注册 game handler。\n\n依赖：ONLINE-05, ONLINE-08。预估代码约 80 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-10-Frontend-Socket-Service",
       "title": "前端：创建 Socket.io 客户端服务层 + config 配置",
       "description": "前端基础设施任务。\n\n**A. 配置扩展** — 修改 gomoku-web/src/config.ts：\n在现有 config 对象中新增 `socket` 配置项：\n```typescript\nsocket: {\n  url: import.meta.env.VITE_SOCKET_URL || '',  // 空 string 表示使用当前 origin\n}\n```\n不修改现有的 api/app/logging 配置。\n\n**B. Socket 服务** — 创建 gomoku-web/src/services/socket.service.ts：\n1. 导出 `socketService` 单例对象：\n   - `connect(token: string)` — 使用 { auth: { token }, transports: ['websocket', 'polling'] } 建立连接。URL 从 config.socket.url 获取，为空则使用当前 origin。\n   - `disconnect()` — 断开连接。\n   - `on(event, callback)` — 监听事件。\n   - `off(event, callback)` — 取消监听。\n   - `emit(event, data)` — 发送事件。\n   - `isConnected` — getter。\n2. 自动重连：reconnection=true, reconnectionAttempts=5, reconnectionDelay=1000。\n3. 连接/断开/错误事件处理。\n\n依赖：ONLINE-01。预估代码约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-11-Frontend-Room-API",

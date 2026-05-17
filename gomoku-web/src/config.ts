@@ -17,6 +17,9 @@ export const config = {
     name: 'Gomoku AI',
     version: '1.0.0',
   },
+  socket: {
+    url: import.meta.env.VITE_SOCKET_URL || '', // 空 string 表示使用当前 origin
+  },
   logging: {
     enabled: import.meta.env.DEV, // 开发环境下启用日志
   },
