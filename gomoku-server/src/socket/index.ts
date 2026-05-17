@@ -1,6 +1,7 @@
 import { Server } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '../utils/logger';
+import { optionalSocketAuth } from './middleware';
 import type { TypedServer } from './types';
 
 let io: TypedServer;
@@ -54,11 +55,17 @@ export function initializeSocket(httpServer: Server): void {
     transports: ['websocket', 'polling'],
   }) as TypedServer;
 
+  // Register optional auth middleware on the main namespace.
+  // Guests can connect (e.g. for spectating), but socket.data.user remains undefined.
+  // Individual handlers check socket.data.user for actions that require authentication.
+  io.use(optionalSocketAuth);
+
   io.on('connection', (socket) => {
-    logger.info(`Socket connected: ${socket.id}`);
+    const userId = socket.data.user?.id ?? 'anonymous';
+    logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
 
     socket.on('disconnect', (reason) => {
-      logger.info(`Socket disconnected: ${socket.id}, reason: ${reason}`);
+      logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);
     });
   });
 

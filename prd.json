@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-04-Express-Socket-Integration",
-      "title": "重构 Express 启动方式以支持 Socket.io",
-      "description": "核心架构变更任务。修改 gomoku-server/src/app.ts：\n\n**现有代码上下文**（app.ts 关键结构）：\n- `export const prisma = new PrismaClient()` — 命名导出，不可更改。\n- `export default app` — 默认导出，不可更改。\n- `startServer()` 函数内部调用 `app.listen(PORT, callback)` — 需要重构。\n- 优雅关闭使用 `process.on('SIGINT/SIGTERM', ...)` — 需要扩展。\n\n**修改步骤**：\n1. 在 `startServer()` 内部，将 `app.listen(PORT, callback)` 替换为：\n   ```typescript\n   import { createServer } from 'http';\n   import { initializeSocket } from './socket';\n   // 在 startServer() 内：\n   const httpServer = createServer(app);\n   initializeSocket(httpServer);\n   httpServer.listen(PORT, callback);\n   ```\n2. 导出 httpServer：在文件顶层声明 `let httpServer: Server`，在 startServer 中赋值，然后 `export { httpServer }`。\n\n3. 优雅关闭扩展：在 SIGINT/SIGTERM handler 中，先调用 `io.close()` 再 `prisma.$disconnect()`。io 实例需要从 socket/index.ts 导出。\n\n4. 创建 gomoku-server/src/socket/index.ts 骨架：\n   - 导出 `io` 实例（供优雅关闭使用）。\n   - 导出 `initializeSocket(httpServer: Server)` 函数。\n   - 创建 Socket.io Server，CORS 配置复用 app.ts 中相同的 allowedOrigins 逻辑（提取为共享函数或直接引用 config）。\n   - transports: ['websocket', 'polling']。\n   - connection 事件暂时只打印日志。\n\n**影响分析**：不修改任何现有路由、中间件或 SSE 逻辑。SSE 基于 Express response，不经过 Socket.io，无冲突。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-05-Socket-Auth-Middleware",
       "title": "创建 Socket.io 认证中间件",
       "description": "安全中间件任务。在 gomoku-server/src/socket/middleware.ts 中实现：\n\n**现有代码上下文**（auth.ts）：\n- `verifyToken(token: string): any` — 返回解码后的 JWT payload（含 id, phone, username, role）或 null。不做数据库查询。\n- `authenticate` 中间件在 verifyToken 后还做了 `prisma.user.findUnique()` 确认用户存在。\n\n**实现要求**：\n1. `socketAuth` 中间件（用于 io.use()）：\n   - 从 socket.handshake.auth.token 或 socket.handshake.headers.authorization 提取 JWT。\n   - 调用 verifyToken 解码。\n   - 再做 prisma.user.findUnique 确认用户存在（与 authenticate 中间件一致）。\n   - 成功：将用户信息附加到 socket.data.user。\n   - 失败：返回 next(new Error('Authentication error'))。\n\n2. `optionalSocketAuth` 中间件（用于观战和浏览）：\n   - 尝试验证 token + DB 查询，成功则附加 socket.data.user。\n   - 失败不拒绝连接，socket.data.user 保持 undefined。\n\n3. 在 socket/index.ts 中注册：主命名空间使用 optionalSocketAuth，需要认证的事件在 handler 内部检查 socket.data.user。\n\n依赖：ONLINE-04。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-06-Room-Service",
