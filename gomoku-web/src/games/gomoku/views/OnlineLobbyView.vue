@@ -1,24 +1,28 @@
 <script setup lang="ts">
 /**
  * OnlineLobbyView — Gomoku online lobby page
- * Displays room list, supports creating / joining / watching rooms.
+ * Displays room list, supports creating / joining / watching rooms,
+ * and ranked matchmaking.
  *
  * Auth policy: guests can browse rooms and spectate; creating or joining
  * a room requires authentication (enforced client-side with a toast).
  */
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus } from 'lucide-vue-next';
+import { Plus, Swords } from 'lucide-vue-next';
 import { currentTheme, t } from '../../../i18n';
 import { useRoom } from '../../../composables/useRoom';
 import { useGlobalAuth } from '../../../composables/useAuth';
+import { useMatchmaking } from '../../../composables/useMatchmaking';
 import { socketService } from '../../../services/socket.service';
 import RoomList from '../components/online/RoomList.vue';
 import CreateRoomModal from '../components/online/CreateRoomModal.vue';
+import MatchmakingOverlay from '../components/online/MatchmakingOverlay.vue';
 
 const router = useRouter();
 const room = useRoom();
 const auth = useGlobalAuth();
+const matchmaking = useMatchmaking();
 
 const showCreateModal = ref(false);
 const errorMsg = ref('');
@@ -56,6 +60,15 @@ function handleJoin(roomId: string): void {
 function handleWatch(roomId: string): void {
   room.watchRoom(roomId);
   router.push(`/online/room/${roomId}`);
+}
+
+function handleRankedMatch(): void {
+  if (!auth.isAuthenticated.value) {
+    errorMsg.value = t('onlineErrorNotLoggedIn');
+    return;
+  }
+  errorMsg.value = '';
+  matchmaking.startMatchmaking('standard');
 }
 
 // ── Socket responses ────────────────────────────────────────────────────
@@ -107,13 +120,22 @@ onUnmounted(() => {
         >
           {{ t('onlineTitle') }}
         </h1>
-        <button
-          @click="handleOpenCreate"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-emerald-600 hover:bg-emerald-700 text-white"
-        >
-          <Plus class="w-4 h-4" />
-          {{ t('onlineCreateRoom') }}
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            @click="handleRankedMatch"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <Swords class="w-4 h-4" />
+            {{ t('onlineRankedGame') }}
+          </button>
+          <button
+            @click="handleOpenCreate"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <Plus class="w-4 h-4" />
+            {{ t('onlineCreateRoom') }}
+          </button>
+        </div>
       </div>
 
       <!-- Error banner -->
@@ -140,6 +162,15 @@ onUnmounted(() => {
       :visible="showCreateModal"
       @close="showCreateModal = false"
       @create="handleCreate"
+    />
+
+    <!-- Matchmaking overlay -->
+    <MatchmakingOverlay
+      :visible="matchmaking.isMatching.value || matchmaking.matchedOpponent.value !== null"
+      :queue-position="matchmaking.queuePosition.value"
+      :matched-opponent="matchmaking.matchedOpponent.value"
+      @cancel="matchmaking.cancelMatchmaking()"
+      @navigate="matchmaking.navigateToRoom()"
     />
   </div>
 </template>

@@ -57,6 +57,7 @@
 | 聊天面板 | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
 | 玩家信息栏 | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
 | 观战者列表 | `gomoku-web/src/games/gomoku/components/online/SpectatorList.vue` |
+| 匹配遮罩层（等待/匹配成功/自动跳转） | `gomoku-web/src/games/gomoku/components/online/MatchmakingOverlay.vue` |
 | Toast 通知 | `gomoku-web/src/games/gomoku/components/NotificationToast.vue` |
 | 全屏视觉确认面板 | `gomoku-web/src/games/gomoku/components/VisionConfirmationPanel.vue` |
 
@@ -126,7 +127,7 @@
 | 在线对弈核心状态 | `gomoku-web/src/composables/useOnlineGame.ts` |
 | 房间列表/加入/离开 | `gomoku-web/src/composables/useRoom.ts` |
 | 实时聊天 | `gomoku-web/src/composables/useChat.ts` |
-| 匹配队列（规划中） | `gomoku-web/src/composables/useMatchmaking.ts` |
+| 匹配队列（排队/匹配/自动跳转） | `gomoku-web/src/composables/useMatchmaking.ts` |
 
 ### 共享组件
 | 要改什么 | 文件路径 |

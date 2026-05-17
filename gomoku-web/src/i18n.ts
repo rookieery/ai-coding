@@ -359,6 +359,27 @@ export interface Messages {
   onlineChatSpectatorsChannel: string;
   onlineChatPlaceholder: string;
   onlineChatSend: string;
+  onlineLobby: string;
+  onlineOpponentDisconnected: string;
+  onlineReconnectingCountdown: string;
+  onlineErrorRoomFull: string;
+  onlineErrorGameStarted: string;
+  onlineErrorRoomNotFound: string;
+  onlineErrorNotYourTurn: string;
+  onlineErrorInvalidMove: string;
+  onlineRankedGame: string;
+  onlineCasualGame: string;
+  onlineRatingLabel: string;
+  onlineMatchmakingTitle: string;
+  onlineMatchmakingWaiting: string;
+  onlineMatchmakingCancel: string;
+  onlineMatchFound: string;
+  navOnline: string;
+  onlineMatchmakingQueuePosition: string;
+  onlineMatchmakingWaitTime: string;
+  onlineMatchFoundRedirecting: string;
+  onlineMatchFoundVs: string;
+  onlineMatchmakingSearching: string;
 }
 
 export type MessageKey = keyof Messages;

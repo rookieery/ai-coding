@@ -368,5 +368,10 @@
   "onlineMatchmakingTitle": "匹配对手",
   "onlineMatchmakingWaiting": "正在寻找对手...",
   "onlineMatchmakingCancel": "取消匹配",
-  "onlineMatchFound": "匹配成功"
+  "onlineMatchFound": "匹配成功",
+  "onlineMatchmakingQueuePosition": "队列位置: {0}",
+  "onlineMatchmakingWaitTime": "已等待 {0} 秒",
+  "onlineMatchFoundRedirecting": "{0} 秒后进入房间...",
+  "onlineMatchFoundVs": "VS",
+  "onlineMatchmakingSearching": "正在为你寻找实力相当的对手..."
 }

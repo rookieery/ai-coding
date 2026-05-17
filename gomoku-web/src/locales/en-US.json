@@ -368,5 +368,10 @@
   "onlineMatchmakingTitle": "Matchmaking",
   "onlineMatchmakingWaiting": "Finding opponent...",
   "onlineMatchmakingCancel": "Cancel Matchmaking",
-  "onlineMatchFound": "Match Found"
+  "onlineMatchFound": "Match Found",
+  "onlineMatchmakingQueuePosition": "Queue Position: {0}",
+  "onlineMatchmakingWaitTime": "{0}s elapsed",
+  "onlineMatchFoundRedirecting": "Entering room in {0}s...",
+  "onlineMatchFoundVs": "VS",
+  "onlineMatchmakingSearching": "Searching for a worthy opponent..."
 }

@@ -1260,6 +1260,12 @@
         "title": "后端：创建匹配服务（MatchmakingService）+ 单元测试",
         "description": "匹配系统任务（第二阶段）。分两部分：\n\n**A. MatchmakingService** — gomoku-server/src/services/matchmaking.service.ts：\n1. 内存队列：Map<ruleMode, QueueEntry[]>，QueueEntry = { userId, rating, enqueuedAt }。\n2. `enqueue(userId, rating, ruleMode)` — 加入队列，检查防重复。\n3. `dequeue(userId)` — 离开队列。\n4. `findMatch()` — 遍历队列匹配：优先积分差 <= 200；超 30s 未匹配则每 10s 扩大 100 分范围。返回 { player1, player2 } | null。\n5. `getQueuePosition(userId)` — 获取队列位置。\n6. `getQueueSize(ruleMode)` — 队列长度。\n\n**B. 单元测试** — gomoku-server/src/__tests__/matchmaking.test.ts：\n1. 相同积分立即匹配。\n2. 积分差距过大不匹配。\n3. 等待超时扩大范围后匹配。\n4. 多人同时匹配的正确配对。\n5. 取消匹配后不再被匹配。\n6. 队列为空不报错。\n7. 防止重复入队。\n\n依赖：无（纯逻辑）。预估代码约 150 行（服务）+ 120 行（测试）。",
         "passes": true
+      },
+      {
+        "id": "ONLINE-24A-Matchmaking-Handler",
+        "title": "后端：创建匹配 Socket Handler",
+        "description": "后端事件处理任务（第二阶段）。在 gomoku-server/src/socket/handlers/match.handler.ts 中实现：\n\n1. 导出 `registerMatchHandlers(io, socket)` 函数。\n2. `match:queue` 处理：\n   - 验证 socket.data.user 存在。\n   - 获取用户 rating（从数据库或内存缓存）。\n   - 调用 MatchmakingService.enqueue(userId, rating, ruleMode)。\n   - 回发 match:waiting { position }。\n   - 调用 findMatch()，若匹配成功：\n     - 调用 RoomService.createRoom 创建排位房间（isRanked=true）。\n     - 向双方发送 match:found { roomId, opponent }。\n3. `match:cancel` 处理：\n   - 调用 MatchmakingService.dequeue(userId)。\n4. 定时器：每 5 秒调用 findMatch()（setInterval，在 initializeSocket 中启动）。\n5. 在 socket/index.ts 中注册 match handler。\n\n依赖：ONLINE-05, ONLINE-23。预估代码约 80 行。",
+        "passes": true
       }
     ]
   }

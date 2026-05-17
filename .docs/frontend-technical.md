@@ -90,6 +90,7 @@ gomoku-web/src/
 | `useOnlineGame` | 在线对弈：棋盘状态、轮次逻辑、Socket game 事件 |
 | `useRoom` | 房间管理：房间列表、加入/离开/观战、Socket room 事件 |
 | `useChat` | 实时聊天：频道隔离（players/spectators）、Socket chat 事件 |
+| `useMatchmaking` | 匹配队列：排队/取消/匹配成功自动跳转、Socket match 事件 |
 
 ### 跨组件通信
 `useVisionBridge()` 是一个响应式状态桥，用于在 GameView、AgentView 和视觉确认面板之间传递识别候选、分析请求和复盘标志。
@@ -122,7 +123,7 @@ gomoku-web/src/
 - 翻译文件：`locales/zh-CN.json` 和 `locales/en-US.json`
 - `t(key, ...args)` 函数，支持位置参数插值（`{0}`, `{1}`）
 - `MessageKey` 类型确保所有翻译 key 编译时校验
-- 约 370+ 翻译词条（含 47 个 online 前缀在线对弈词条）
+- 约 370+ 翻译词条（含 52 个 online 前缀在线对弈词条）
 - 语言偏好持久化到 localStorage 的 `gomoku_locale` key
 
 ---
