@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-11-Frontend-Room-API",
-      "title": "前端：创建房间 API 层和房间 Composable",
-      "description": "前端数据层任务。分两部分：\n\n**A. REST API 层** — gomoku-web/src/api/room-api.ts：\n1. `fetchRooms(page, pageSize)` — GET /api/rooms。\n2. `fetchRoomById(roomId)` — GET /api/rooms/:id。\n3. 复用项目现有的 getDefaultFetchOptions + getApiUrl 工具（来自 config.ts）。\n\n**B. Room Composable** — gomoku-web/src/composables/useRoom.ts：\n1. `rooms` ref — 房间列表。\n2. `currentRoom` ref — 当前所在房间。\n3. `isInRoom` computed — 是否在房间中。\n4. `loadRooms()` — 调用 room-api 获取房间列表。\n5. `createRoom(name, ruleMode)` — 通过 Socket 发送 room:create。\n6. `joinRoom(roomId)` — 通过 Socket 发送 room:join。\n7. `leaveRoom()` — 通过 Socket 发送 room:leave。\n8. `watchRoom(roomId)` — 通过 Socket 发送 room:watch。\n9. 监听 Socket 事件（room:created, room:updated, room:removed）自动更新本地状态。\n10. 组件卸载时自动清理 Socket 监听（使用 onUnmounted）。\n\n依赖：ONLINE-10, ONLINE-07B（REST API 需后端就绪）。预估代码约 120 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-12A-Room-Sub-Components",
       "title": "前端：创建房间子组件（RoomList + RoomCard + CreateRoomModal）",
       "description": "前端 UI 子组件任务。创建 3 个组件：\n\n**A. RoomCard.vue** — gomoku-web/src/games/gomoku/components/online/RoomCard.vue：\n1. Props: room (RoomInfo 类型)。\n2. 显示：房间名称、规则模式（无禁手/有禁手）、状态标签（等待中/对弈中）。\n3. 显示 host 名称、guest 名称（或「等待中...」）。\n4. 观战人数。\n5. 操作按钮：加入（status=waiting 时）/ 观战（status=playing 时），emit 对应事件。\n6. 所有文案使用 i18n。\n\n**B. RoomList.vue** — gomoku-web/src/games/gomoku/components/online/RoomList.vue：\n1. Props: rooms (RoomInfo[])。\n2. 渲染 RoomCard 列表（v-for）。\n3. 空状态显示 i18n('noRooms')。\n4. 向上透传 join/watch 事件。\n\n**C. CreateRoomModal.vue** — gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue：\n1. Props: visible (boolean)。\n2. Emits: close, create。\n3. 表单：房间名称输入框、规则模式选择（无禁手/有禁手）。\n4. 确认/取消按钮。\n5. 表单校验（名称不能为空）。\n\n依赖：ONLINE-11。所有文案使用 i18n，严禁硬编码中文。预估代码约 200 行（3 个文件合计）。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-12B-Online-Lobby-View",

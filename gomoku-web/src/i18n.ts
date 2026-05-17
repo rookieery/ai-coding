@@ -327,6 +327,19 @@ export interface Messages {
   chessNewGame: string;
   musicOn: string;
   musicOff: string;
+  onlineStatusWaiting: string;
+  onlineStatusPlaying: string;
+  onlineWaitingPlayer: string;
+  onlineSpectators: string;
+  onlineJoinRoom: string;
+  onlineWatchGame: string;
+  onlineNoRooms: string;
+  onlineCreateRoom: string;
+  onlineRoomName: string;
+  onlineRoomNamePlaceholder: string;
+  onlineRoomNameRequired: string;
+  onlineRuleStandard: string;
+  onlineRuleRenju: string;
 }
 
 export type MessageKey = keyof Messages;

@@ -50,9 +50,9 @@
 | 保存棋局弹窗 | `gomoku-web/src/games/gomoku/components/SaveGameModal.vue` |
 | 棋局记录列表弹窗 | `gomoku-web/src/games/gomoku/components/GameRecordsModal.vue` |
 | 删除确认弹窗 | `gomoku-web/src/games/gomoku/components/DeleteConfirmModal.vue` |
-| 在线房间列表（规划中） | `gomoku-web/src/games/gomoku/components/online/RoomList.vue` |
-| 在线房间卡片（规划中） | `gomoku-web/src/games/gomoku/components/online/RoomCard.vue` |
-| 创建房间弹窗（规划中） | `gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue` |
+| 在线房间列表 | `gomoku-web/src/games/gomoku/components/online/RoomList.vue` |
+| 在线房间卡片 | `gomoku-web/src/games/gomoku/components/online/RoomCard.vue` |
+| 创建房间弹窗 | `gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue` |
 | 在线对弈棋盘（规划中） | `gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue` |
 | 聊天面板（规划中） | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
 | 玩家信息栏（规划中） | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
@@ -101,7 +101,7 @@
 | 管理员 API | `gomoku-web/src/api/admin-api.ts` |
 | 视觉识别 API | `gomoku-web/src/api/vision-api.ts` |
 | 象棋编码转换 | `gomoku-web/src/api/chess-vision-api.ts` |
-| 房间 REST API（规划中） | `gomoku-web/src/api/room-api.ts` |
+| 房间 REST API | `gomoku-web/src/api/room-api.ts` |
 | 五子棋 LLM API（游戏模块内） | `gomoku-web/src/games/gomoku/api/llmApi.ts` |
 | 象棋 LLM API（游戏模块内） | `gomoku-web/src/games/chinese-chess/api/chessLlmApi.ts` |
 
@@ -124,7 +124,7 @@
 | 输入框自动高度 | `gomoku-web/src/composables/useAutoResize.ts` |
 | 视觉识别跨组件通信 | `gomoku-web/src/composables/useVisionBridge.ts` |
 | 在线对弈核心状态（规划中） | `gomoku-web/src/composables/useOnlineGame.ts` |
-| 房间列表/加入/离开（规划中） | `gomoku-web/src/composables/useRoom.ts` |
+| 房间列表/加入/离开 | `gomoku-web/src/composables/useRoom.ts` |
 | 实时聊天（规划中） | `gomoku-web/src/composables/useChat.ts` |
 | 匹配队列（规划中） | `gomoku-web/src/composables/useMatchmaking.ts` |
 
@@ -144,7 +144,7 @@
 | 中文翻译 | `gomoku-web/src/locales/zh-CN.json` |
 | 英文翻译 | `gomoku-web/src/locales/en-US.json` |
 | 密码校验 | `gomoku-web/src/utils/password.ts` |
-| Socket.io 客户端单例（规划中） | `gomoku-web/src/services/socket.service.ts` |
+| Socket.io 客户端单例 | `gomoku-web/src/services/socket.service.ts` |
 
 ---
 

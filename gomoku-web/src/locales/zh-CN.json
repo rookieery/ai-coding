@@ -320,5 +320,18 @@
   "chessResignGame": "认输",
   "chessNewGame": "新局",
   "musicOn": "背景音乐已开启",
-  "musicOff": "背景音乐已关闭"
+  "musicOff": "背景音乐已关闭",
+  "onlineStatusWaiting": "等待中",
+  "onlineStatusPlaying": "对弈中",
+  "onlineWaitingPlayer": "等待玩家加入...",
+  "onlineSpectators": "观战: {0} 人",
+  "onlineJoinRoom": "加入",
+  "onlineWatchGame": "观战",
+  "onlineNoRooms": "暂无房间",
+  "onlineCreateRoom": "创建房间",
+  "onlineRoomName": "房间名称",
+  "onlineRoomNamePlaceholder": "请输入房间名称",
+  "onlineRoomNameRequired": "房间名称不能为空",
+  "onlineRuleStandard": "无禁手",
+  "onlineRuleRenju": "有禁手"
 }

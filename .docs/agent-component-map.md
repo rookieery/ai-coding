@@ -44,6 +44,10 @@ App.vue
 │       ├── GameRecordsModal.vue
 │       ├── DeleteConfirmModal.vue
 │       └── NotificationToast.vue
+│
+│   └── OnlineLobbyView.vue (在线大厅, 规划中)
+│       ├── RoomList.vue → RoomCard.vue
+│       └── CreateRoomModal.vue
 ```
 
 ---

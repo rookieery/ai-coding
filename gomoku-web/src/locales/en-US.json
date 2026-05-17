@@ -320,5 +320,18 @@
   "chessResignGame": "Resign",
   "chessNewGame": "New Game",
   "musicOn": "Music On",
-  "musicOff": "Music Off"
+  "musicOff": "Music Off",
+  "onlineStatusWaiting": "Waiting",
+  "onlineStatusPlaying": "In Progress",
+  "onlineWaitingPlayer": "Waiting for player...",
+  "onlineSpectators": "Spectators: {0}",
+  "onlineJoinRoom": "Join",
+  "onlineWatchGame": "Watch",
+  "onlineNoRooms": "No rooms available",
+  "onlineCreateRoom": "Create Room",
+  "onlineRoomName": "Room Name",
+  "onlineRoomNamePlaceholder": "Enter room name",
+  "onlineRoomNameRequired": "Room name cannot be empty",
+  "onlineRuleStandard": "Standard",
+  "onlineRuleRenju": "Renju"
 }
