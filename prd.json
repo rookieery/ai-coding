@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-07A-Room-Socket-Handler",
-      "title": "创建房间 Socket Handler",
-      "description": "事件处理任务。在 gomoku-server/src/socket/handlers/room.handler.ts 中实现：\n\n1. 导出 `registerRoomHandlers(io, socket)` 函数。\n2. `room:create` — 验证 socket.data.user 存在，调用 RoomService.createRoom，socket.join(roomId)，回发 room:created 给创建者，广播 room:updated 给大厅（后续优化）。\n3. `room:join` — 验证登录，调用 RoomService.joinRoom，socket.join(roomId)，广播 room:updated 给房间内所有人。\n4. `room:leave` — 调用 RoomService.leaveRoom，socket.leave(roomId)，若房间被销毁则广播 room:removed，否则广播 room:updated。\n5. `room:watch` — 验证登录，调用 RoomService.watchRoom，socket.join(roomId)，广播 room:updated。\n6. `room:list` — 调用 RoomService.getRoomList，回发 room:list 给请求者。\n7. 所有错误通过 socket.emit('error', { code, message }) 返回。\n8. 在 socket/index.ts 的 connection 中调用 registerRoomHandlers。\n\n依赖：ONLINE-05, ONLINE-06。预估代码约 150 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-07B-Room-REST-API",
       "title": "创建房间 REST API + 路由注册",
       "description": "REST 接口任务。\n\n1. 创建 gomoku-server/src/controllers/room.controller.ts：\n   - `getRooms` — GET /api/rooms，从 query 获取 page/pageSize，调用 RoomService.getRoomList，返回统一响应格式。\n   - `getRoomById` — GET /api/rooms/:id，调用 RoomService.getRoomById，返回统一响应格式。\n\n2. 创建 gomoku-server/src/routes/room.routes.ts：\n   - 使用 optionalAuthenticate 中间件（游客也可浏览房间）。\n   - `GET /` → getRooms\n   - `GET /:id` → getRoomById\n\n3. **修改 gomoku-server/src/routes/index.ts**：在现有路由列表末尾添加 `router.use('/rooms', roomRoutes)`。\n\n**现有代码上下文**：routes/index.ts 使用 `const router = Router()` + `router.use(...)` 模式注册路由。\n\n依赖：ONLINE-06。预估代码约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-08-Online-Game-Service",

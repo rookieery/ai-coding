@@ -5,6 +5,7 @@ import authRoutes from './auth.routes';
 import adminRoutes from './admin.routes';
 import gamesRoutes from './games';
 import visionRoutes from './vision.routes';
+import roomRoutes from './room.routes';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use('/chat', chatRoutes);
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/vision', visionRoutes);
+router.use('/rooms', roomRoutes);
 
 export default router;
