@@ -194,7 +194,7 @@
 | 房间业务逻辑 | `gomoku-server/src/services/room.service.ts` |
 | 在线对弈逻辑 | `gomoku-server/src/services/online-game.service.ts` |
 | 断线重连管理（60s 倒计时 + 重连取消） | `gomoku-server/src/services/disconnect.service.ts` |
-| ELO 积分计算（规划中） | `gomoku-server/src/services/elo.service.ts` |
+| ELO 积分计算（标准 ELO + K-factor 动态调整） | `gomoku-server/src/services/elo.service.ts` |
 | 匹配服务（stub：仅 dequeue） | `gomoku-server/src/services/matchmaking.service.ts` |
 
 ### 路由

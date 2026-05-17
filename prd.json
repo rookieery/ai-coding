@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-20-I18N",
-      "title": "新增在线对弈相关 i18n 翻译词条（中英文）",
-      "description": "国际化任务。在 gomoku-web/src/locales/zh-CN.json 和 en-US.json 中添加所有在线对弈相关词条：\n\n需要覆盖的词条域（使用 online* 前缀）：\n1. 页面标题与导航：onlineTitle, onlineLobby。\n2. 房间操作：onlineCreateRoom, onlineJoinRoom, onlineWatchGame, onlineLeaveRoom, onlineRoomName, onlineRoomNamePlaceholder, onlineNoRooms。\n3. 游戏状态：onlineWaitingForOpponent, onlineOpponentJoined, onlineYourTurn, onlineOpponentTurn, onlineYouWin, onlineYouLose, onlineGameDraw。\n4. 断线：onlineOpponentDisconnected, onlineReconnectingCountdown。\n5. 操作：onlineResign。\n6. 聊天：onlineChatPlayersChannel, onlineChatSpectatorsChannel, onlineChatPlaceholder。\n7. 观战：onlineSpectators。\n8. 规则模式：onlineRuleStandard, onlineRuleRenju。\n9. 错误提示：onlineErrorNotLoggedIn, onlineErrorRoomFull, onlineErrorGameStarted, onlineErrorRoomNotFound, onlineErrorNotYourTurn, onlineErrorInvalidMove。\n10. 通用：onlineRankedGame, onlineCasualGame, onlineRatingLabel。\n11. 匹配：onlineMatchmakingTitle, onlineMatchmakingWaiting, onlineMatchmakingCancel, onlineMatchFound。\n\n要求：\n- 中文和英文词条 key 完全一致。\n- 英文翻译自然准确。\n- 条目按功能模块分组，使用 online 前缀避免与现有词条冲突。\n\n依赖：所有前端组件完成。预估新增词条约 30 条/语言。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-21-ELO-Service",
       "title": "后端：创建 ELO 积分计算服务 + 单元测试",
       "description": "积分系统任务（第二阶段）。分两部分：\n\n**A. EloService** — gomoku-server/src/services/elo.service.ts：\n1. `calculateNewRating(playerRating, opponentRating, result: 'win' | 'loss' | 'draw')` — 标准 ELO 公式：\n   - Expected = 1 / (1 + 10^((opponentRating - playerRating) / 400))\n   - K-factor 动态调整：前 30 局 K=40, rating < 2400 K=20, rating >= 2400 K=10。\n   - New = Old + K * (Actual - Expected)\n   - 返回 { newPlayerRating, newOpponentRating }\n2. `updateRatings(winnerId, loserId, isDraw)` — 更新数据库中 User 的 rating 字段。\n\n**B. 单元测试** — gomoku-server/src/__tests__/elo.test.ts：\n1. 初始积分对弈（1200 vs 1200）— 胜者加分、败者减分。\n2. 高分对低分 — 高分胜者加分少，低分败者减分少。\n3. 低分胜高分 — 积分变化大（爆冷）。\n4. 平局处理 — 双方积分向均值靠拢。\n5. K-factor 变化 — 不同 rating 区间的 K 值验证。\n6. 边界值 — rating 为 0、极大值。\n\n依赖：无（纯算法）。预估代码约 80 行（服务）+ 100 行（测试）。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-22-ELO-Integration",

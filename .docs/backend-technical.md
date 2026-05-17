@@ -29,7 +29,7 @@ gomoku-server/src/
 │   ├── auth.ts              # JWT 认证 + 管理员权限
 │   └── validation.ts        # Zod 请求校验中间件
 ├── controllers/             # 8 个控制器
-├── services/                # 10 个服务
+├── services/                # 11 个服务
 ├── routes/                  # 路由定义
 │   ├── index.ts             # 路由聚合
 │   └── games/               # 游戏子路由
@@ -192,3 +192,26 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 
 ### Docker Compose
 包含 PostgreSQL 15 + pgAdmin + 应用服务三个容器。
+
+---
+
+## ELO 积分系统
+
+### 算法
+标准 ELO 公式，K-factor 动态调整：
+
+| 条件 | K 值 |
+|------|------|
+| 对局数 < 30 | 40 |
+| 积分 < 2400 | 20 |
+| 积分 >= 2400 | 10 |
+
+### 核心文件
+| 文件 | 说明 |
+|------|------|
+| `services/elo.service.ts` | 纯函数 `calculateNewRating` + 数据库更新 `updateRatings` |
+| `services/elo.service.test.ts` | 24 个单元测试覆盖所有场景 |
+
+### API
+- `calculateNewRating(playerRating, opponentRating, result, playerGamesPlayed, opponentGamesPlayed)` — 纯函数，返回 `{ newPlayerRating, newOpponentRating }`
+- `eloService.updateRatings(winnerId, loserId, isDraw)` — 异步，更新数据库中 User.rating 字段

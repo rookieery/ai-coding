@@ -1224,6 +1224,24 @@
         "title": "后端：创建聊天 Socket Handler",
         "description": "聊天后端任务。在 gomoku-server/src/socket/handlers/chat.handler.ts 中实现：\n\n1. 导出 `registerChatHandlers(io, socket)` 函数。\n\n2. `chat:send` 事件处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 验证用户在该房间内（通过 socket.rooms 检查）。\n   - 根据用户角色确定可用频道：\n     - 对弈者（host/guest）只能用 'players' 频道。\n     - 观战者只能用 'spectators' 频道。\n   - 消息内容校验：非空，trim 后长度 1-500。\n   - 将消息持久化到 RoomMessage 表。\n   - 广播 `chat:message` 到房间内对应频道的所有人。\n\n3. 频道隔离实现：利用 Socket.io Room 的子房间机制，每个房间 ID 拆分为两个 Socket Room：`{roomId}:players` 和 `{roomId}:spectators`。对弈者加入时同时 join `{roomId}` 和 `{roomId}:players`，观战者 join `{roomId}` 和 `{roomId}:spectators`。\n\n4. 在 socket/index.ts 中注册 chat handler。\n\n依赖：ONLINE-05。预估代码约 100 行。",
         "passes": true
+      },
+      {
+        "id": "ONLINE-18-Frontend-Chat",
+        "title": "前端：创建聊天 composable + ChatPanel 组件",
+        "description": "前端聊天功能任务。分两部分：\n\n**A. useChat composable** — gomoku-web/src/composables/useChat.ts：\n1. Props 参数：roomId, isPlayer (boolean)。\n2. 状态：`messages` ref（分频道 Map：players 和 spectators）、`activeChannel` ref（根据角色自动设定）。\n3. `sendMessage(content)` — 通过 Socket 发送 chat:send，自动根据 isPlayer 选择频道。\n4. 监听 chat:message Socket 事件，追加到对应频道的消息列表。\n5. `messagesForActiveChannel` computed — 当前激活频道的消息。\n6. 组件卸载时清理 Socket 监听。\n\n**B. ChatPanel.vue** — gomoku-web/src/games/gomoku/components/online/ChatPanel.vue：\n1. Props: roomId (string), isPlayer (boolean)。\n2. 消息列表：显示用户名 + 消息内容 + 时间，自动滚动到底部（nextTick + scrollTop）。\n3. 输入框 + 发送按钮，回车发送。\n4. 观战者只显示观战频道，对弈者只显示对弈频道（无需 Tab 切换，MVP 简化）。\n5. 所有文案使用 i18n。\n\n依赖：ONLINE-10, ONLINE-17。预估代码约 100 行（composable）+ 100 行（组件）。",
+        "passes": true
+      },
+      {
+        "id": "ONLINE-19-Disconnect-Service",
+        "title": "后端：创建断线重连管理 Service + 集成到 Socket 连接管理",
+        "description": "断线重连任务。分两部分：\n\n**A. DisconnectService** — gomoku-server/src/services/disconnect.service.ts：\n1. 内存 Map<roomId, { userId, timeout: NodeJS.Timeout, startedAt }> 管理断线状态。\n2. `startDisconnectTimer(roomId, userId, io)` — 对弈者断线时启动 60 秒倒计时：\n   - 存储到 Map。\n   - 使用 setTimeout，到期自动将断线方判负（更新数据库 room.winner/room.status），广播 game:over。\n   - 每秒广播 disconnect:warning { roomId, remainingSeconds } 给房间内其他人。\n3. `cancelDisconnectTimer(roomId, userId)` — 对弈者重连时取消倒计时：clearTimeout，从 Map 移除。\n4. `isDisconnected(roomId, userId)` — 检查用户是否处于断线状态。\n\n**B. 集成到 Socket 连接管理** — 修改 gomoku-server/src/socket/index.ts：\n1. Socket disconnect 事件：检测断开者是否为活跃房间的对弈者（host 或 guest），如果是且游戏正在进行（status=playing），触发 DisconnectService.startDisconnectTimer。**同时必须调用 MatchmakingService.dequeue(userId)**，清理该用户可能残留的匹配队列，防止断线玩家留在匹配池中变成僵尸玩家。\n2. Socket connection 事件：检查重连用户（通过 socket.data.user.id 匹配活跃房间的 host/guest），如果处于断线状态，触发 DisconnectService.cancelDisconnectTimer。\n\nMVP 限制：内存版，进程重启后断线状态丢失。\n\n依赖：ONLINE-09。预估代码约 120 行。",
+        "passes": true
+      },
+      {
+        "id": "ONLINE-20-I18N",
+        "title": "新增在线对弈相关 i18n 翻译词条（中英文）",
+        "description": "国际化任务。在 gomoku-web/src/locales/zh-CN.json 和 en-US.json 中添加所有在线对弈相关词条：\n\n需要覆盖的词条域（使用 online* 前缀）：\n1. 页面标题与导航：onlineTitle, onlineLobby。\n2. 房间操作：onlineCreateRoom, onlineJoinRoom, onlineWatchGame, onlineLeaveRoom, onlineRoomName, onlineRoomNamePlaceholder, onlineNoRooms。\n3. 游戏状态：onlineWaitingForOpponent, onlineOpponentJoined, onlineYourTurn, onlineOpponentTurn, onlineYouWin, onlineYouLose, onlineGameDraw。\n4. 断线：onlineOpponentDisconnected, onlineReconnectingCountdown。\n5. 操作：onlineResign。\n6. 聊天：onlineChatPlayersChannel, onlineChatSpectatorsChannel, onlineChatPlaceholder。\n7. 观战：onlineSpectators。\n8. 规则模式：onlineRuleStandard, onlineRuleRenju。\n9. 错误提示：onlineErrorNotLoggedIn, onlineErrorRoomFull, onlineErrorGameStarted, onlineErrorRoomNotFound, onlineErrorNotYourTurn, onlineErrorInvalidMove。\n10. 通用：onlineRankedGame, onlineCasualGame, onlineRatingLabel。\n11. 匹配：onlineMatchmakingTitle, onlineMatchmakingWaiting, onlineMatchmakingCancel, onlineMatchFound。\n\n要求：\n- 中文和英文词条 key 完全一致。\n- 英文翻译自然准确。\n- 条目按功能模块分组，使用 online 前缀避免与现有词条冲突。\n\n依赖：所有前端组件完成。预估新增词条约 30 条/语言。",
+        "passes": true
       }
     ]
   }
