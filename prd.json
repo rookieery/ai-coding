@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-08-Online-Game-Service",
-      "title": "创建在线对弈 Service（OnlineGameService）",
-      "description": "核心对弈逻辑任务。在 gomoku-server/src/services/online-game.service.ts 中实现 OnlineGameService 类：\n\n**现有代码上下文**（前端 gameConstants.ts 中的纯函数，需移植到 Node.js）：\n- `BOARD_SIZE = 15`, `EMPTY = 0`, `BLACK = 1`, `WHITE = 2`\n- `checkWin(board: number[][], r: number, c: number, player: number, ruleMode?: 'standard'|'renju'): {r: number, c: number}[] | null` — 检查4个方向（水平、垂直、两条对角线）的五连，renju 模式黑棋只认恰好5连，标准模式认5连以上。返回获胜连线坐标数组或 null。\n- `checkDraw(board: number[][]): boolean` — `board.every(row => row.every(cell => cell !== EMPTY))`\n\n**实现要求**：\n1. `makeMove(roomId, userId, r, c)` — 落子验证与执行：\n   - 查询房间，检查 status=playing。\n   - 根据 hostColor 和 currentPlayer 判断当前用户对应颜色。\n   - 验证坐标合法性（0 <= r,c < 15，该位置为 EMPTY）。\n   - 更新 boardState（JSON.parse → 修改 → JSON.stringify）。\n   - 追加到 moves（{r, c, player, timestamp}）。\n   - 切换 currentPlayer，递增 moveCount，更新 lastMoveAt。\n   - 调用 checkWin，若五连则设置 winner 并 status=finished。\n   - 调用 checkDraw，若平局则 winner='draw' 并 status=finished。\n   - 更新数据库。\n   - 返回 { boardState, winner, isDraw, move }。\n\n2. `resign(roomId, userId)` — 设置对手为 winner，status=finished。\n\n3. `checkWin(board, r, c, player, ruleMode)` — 从 gameConstants.ts 原样移植，保持算法完全一致。纯函数，无外部依赖。\n\n4. `checkDraw(board)` — 从 gameConstants.ts 原样移植。\n\n依赖：ONLINE-02。预估代码约 180 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-09-Game-Socket-Handler",
       "title": "创建对弈 Socket Handler",
       "description": "对弈事件处理任务。在 gomoku-server/src/socket/handlers/game.handler.ts 中实现：\n\n1. 导出 `registerGameHandlers(io, socket)` 函数。\n\n2. `game:move` 处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 调用 OnlineGameService.makeMove。\n   - 广播 `game:move` 给房间内所有人（包括观战者），携带 { roomId, r, c, player, boardState }。\n   - 若游戏结束，额外广播 `game:over` 携带 { roomId, winner, reason }。\n   - 错误时返回 `error` 事件。\n\n3. `game:resign` 处理：\n   - 调用 OnlineGameService.resign。\n   - 广播 `game:over` 给房间内所有人，reason='resign'。\n\n4. 在 socket/index.ts 中注册 game handler。\n\n依赖：ONLINE-05, ONLINE-08。预估代码约 80 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-10-Frontend-Socket-Service",
