@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-12B-Online-Lobby-View",
-      "title": "前端：创建在线大厅页面（OnlineLobbyView）",
-      "description": "前端页面组装任务。创建 gomoku-web/src/games/gomoku/views/OnlineLobbyView.vue：\n\n1. 页面布局：顶部标题栏（onlineTitle）+ 创建房间按钮 + 房间列表区域。\n2. 使用 useRoom composable 管理状态。\n3. 集成 CreateRoomModal：点击创建按钮显示弹窗，create 事件调用 useRoom.createRoom。\n4. 集成 RoomList + RoomCard：加载房间列表，点击加入/观战调用对应方法。\n5. 加入房间成功后跳转到 /online/room/:id（router.push）。\n6. 未登录用户：可浏览房间列表和观战，创建/加入时前端提示需登录（使用 useAuth）。\n7. 页面挂载时调用 loadRooms()，卸载时清理 Socket 监听。\n8. 实时更新：监听 room:updated 事件自动刷新列表。\n\n依赖：ONLINE-12A, ONLINE-11。所有文案使用 i18n。预估代码约 120 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-13-Frontend-Online-Game",
       "title": "前端：在线对弈核心 composable（useOnlineGame）",
       "description": "前端核心状态管理任务。在 gomoku-web/src/composables/useOnlineGame.ts 中实现在线对弈 composable：\n\n1. 状态管理：\n   - `boardState` ref — 15x15 棋盘数组。\n   - `currentPlayer` ref — 当前轮次（black/white）。\n   - `myColor` ref — 我的颜色（加入房间时确定）。\n   - `isMyTurn` computed — currentPlayer === myColor。\n   - `isSpectator` ref — 是否为观战者。\n   - `gameStatus` ref — 游戏状态（waiting/playing/finished）。\n   - `winner` ref — 获胜者。\n   - `moveCount` ref — 落子数。\n   - `lastMove` ref — 最后一步坐标 {r, c}。\n\n2. 方法：\n   - `initGame(roomInfo, isSpectator)` — 初始化棋盘状态，设置 myColor。**断线重连恢复**：当 roomInfo.moves 非空时，必须解析 moves 数组还原棋盘：遍历每一步 move 解析 { r, c, player }，逐步重建 boardState；根据最后一步的 player 设置 currentPlayer（切换到对手颜色）；恢复 moveCount 和 lastMove。这确保断线重连后能正确恢复残局状态。\n   - `makeMove(r, c)` — 仅在 isMyTurn 且非观战时可用，发送 game:move 到服务端，不直接修改本地棋盘。\n   - `resign()` — 发送 game:resign。\n   - `cleanup()` — 清理所有 Socket 监听。\n\n3. Socket 事件监听（onMounted 中注册，onUnmounted 中 cleanup）：\n   - `game:move` — 更新本地 boardState、currentPlayer、moveCount、lastMove。\n   - `game:over` — 设置 winner 和 gameStatus=finished。\n\n4. 观战模式：isSpectator=true 时 makeMove/resign 不执行（只读棋盘）。\n\n依赖：ONLINE-10。预估代码约 130 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-14A-Game-Sub-Components",
