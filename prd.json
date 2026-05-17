@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-16-Spectator-Backend",
-      "title": "后端：完善观战逻辑（断线/离开时观战者计数管理）",
-      "description": "观战后端完善任务。修改 gomoku-server/src/socket/handlers/room.handler.ts 和 game.handler.ts：\n\n1. `room:watch` 事件处理完善（在 room.handler.ts 中）：\n   - 验证房间存在且状态为 playing 或 waiting。\n   - 调用 RoomService.watchRoom。\n   - socket.join(roomId)。\n   - 广播 room:updated 给房间内所有人。\n\n2. Socket disconnect 中检测观战者（在 socket/index.ts 的 disconnect 处理中）：\n   - 如果该用户在某房间中但不是 host 也不是 guest，则为观战者。\n   - 调用 RoomService.unwatchRoom 递减 spectatorCount。\n   - 广播 room:updated。\n\n3. 观战者权限限制（在 game.handler.ts 中）：\n   - game:move 和 game:resign 处理中检查发送者是否为对弈者（host 或 guest）。\n   - 观战者发送 game:move 返回 error('onlineErrorNotYourTurn')。\n\n依赖：ONLINE-07A, ONLINE-09。预估代码约 50 行（增量修改）。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-17-Chat-Handler",
       "title": "后端：创建聊天 Socket Handler",
       "description": "聊天后端任务。在 gomoku-server/src/socket/handlers/chat.handler.ts 中实现：\n\n1. 导出 `registerChatHandlers(io, socket)` 函数。\n\n2. `chat:send` 事件处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 验证用户在该房间内（通过 socket.rooms 检查）。\n   - 根据用户角色确定可用频道：\n     - 对弈者（host/guest）只能用 'players' 频道。\n     - 观战者只能用 'spectators' 频道。\n   - 消息内容校验：非空，trim 后长度 1-500。\n   - 将消息持久化到 RoomMessage 表。\n   - 广播 `chat:message` 到房间内对应频道的所有人。\n\n3. 频道隔离实现：利用 Socket.io Room 的子房间机制，每个房间 ID 拆分为两个 Socket Room：`{roomId}:players` 和 `{roomId}:spectators`。对弈者加入时同时 join `{roomId}` 和 `{roomId}:players`，观战者 join `{roomId}` 和 `{roomId}:spectators`。\n\n4. 在 socket/index.ts 中注册 chat handler。\n\n依赖：ONLINE-05。预估代码约 100 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-18-Frontend-Chat",

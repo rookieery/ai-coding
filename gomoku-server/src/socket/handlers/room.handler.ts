@@ -21,6 +21,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       );
 
       socket.join(room.id);
+      socket.join(`${room.id}:players`);
 
       socket.emit('room:created', { room });
 
@@ -49,6 +50,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       );
 
       socket.join(payload.roomId);
+      socket.join(`${payload.roomId}:players`);
 
       // Notify the joining player
       socket.emit('room:joined', { room, color });
@@ -73,6 +75,8 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       );
 
       socket.leave(payload.roomId);
+      socket.leave(`${payload.roomId}:players`);
+      socket.leave(`${payload.roomId}:spectators`);
 
       if (destroyed) {
         io.to(payload.roomId).emit('room:removed', { roomId: payload.roomId });
@@ -114,6 +118,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       );
 
       socket.join(payload.roomId);
+      socket.join(`${payload.roomId}:spectators`);
 
       io.to(payload.roomId).emit('room:updated', { room });
 

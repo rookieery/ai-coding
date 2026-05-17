@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { optionalSocketAuth } from './middleware';
 import { registerRoomHandlers } from './handlers/room.handler';
 import { registerGameHandlers } from './handlers/game.handler';
+import { registerChatHandlers } from './handlers/chat.handler';
 import { roomService } from '../services/room.service';
 import type { TypedServer } from './types';
 
@@ -70,6 +71,7 @@ export function initializeSocket(httpServer: Server): void {
     // Register event handlers
     registerRoomHandlers(io, socket);
     registerGameHandlers(io, socket);
+    registerChatHandlers(io, socket);
 
     socket.on('disconnect', async (reason) => {
       logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);
