@@ -1,11 +1,4 @@
 {
   "branchName": "feature/online-multiplayer",
-  "stories": [
-    {
-      "id": "ONLINE-27-Online-Game-Tests",
-      "title": "后端：对弈逻辑单元测试",
-      "description": "测试任务。在 gomoku-server/src/__tests__/online-game.test.ts 中编写对弈逻辑测试用例：\n\n1. 合法落子 — 正常更新棋盘状态。\n2. 非法位置 — 已有棋子的位置不能落子。\n3. 越界坐标 — 超出棋盘范围的坐标被拒绝。\n4. 轮次错误 — 非当前玩家的落子被拒绝。\n5. 五连判定 — 水平、垂直、两条对角线的五连均能正确判定。\n6. 平局判定 — 棋盘下满无五连时判定平局。\n7. 认输 — 正确设置对手为 winner。\n8. 游戏已结束后不能再落子。\n\n**关键**：服务端 checkWin 必须与前端 gameConstants.ts 的 checkWin 结果完全一致。建议编写对比测试：构造已知五连棋盘，验证服务端算法返回相同的获胜坐标。\n\n依赖：ONLINE-08。预估代码约 200 行。",
-      "passes": true
-    }
-  ]
+  "stories": []
 }

@@ -1284,6 +1284,12 @@
         "title": "后端：房间状态机单元测试",
         "description": "测试任务。在 gomoku-server/src/__tests__/room-state.test.ts 中编写房间状态机测试用例：\n\n1. 房间生命周期：waiting → playing → finished 正常流转。\n2. host 离开 → 房间被销毁（status=finished）。\n3. guest 离开 → 房间回到 waiting 状态。\n4. 房间已满时拒绝新玩家加入。\n5. 游戏进行中拒绝新玩家加入。\n6. 不能加入自己的房间。\n7. 房间不存在时的错误处理。\n8. 观战者计数正确增减。\n9. 观战者超过 maxSpectators 时拒绝。\n\n依赖：ONLINE-06。预估代码约 150 行。",
         "passes": true
+      },
+      {
+        "id": "ONLINE-27-Online-Game-Tests",
+        "title": "后端：对弈逻辑单元测试",
+        "description": "测试任务。在 gomoku-server/src/__tests__/online-game.test.ts 中编写对弈逻辑测试用例：\n\n1. 合法落子 — 正常更新棋盘状态。\n2. 非法位置 — 已有棋子的位置不能落子。\n3. 越界坐标 — 超出棋盘范围的坐标被拒绝。\n4. 轮次错误 — 非当前玩家的落子被拒绝。\n5. 五连判定 — 水平、垂直、两条对角线的五连均能正确判定。\n6. 平局判定 — 棋盘下满无五连时判定平局。\n7. 认输 — 正确设置对手为 winner。\n8. 游戏已结束后不能再落子。\n\n**关键**：服务端 checkWin 必须与前端 gameConstants.ts 的 checkWin 结果完全一致。建议编写对比测试：构造已知五连棋盘，验证服务端算法返回相同的获胜坐标。\n\n依赖：ONLINE-08。预估代码约 200 行。",
+        "passes": true
       }
     ]
   }
