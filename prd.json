@@ -5,7 +5,7 @@
       "id": "ONLINE-01-Dependencies",
       "title": "安装 Socket.io 依赖（前后端）",
       "description": "基础设施任务。\n\n1. 后端（gomoku-server）：执行 `npm install socket.io`。\n2. 前端（gomoku-web）：执行 `npm install socket.io-client`。\n3. 验证安装成功，无版本冲突。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-02-Prisma-Schema",
