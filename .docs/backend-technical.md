@@ -348,3 +348,34 @@ RoomService 核心方法的 Jest 单元测试，通过 mock Prisma Client 验证
 - Mock `../app` 模块的 `prisma.room` 对象（create、findUnique、findUniqueOrThrow、update、updateMany）
 - 使用 `buildRoom(overrides)` 辅助函数构建模拟 Prisma 返回值
 - 每个测试用例 `beforeEach` 清除所有 mock
+
+---
+
+## 对弈逻辑单元测试
+
+### 概述
+OnlineGameService 核心方法（makeMove、resign）及纯函数（checkWin、checkDraw）的 Jest 单元测试，通过 mock Prisma Client 验证落子校验、五连判定、平局、认输等对弈核心逻辑。
+
+### 核心文件
+| 文件 | 说明 |
+|------|------|
+| `services/online-game.service.ts` | 对弈核心逻辑（makeMove, resign, checkWin, checkDraw） |
+| `__tests__/online-game.test.ts` | 对弈逻辑测试（35 个用例，约 570 行） |
+
+### 测试覆盖范围
+1. **合法落子** — 正常更新棋盘、切换当前玩家、持久化走子记录
+2. **非法位置** — 已有棋子的位置被拒绝（CELL_OCCUPIED）
+3. **越界坐标** — 负数/超出 BOARD_SIZE 的行列被拒绝（INVALID_COORDINATES）
+4. **轮次错误** — 非当前玩家落子被拒绝（NOT_YOUR_TURN）
+5. **五连判定** — 水平、垂直、主对角线、副对角线四种方向的五连均能正确检测
+6. **平局判定** — 棋盘下满无五连时判定平局（使用三色循环填充棋盘避免误判）
+7. **认输** — Host/Guest 认输正确设置对手为 winner，非玩家和等待状态拒绝
+8. **游戏结束保护** — finished 状态拒绝落子、房间不存在错误、非玩家拒绝
+9. **checkWin 纯函数前端一致性** — 空棋盘、不足五连、精确五连坐标验证、overline（六连返回前5颗）、renju 规则（黑棋六连返回 null、白棋六连仍算赢）、错误玩家检测
+10. **checkDraw 纯函数** — 空棋盘、满棋盘、有空位的棋盘
+
+### 测试策略
+- Mock `../app`（prisma.room/user/match）、`../utils/logger`、`../services/elo.service`
+- 使用 `buildPlayingRoom(overrides)` 辅助函数构建 playing 状态的模拟房间数据
+- `emptyBoard()` 辅助函数生成 15x15 零矩阵
+- 每个测试用例 `beforeEach` 清除所有 mock

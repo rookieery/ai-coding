@@ -201,6 +201,7 @@
 | 匹配服务（内存队列 + 动态积分阈值 + 防重复入队） | `gomoku-server/src/services/matchmaking.service.ts` |
 | 匹配服务单元测试（14 个测试用例） | `gomoku-server/src/services/matchmaking.service.test.ts` |
 | 房间状态机单元测试（21 个测试用例） | `gomoku-server/src/__tests__/room-state.test.ts` |
+| 对弈逻辑单元测试（35 个测试用例） | `gomoku-server/src/__tests__/online-game.test.ts` |
 
 ### 路由
 | 要改什么 | 文件路径 |
