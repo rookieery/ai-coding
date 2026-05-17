@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-19-Disconnect-Service",
-      "title": "后端：创建断线重连管理 Service + 集成到 Socket 连接管理",
-      "description": "断线重连任务。分两部分：\n\n**A. DisconnectService** — gomoku-server/src/services/disconnect.service.ts：\n1. 内存 Map<roomId, { userId, timeout: NodeJS.Timeout, startedAt }> 管理断线状态。\n2. `startDisconnectTimer(roomId, userId, io)` — 对弈者断线时启动 60 秒倒计时：\n   - 存储到 Map。\n   - 使用 setTimeout，到期自动将断线方判负（更新数据库 room.winner/room.status），广播 game:over。\n   - 每秒广播 disconnect:warning { roomId, remainingSeconds } 给房间内其他人。\n3. `cancelDisconnectTimer(roomId, userId)` — 对弈者重连时取消倒计时：clearTimeout，从 Map 移除。\n4. `isDisconnected(roomId, userId)` — 检查用户是否处于断线状态。\n\n**B. 集成到 Socket 连接管理** — 修改 gomoku-server/src/socket/index.ts：\n1. Socket disconnect 事件：检测断开者是否为活跃房间的对弈者（host 或 guest），如果是且游戏正在进行（status=playing），触发 DisconnectService.startDisconnectTimer。**同时必须调用 MatchmakingService.dequeue(userId)**，清理该用户可能残留的匹配队列，防止断线玩家留在匹配池中变成僵尸玩家。\n2. Socket connection 事件：检查重连用户（通过 socket.data.user.id 匹配活跃房间的 host/guest），如果处于断线状态，触发 DisconnectService.cancelDisconnectTimer。\n\nMVP 限制：内存版，进程重启后断线状态丢失。\n\n依赖：ONLINE-09。预估代码约 120 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-20-I18N",
       "title": "新增在线对弈相关 i18n 翻译词条（中英文）",
       "description": "国际化任务。在 gomoku-web/src/locales/zh-CN.json 和 en-US.json 中添加所有在线对弈相关词条：\n\n需要覆盖的词条域（使用 online* 前缀）：\n1. 页面标题与导航：onlineTitle, onlineLobby。\n2. 房间操作：onlineCreateRoom, onlineJoinRoom, onlineWatchGame, onlineLeaveRoom, onlineRoomName, onlineRoomNamePlaceholder, onlineNoRooms。\n3. 游戏状态：onlineWaitingForOpponent, onlineOpponentJoined, onlineYourTurn, onlineOpponentTurn, onlineYouWin, onlineYouLose, onlineGameDraw。\n4. 断线：onlineOpponentDisconnected, onlineReconnectingCountdown。\n5. 操作：onlineResign。\n6. 聊天：onlineChatPlayersChannel, onlineChatSpectatorsChannel, onlineChatPlaceholder。\n7. 观战：onlineSpectators。\n8. 规则模式：onlineRuleStandard, onlineRuleRenju。\n9. 错误提示：onlineErrorNotLoggedIn, onlineErrorRoomFull, onlineErrorGameStarted, onlineErrorRoomNotFound, onlineErrorNotYourTurn, onlineErrorInvalidMove。\n10. 通用：onlineRankedGame, onlineCasualGame, onlineRatingLabel。\n11. 匹配：onlineMatchmakingTitle, onlineMatchmakingWaiting, onlineMatchmakingCancel, onlineMatchFound。\n\n要求：\n- 中文和英文词条 key 完全一致。\n- 英文翻译自然准确。\n- 条目按功能模块分组，使用 online 前缀避免与现有词条冲突。\n\n依赖：所有前端组件完成。预估新增词条约 30 条/语言。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-21-ELO-Service",

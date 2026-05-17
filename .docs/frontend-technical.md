@@ -122,7 +122,7 @@ gomoku-web/src/
 - 翻译文件：`locales/zh-CN.json` 和 `locales/en-US.json`
 - `t(key, ...args)` 函数，支持位置参数插值（`{0}`, `{1}`）
 - `MessageKey` 类型确保所有翻译 key 编译时校验
-- 约 300+ 翻译词条
+- 约 370+ 翻译词条（含 47 个 online 前缀在线对弈词条）
 - 语言偏好持久化到 localStorage 的 `gomoku_locale` key
 
 ---

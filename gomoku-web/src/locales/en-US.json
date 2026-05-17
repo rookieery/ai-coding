@@ -353,5 +353,20 @@
   "onlineChatPlayersChannel": "Players",
   "onlineChatSpectatorsChannel": "Spectators",
   "onlineChatPlaceholder": "Type a message...",
-  "onlineChatSend": "Send"
+  "onlineChatSend": "Send",
+  "onlineLobby": "Online Lobby",
+  "onlineOpponentDisconnected": "Opponent Disconnected",
+  "onlineReconnectingCountdown": "Reconnecting in {0}s",
+  "onlineErrorRoomFull": "Room is full",
+  "onlineErrorGameStarted": "Game has already started",
+  "onlineErrorRoomNotFound": "Room not found",
+  "onlineErrorNotYourTurn": "Not your turn",
+  "onlineErrorInvalidMove": "Invalid move",
+  "onlineRankedGame": "Ranked",
+  "onlineCasualGame": "Casual",
+  "onlineRatingLabel": "Rating",
+  "onlineMatchmakingTitle": "Matchmaking",
+  "onlineMatchmakingWaiting": "Finding opponent...",
+  "onlineMatchmakingCancel": "Cancel Matchmaking",
+  "onlineMatchFound": "Match Found"
 }

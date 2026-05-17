@@ -353,5 +353,20 @@
   "onlineChatPlayersChannel": "对弈频道",
   "onlineChatSpectatorsChannel": "观战频道",
   "onlineChatPlaceholder": "输入消息...",
-  "onlineChatSend": "发送"
+  "onlineChatSend": "发送",
+  "onlineLobby": "在线大厅",
+  "onlineOpponentDisconnected": "对手已断线",
+  "onlineReconnectingCountdown": "等待重连 {0} 秒",
+  "onlineErrorRoomFull": "房间已满",
+  "onlineErrorGameStarted": "游戏已开始",
+  "onlineErrorRoomNotFound": "房间不存在",
+  "onlineErrorNotYourTurn": "还没轮到你",
+  "onlineErrorInvalidMove": "无效的落子",
+  "onlineRankedGame": "排位赛",
+  "onlineCasualGame": "休闲赛",
+  "onlineRatingLabel": "积分",
+  "onlineMatchmakingTitle": "匹配对手",
+  "onlineMatchmakingWaiting": "正在寻找对手...",
+  "onlineMatchmakingCancel": "取消匹配",
+  "onlineMatchFound": "匹配成功"
 }
