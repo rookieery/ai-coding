@@ -339,5 +339,14 @@
   "onlineCurrentTurn": "当前回合",
   "onlineDisconnected": "已断线",
   "onlineYourTurn": "轮到你了",
-  "onlineOpponentTurn": "对手回合"
+  "onlineOpponentTurn": "对手回合",
+  "onlineYouWin": "你赢了！",
+  "onlineYouLose": "你输了",
+  "onlineGameDraw": "平局",
+  "onlineResign": "认输",
+  "onlineLeaveRoom": "离开房间",
+  "onlineBackToLobby": "返回大厅",
+  "onlineWaitingForOpponent": "等待对手加入...",
+  "onlineOpponentJoined": "对手已加入",
+  "onlineGameFinished": "对局结束"
 }

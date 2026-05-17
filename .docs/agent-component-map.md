@@ -49,7 +49,7 @@ App.vue
 │       ├── RoomList.vue → RoomCard.vue
 │       └── CreateRoomModal.vue
 │
-│   └── OnlineGameView.vue (在线对弈, 规划中)
+│   └── OnlineGameView.vue (在线对弈)
 │       ├── OnlineBoard.vue ★ 在线棋盘 (独立渲染, 支持回合控制)
 │       ├── PlayerInfo.vue ★ 玩家信息 (颜色/用户名/轮次/断线)
 │       └── SpectatorList.vue ★ 观战者列表 (数量展示)
@@ -133,6 +133,36 @@ AgentGomokuPanel.vue / AgentChessPanel.vue ← 加载棋盘状态
 
 ---
 
+## 数据流：在线对弈 (OnlineGameView)
+
+```
+OnlineGameView.vue (路由 /online/room/:id)
+  │
+  ├── onMounted → fetchRoomById(roomId) [REST]
+  │     └── initGame(roomInfo, isSpectator) → useOnlineGame
+  │
+  ├── Socket 事件:
+  │     ├── room:watch (观战者加入)
+  │     ├── room:join  (玩家加入)
+  │     ├── room:updated → 更新 roomInfo
+  │     ├── game:move → 更新棋盘状态 (useOnlineGame 内部处理)
+  │     └── game:over → 设置 winner/gameStatus (useOnlineGame 内部处理)
+  │
+  ├── 用户操作:
+  │     ├── 点击棋盘 → makeMove(r, c) → emit game:move
+  │     ├── 认输按钮 → resign() → emit game:resign
+  │     └── 离开按钮 → leaveRoom() / router.push('/online')
+  │
+  └── 状态展示:
+        ├── 顶部栏: 房间名称 + 状态标签 (waiting/playing/finished)
+        ├── 左侧: 对手 PlayerInfo
+        ├── 中间: OnlineBoard
+        ├── 右侧: 自己 PlayerInfo + SpectatorList
+        └── 底部: 认输按钮(仅玩家) + 返回大厅(游戏结束)
+```
+
+---
+
 ## 数据流：棋局保存与加载
 
 ```
@@ -163,6 +193,17 @@ AgentGomokuPanel.vue / AgentChessPanel.vue ← 加载棋盘状态
 | 象棋主题 | `useGlobalSettings()` | localStorage `chess_theme` | 象棋相关 |
 | 全局主题 (light/dark) | `i18n.ts` currentTheme | localStorage `gomoku_theme` key | 全局 |
 | 语言 | `i18n.ts` currentLocale | localStorage `gomoku_locale` | 全局 |
+
+### 在线对弈状态 (跨组件共享, 单例)
+
+| 状态 | 管理 Composable | 存储方式 | 影响范围 |
+|------|----------------|---------|---------|
+| 棋盘矩阵 boardState[][] | `useOnlineGame()` | 内存 | OnlineGameView |
+| 当前轮次 currentPlayer | `useOnlineGame()` | 内存 | OnlineGameView |
+| 我的颜色 myColor | `useOnlineGame()` | 内存 | OnlineGameView |
+| 游戏状态 gameStatus | `useOnlineGame()` | 内存 | OnlineGameView |
+| 房间列表 rooms[] | `useRoom()` | 内存 | OnlineLobbyView, OnlineGameView |
+| 当前房间 currentRoom | `useRoom()` | 内存 | OnlineGameView |
 
 ### 组件局部状态 (不跨页面)
 

@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-14A-Game-Sub-Components",
-      "title": "前端：创建对弈子组件（OnlineBoard + PlayerInfo + SpectatorList）",
-      "description": "前端 UI 子组件任务。创建 3 个组件：\n\n**A. OnlineBoard.vue** — gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue：\n1. Props: boardState (number[][]), currentPlayer (string), isMyTurn (boolean), isSpectator (boolean), lastMove ({r,c}|null)。\n2. Emits: move(r, c)。\n3. 复用现有 Board.vue 组件渲染棋盘（通过 props 传入数据）。\n4. 点击空位时 emit move 事件（仅 isMyTurn 且非观战时响应点击）。\n5. 高亮最后一步落子位置。\n6. 当前轮次指示器。\n\n**B. PlayerInfo.vue** — gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue：\n1. Props: username (string), color ('black'|'white'), isCurrentTurn (boolean), isDisconnected (boolean)。\n2. 显示：用户名、执子颜色标识、当前轮次高亮（isCurrentTurn 时边框/背景变化）。\n3. 断线状态显示（灰色遮罩 + 断线提示文案）。\n\n**C. SpectatorList.vue** — gomoku-web/src/games/gomoku/components/online/SpectatorList.vue：\n1. Props: spectatorCount (number)。\n2. 显示观战者数量（i18n: spectators）。\n3. 简洁展示，不需要展示具体用户名列表（MVP 阶段）。\n\n依赖：ONLINE-13。所有文案使用 i18n。预估代码约 160 行（3 个文件合计）。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-14B-Online-Game-View",
       "title": "前端：创建在线对弈页面（OnlineGameView）",
       "description": "前端页面组装任务。创建 gomoku-web/src/games/gomoku/views/OnlineGameView.vue：\n\n1. 从路由参数获取 roomId（useRoute().params.id）。\n2. 使用 useOnlineGame 和 useChat composable。\n3. 布局：\n   - 顶部：房间名称 + 状态栏。\n   - 左侧：对手 PlayerInfo。\n   - 中间：OnlineBoard 棋盘。\n   - 右侧：自己 PlayerInfo + ChatPanel + SpectatorList。\n4. 状态处理：\n   - 等待对手加入时显示 i18n('waitingForOpponent')。\n   - 游戏结束时显示结果（youWin/youLose/gameDraw）+ 返回大厅按钮。\n5. 底部工具栏：认输按钮（仅对弈者可见）+ 离开房间按钮。\n6. 点击棋盘空位 → useOnlineGame.makeMove。\n7. 页面挂载时通过 room:join 或 room:watch 加入房间，初始化游戏状态。\n8. 页面卸载时调用 cleanup()。\n\n依赖：ONLINE-14A, ONLINE-13。所有文案使用 i18n。预估代码约 150 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-15-Frontend-Routes",

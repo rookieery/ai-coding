@@ -26,8 +26,8 @@
 | 管理后台页 | `gomoku-web/src/views/AdminView.vue` |
 | 独立五子棋页 | `gomoku-web/src/views/GameView.vue` |
 | 独立象棋页 | `gomoku-web/src/views/ChineseChessView.vue` |
-| 在线大厅页（规划中） | `gomoku-web/src/games/gomoku/views/OnlineLobbyView.vue` |
-| 在线对弈页（规划中） | `gomoku-web/src/games/gomoku/views/OnlineGameView.vue` |
+| 在线大厅页 | `gomoku-web/src/games/gomoku/views/OnlineLobbyView.vue` |
+| 在线对弈页 | `gomoku-web/src/games/gomoku/views/OnlineGameView.vue` |
 
 ### Agent 组件
 | 要改什么 | 文件路径 |
@@ -123,7 +123,7 @@
 | 打字机动画引擎 | `gomoku-web/src/composables/useTypewriterQueue.ts` |
 | 输入框自动高度 | `gomoku-web/src/composables/useAutoResize.ts` |
 | 视觉识别跨组件通信 | `gomoku-web/src/composables/useVisionBridge.ts` |
-| 在线对弈核心状态（规划中） | `gomoku-web/src/composables/useOnlineGame.ts` |
+| 在线对弈核心状态 | `gomoku-web/src/composables/useOnlineGame.ts` |
 | 房间列表/加入/离开 | `gomoku-web/src/composables/useRoom.ts` |
 | 实时聊天（规划中） | `gomoku-web/src/composables/useChat.ts` |
 | 匹配队列（规划中） | `gomoku-web/src/composables/useMatchmaking.ts` |

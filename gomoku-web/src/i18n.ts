@@ -346,6 +346,15 @@ export interface Messages {
   onlineDisconnected: string;
   onlineYourTurn: string;
   onlineOpponentTurn: string;
+  onlineYouWin: string;
+  onlineYouLose: string;
+  onlineGameDraw: string;
+  onlineResign: string;
+  onlineLeaveRoom: string;
+  onlineBackToLobby: string;
+  onlineWaitingForOpponent: string;
+  onlineOpponentJoined: string;
+  onlineGameFinished: string;
 }
 
 export type MessageKey = keyof Messages;

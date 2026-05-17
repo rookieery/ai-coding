@@ -339,5 +339,14 @@
   "onlineCurrentTurn": "Current Turn",
   "onlineDisconnected": "Disconnected",
   "onlineYourTurn": "Your Turn",
-  "onlineOpponentTurn": "Opponent's Turn"
+  "onlineOpponentTurn": "Opponent's Turn",
+  "onlineYouWin": "You Win!",
+  "onlineYouLose": "You Lose",
+  "onlineGameDraw": "Draw",
+  "onlineResign": "Resign",
+  "onlineLeaveRoom": "Leave Room",
+  "onlineBackToLobby": "Back to Lobby",
+  "onlineWaitingForOpponent": "Waiting for opponent...",
+  "onlineOpponentJoined": "Opponent joined",
+  "onlineGameFinished": "Game Over"
 }
