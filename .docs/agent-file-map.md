@@ -191,8 +191,8 @@
 | 五子棋盘识别 | `gomoku-server/src/services/vision.service.ts` |
 | 象棋盘识别 | `gomoku-server/src/services/chess-vision.service.ts` |
 | 统一视觉识别（自动判断棋盘类型） | `gomoku-server/src/services/unified-vision.service.ts` |
-| 房间业务逻辑（规划中） | `gomoku-server/src/services/room.service.ts` |
-| 在线对弈逻辑（规划中） | `gomoku-server/src/services/online-game.service.ts` |
+| 房间业务逻辑 | `gomoku-server/src/services/room.service.ts` |
+| 在线对弈逻辑 | `gomoku-server/src/services/online-game.service.ts` |
 | 断线重连管理（规划中） | `gomoku-server/src/services/disconnect.service.ts` |
 | ELO 积分计算（规划中） | `gomoku-server/src/services/elo.service.ts` |
 | 匹配服务（规划中） | `gomoku-server/src/services/matchmaking.service.ts` |
@@ -220,14 +220,14 @@
 | 象棋候选走法生成 | `gomoku-server/src/utils/chessCandidateGenerator.ts` |
 | 象棋威胁检测 | `gomoku-server/src/utils/chessThreatDetector.ts` |
 
-### Socket.io（规划中）
+### Socket.io
 | 要改什么 | 文件路径 |
 |---------|---------|
-| Socket.io 初始化入口 | `gomoku-server/src/socket/index.ts` |
+| Socket.io 初始化入口（含断线观战者清理） | `gomoku-server/src/socket/index.ts` |
 | Socket 事件类型定义 | `gomoku-server/src/socket/types.ts` |
 | Socket 认证中间件 | `gomoku-server/src/socket/middleware.ts` |
-| 房间事件处理 | `gomoku-server/src/socket/handlers/room.handler.ts` |
-| 对弈事件处理 | `gomoku-server/src/socket/handlers/game.handler.ts` |
+| 房间事件处理（含观战验证） | `gomoku-server/src/socket/handlers/room.handler.ts` |
+| 对弈事件处理（含观战者权限拦截） | `gomoku-server/src/socket/handlers/game.handler.ts` |
 | 聊天事件处理 | `gomoku-server/src/socket/handlers/chat.handler.ts` |
 | 匹配事件处理 | `gomoku-server/src/socket/handlers/match.handler.ts` |
 

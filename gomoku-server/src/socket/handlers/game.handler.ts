@@ -1,4 +1,5 @@
 import { onlineGameService } from '../../services/online-game.service';
+import { roomService } from '../../services/room.service';
 import { logger } from '../../utils/logger';
 import type { PlayerColor, GameOverReason } from '../types';
 import type { TypedServer, TypedSocket } from '../types';
@@ -22,6 +23,16 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
 
       const { roomId, r, c } = payload;
       const userId = socket.data.user.id;
+
+      // Spectator permission check — only host or guest may move
+      const roomInfo = await roomService.getRoomById(roomId);
+      if (roomInfo.hostId !== userId && roomInfo.guestId !== userId) {
+        socket.emit('error', {
+          code: 'GAME_MOVE_FAILED',
+          message: 'onlineErrorNotYourTurn',
+        });
+        return;
+      }
 
       const result = await onlineGameService.makeMove(roomId, userId, r, c);
 
@@ -65,6 +76,16 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
 
       const { roomId } = payload;
       const userId = socket.data.user.id;
+
+      // Spectator permission check — only host or guest may resign
+      const roomInfo = await roomService.getRoomById(roomId);
+      if (roomInfo.hostId !== userId && roomInfo.guestId !== userId) {
+        socket.emit('error', {
+          code: 'GAME_RESIGN_FAILED',
+          message: 'onlineErrorNotYourTurn',
+        });
+        return;
+      }
 
       const result = await onlineGameService.resign(roomId, userId);
 

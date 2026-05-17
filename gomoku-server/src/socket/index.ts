@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { optionalSocketAuth } from './middleware';
 import { registerRoomHandlers } from './handlers/room.handler';
 import { registerGameHandlers } from './handlers/game.handler';
+import { roomService } from '../services/room.service';
 import type { TypedServer } from './types';
 
 let io: TypedServer;
@@ -70,8 +71,32 @@ export function initializeSocket(httpServer: Server): void {
     registerRoomHandlers(io, socket);
     registerGameHandlers(io, socket);
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', async (reason) => {
       logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);
+
+      // Detect spectator disconnect: if user was in a room but is neither host nor guest
+      if (socket.data.user) {
+        const disconnectedUserId = socket.data.user.id;
+
+        for (const roomId of socket.rooms) {
+          // Skip the socket's own ID room
+          if (roomId === socket.id) continue;
+
+          try {
+            const room = await roomService.getRoomById(roomId);
+
+            // If user is neither host nor guest → they are a spectator
+            if (room.hostId !== disconnectedUserId && room.guestId !== disconnectedUserId) {
+              await roomService.unwatchRoom(roomId);
+              const updatedRoom = await roomService.getRoomById(roomId);
+              io.to(roomId).emit('room:updated', { room: updatedRoom });
+              logger.info(`Spectator ${disconnectedUserId} disconnected from room ${roomId}`);
+            }
+          } catch {
+            // Room may have been deleted or other benign errors — ignore
+          }
+        }
+      }
     });
   });
 

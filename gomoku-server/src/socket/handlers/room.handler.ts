@@ -98,6 +98,16 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
         return;
       }
 
+      // Validate room exists and is in a watchable state (playing or waiting)
+      const existingRoom = await roomService.getRoomById(payload.roomId);
+      if (existingRoom.status !== 'playing' && existingRoom.status !== 'waiting') {
+        socket.emit('error', {
+          code: 'ROOM_WATCH_FAILED',
+          message: 'ROOM_NOT_WATCHABLE',
+        });
+        return;
+      }
+
       const room = await roomService.watchRoom(
         payload.roomId,
         socket.data.user.id,
