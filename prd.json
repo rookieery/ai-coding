@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-06-Room-Service",
-      "title": "创建房间 Service（RoomService）",
-      "description": "核心业务逻辑任务。在 gomoku-server/src/services/room.service.ts 中实现 RoomService 类：\n\n1. `createRoom(hostId, name, ruleMode)` — 创建房间并持久化到数据库，初始化 boardState 为 15x15 空数组（JSON.stringify），返回 RoomInfo。\n\n2. `joinRoom(roomId, userId)` — 加入房间：检查房间存在性、状态为 waiting、未被占满（guestId 为空）、不能加入自己的房间。**并发安全**：更新 guestId 时必须使用 Prisma 原子操作，将 `guestId: null` 作为 update 的 where 条件之一（`prisma.room.update({ where: { id: roomId, guestId: null }, data: { guestId: userId } })`），防止高并发下两个玩家同时加入同一房间的超卖问题。若 update 影响行数为 0 则抛出房间已满错误。成功后若双方齐备则将状态改为 playing，返回 RoomInfo + 颜色。\n\n3. `leaveRoom(roomId, userId)` — 离开房间：如果是 host 离开则销毁房间（status=finished）；如果是 guest 离开则清空 guestId，状态回到 waiting。\n\n4. `watchRoom(roomId, userId)` — 观战：检查房间存在性，递增 spectatorCount（不超过 maxSpectators），返回 RoomInfo。\n\n5. `unwatchRoom(roomId)` — 取消观战：递减 spectatorCount（不低于 0）。\n\n6. `getRoomList(page, pageSize)` — 分页获取公开房间列表（isPublic=true, status!=finished），按 createdAt 倒序。\n\n7. `getRoomById(roomId)` — 获取房间详情，包含 host 和 guest 的用户名。\n\n8. `toRoomInfo(room)` — 内部辅助方法，将 Prisma Room 实体转换为 RoomInfo 接口。\n\n依赖：ONLINE-02。预估代码约 200 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-07A-Room-Socket-Handler",
       "title": "创建房间 Socket Handler",
       "description": "事件处理任务。在 gomoku-server/src/socket/handlers/room.handler.ts 中实现：\n\n1. 导出 `registerRoomHandlers(io, socket)` 函数。\n2. `room:create` — 验证 socket.data.user 存在，调用 RoomService.createRoom，socket.join(roomId)，回发 room:created 给创建者，广播 room:updated 给大厅（后续优化）。\n3. `room:join` — 验证登录，调用 RoomService.joinRoom，socket.join(roomId)，广播 room:updated 给房间内所有人。\n4. `room:leave` — 调用 RoomService.leaveRoom，socket.leave(roomId)，若房间被销毁则广播 room:removed，否则广播 room:updated。\n5. `room:watch` — 验证登录，调用 RoomService.watchRoom，socket.join(roomId)，广播 room:updated。\n6. `room:list` — 调用 RoomService.getRoomList，回发 room:list 给请求者。\n7. 所有错误通过 socket.emit('error', { code, message }) 返回。\n8. 在 socket/index.ts 的 connection 中调用 registerRoomHandlers。\n\n依赖：ONLINE-05, ONLINE-06。预估代码约 150 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-07B-Room-REST-API",

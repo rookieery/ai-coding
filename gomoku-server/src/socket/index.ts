@@ -2,6 +2,7 @@ import { Server } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '../utils/logger';
 import { optionalSocketAuth } from './middleware';
+import { registerRoomHandlers } from './handlers/room.handler';
 import type { TypedServer } from './types';
 
 let io: TypedServer;
@@ -63,6 +64,9 @@ export function initializeSocket(httpServer: Server): void {
   io.on('connection', (socket) => {
     const userId = socket.data.user?.id ?? 'anonymous';
     logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
+
+    // Register event handlers
+    registerRoomHandlers(io, socket);
 
     socket.on('disconnect', (reason) => {
       logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);
