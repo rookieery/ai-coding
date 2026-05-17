@@ -6,6 +6,8 @@ import { registerRoomHandlers } from './handlers/room.handler';
 import { registerGameHandlers } from './handlers/game.handler';
 import { registerChatHandlers } from './handlers/chat.handler';
 import { roomService } from '../services/room.service';
+import { disconnectService } from '../services/disconnect.service';
+import { matchmakingService } from '../services/matchmaking.service';
 import type { TypedServer } from './types';
 
 let io: TypedServer;
@@ -68,6 +70,52 @@ export function initializeSocket(httpServer: Server): void {
     const userId = socket.data.user?.id ?? 'anonymous';
     logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
 
+    // ── Reconnect detection ──────────────────────────────────────────
+    // If a reconnecting user was in a disconnect timer, cancel it.
+    if (socket.data.user) {
+      const reconnectingUserId = socket.data.user.id;
+
+      // Check all rooms the server knows this user belongs to
+      // by scanning active rooms with status=playing where user is host or guest
+      // We rely on the socket joining rooms on the client side, but we can
+      // check disconnect state directly.
+      (async () => {
+        try {
+          const { prisma: db } = await import('../app');
+          const activeRooms = await db.room.findMany({
+            where: {
+              status: 'playing',
+              OR: [
+                { hostId: reconnectingUserId },
+                { guestId: reconnectingUserId },
+              ],
+            },
+            select: { id: true },
+          });
+
+          for (const room of activeRooms) {
+            if (disconnectService.isDisconnected(room.id, reconnectingUserId)) {
+              disconnectService.cancelDisconnectTimer(room.id, reconnectingUserId);
+
+              // Notify the room that the player has reconnected
+              io.to(room.id).emit('disconnect:warning', {
+                roomId: room.id,
+                remainingSeconds: -1, // -1 signals reconnected
+              });
+
+              logger.info(
+                `Player ${reconnectingUserId} reconnected to room ${room.id}, disconnect timer cancelled`,
+              );
+            }
+          }
+        } catch (err) {
+          logger.error(
+            `Error checking reconnect state for user ${reconnectingUserId}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      })();
+    }
+
     // Register event handlers
     registerRoomHandlers(io, socket);
     registerGameHandlers(io, socket);
@@ -76,19 +124,31 @@ export function initializeSocket(httpServer: Server): void {
     socket.on('disconnect', async (reason) => {
       logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);
 
-      // Detect spectator disconnect: if user was in a room but is neither host nor guest
       if (socket.data.user) {
         const disconnectedUserId = socket.data.user.id;
+
+        // Clean up any matchmaking queue entries for this user
+        matchmakingService.dequeue(disconnectedUserId);
 
         for (const roomId of socket.rooms) {
           // Skip the socket's own ID room
           if (roomId === socket.id) continue;
+          // Skip channel sub-rooms (e.g. "roomId:players", "roomId:spectators")
+          if (roomId.includes(':')) continue;
 
           try {
             const room = await roomService.getRoomById(roomId);
 
-            // If user is neither host nor guest → they are a spectator
-            if (room.hostId !== disconnectedUserId && room.guestId !== disconnectedUserId) {
+            const isHost = room.hostId === disconnectedUserId;
+            const isGuest = room.guestId === disconnectedUserId;
+
+            if (isHost || isGuest) {
+              // Player disconnect during an active game → start disconnect timer
+              if (room.status === 'playing') {
+                disconnectService.startDisconnectTimer(roomId, disconnectedUserId, io);
+              }
+            } else {
+              // Spectator disconnect
               await roomService.unwatchRoom(roomId);
               const updatedRoom = await roomService.getRoomById(roomId);
               io.to(roomId).emit('room:updated', { room: updatedRoom });

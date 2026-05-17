@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-18-Frontend-Chat",
-      "title": "前端：创建聊天 composable + ChatPanel 组件",
-      "description": "前端聊天功能任务。分两部分：\n\n**A. useChat composable** — gomoku-web/src/composables/useChat.ts：\n1. Props 参数：roomId, isPlayer (boolean)。\n2. 状态：`messages` ref（分频道 Map：players 和 spectators）、`activeChannel` ref（根据角色自动设定）。\n3. `sendMessage(content)` — 通过 Socket 发送 chat:send，自动根据 isPlayer 选择频道。\n4. 监听 chat:message Socket 事件，追加到对应频道的消息列表。\n5. `messagesForActiveChannel` computed — 当前激活频道的消息。\n6. 组件卸载时清理 Socket 监听。\n\n**B. ChatPanel.vue** — gomoku-web/src/games/gomoku/components/online/ChatPanel.vue：\n1. Props: roomId (string), isPlayer (boolean)。\n2. 消息列表：显示用户名 + 消息内容 + 时间，自动滚动到底部（nextTick + scrollTop）。\n3. 输入框 + 发送按钮，回车发送。\n4. 观战者只显示观战频道，对弈者只显示对弈频道（无需 Tab 切换，MVP 简化）。\n5. 所有文案使用 i18n。\n\n依赖：ONLINE-10, ONLINE-17。预估代码约 100 行（composable）+ 100 行（组件）。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-19-Disconnect-Service",
       "title": "后端：创建断线重连管理 Service + 集成到 Socket 连接管理",
       "description": "断线重连任务。分两部分：\n\n**A. DisconnectService** — gomoku-server/src/services/disconnect.service.ts：\n1. 内存 Map<roomId, { userId, timeout: NodeJS.Timeout, startedAt }> 管理断线状态。\n2. `startDisconnectTimer(roomId, userId, io)` — 对弈者断线时启动 60 秒倒计时：\n   - 存储到 Map。\n   - 使用 setTimeout，到期自动将断线方判负（更新数据库 room.winner/room.status），广播 game:over。\n   - 每秒广播 disconnect:warning { roomId, remainingSeconds } 给房间内其他人。\n3. `cancelDisconnectTimer(roomId, userId)` — 对弈者重连时取消倒计时：clearTimeout，从 Map 移除。\n4. `isDisconnected(roomId, userId)` — 检查用户是否处于断线状态。\n\n**B. 集成到 Socket 连接管理** — 修改 gomoku-server/src/socket/index.ts：\n1. Socket disconnect 事件：检测断开者是否为活跃房间的对弈者（host 或 guest），如果是且游戏正在进行（status=playing），触发 DisconnectService.startDisconnectTimer。**同时必须调用 MatchmakingService.dequeue(userId)**，清理该用户可能残留的匹配队列，防止断线玩家留在匹配池中变成僵尸玩家。\n2. Socket connection 事件：检查重连用户（通过 socket.data.user.id 匹配活跃房间的 host/guest），如果处于断线状态，触发 DisconnectService.cancelDisconnectTimer。\n\nMVP 限制：内存版，进程重启后断线状态丢失。\n\n依赖：ONLINE-09。预估代码约 120 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-20-I18N",
