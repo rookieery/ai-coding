@@ -145,6 +145,7 @@
   "navAgent": "Qilin Agent",
   "navGame": "Gomoku",
   "navChineseChess": "Chinese Chess",
+  "navOnline": "Online",
   "settingsTitle": "Personal Settings",
   "settingsOldPasswordLabel": "Current Password",
   "settingsOldPasswordPlaceholder": "Enter current password",

@@ -4,6 +4,8 @@ import GameView from '../games/gomoku/views/GameView.vue';
 import LoginView from '../views/LoginView.vue';
 import AdminView from '../views/AdminView.vue';
 import ChineseChessView from '../games/chinese-chess/views/ChineseChessView.vue';
+import OnlineLobbyView from '../games/gomoku/views/OnlineLobbyView.vue';
+import OnlineGameView from '../games/gomoku/views/OnlineGameView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -37,6 +39,18 @@ const router = createRouter({
       name: 'chinese-chess',
       component: ChineseChessView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/online',
+      name: 'online-lobby',
+      component: OnlineLobbyView,
+      meta: { requiresAuth: false }
+    },
+    {
+      path: '/online/room/:id',
+      name: 'online-game',
+      component: OnlineGameView,
+      meta: { requiresAuth: false }
     }
   ]
 });

@@ -54,8 +54,10 @@ gomoku-web/src/
 | `/login` | `LoginView.vue` | 仅游客 | 登录/注册 |
 | `/admin` | `AdminView.vue` | ADMIN | 管理后台 |
 | `/chinese-chess` | `ChineseChessView.vue` | 需要 | 独立象棋页面 |
+| `/online` | `OnlineLobbyView.vue` | 不需要 | 在线对弈大厅（游客可浏览） |
+| `/online/room/:id` | `OnlineGameView.vue` | 不需要 | 在线对弈房间（游客可观战） |
 
-路由守卫：未登录重定向到 `/login`，已登录访问 `/login` 重定向到 `/`。`AgentView`、`GameView`、`AdminView`、`ChineseChessView` 使用 `<keep-alive>` 缓存。
+路由守卫：未登录重定向到 `/login`，已登录访问 `/login` 重定向到 `/`。`AgentView`、`GameView`、`AdminView`、`ChineseChessView`、`OnlineLobbyView`、`OnlineGameView` 使用 `<keep-alive>` 缓存。
 
 ---
 

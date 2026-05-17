@@ -145,6 +145,7 @@
   "navAgent": "棋林智能体",
   "navGame": "五子棋",
   "navChineseChess": "中国象棋",
+  "navOnline": "在线对弈",
   "settingsTitle": "个人设置",
   "changePasswordTitle": "修改密码",
   "settingsOldPasswordLabel": "旧密码",
