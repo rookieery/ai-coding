@@ -54,7 +54,7 @@
 | 在线房间卡片 | `gomoku-web/src/games/gomoku/components/online/RoomCard.vue` |
 | 创建房间弹窗 | `gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue` |
 | 在线对弈棋盘 | `gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue` |
-| 聊天面板（规划中） | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
+| 聊天面板 | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
 | 玩家信息栏 | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
 | 观战者列表 | `gomoku-web/src/games/gomoku/components/online/SpectatorList.vue` |
 | Toast 通知 | `gomoku-web/src/games/gomoku/components/NotificationToast.vue` |
@@ -125,7 +125,7 @@
 | 视觉识别跨组件通信 | `gomoku-web/src/composables/useVisionBridge.ts` |
 | 在线对弈核心状态 | `gomoku-web/src/composables/useOnlineGame.ts` |
 | 房间列表/加入/离开 | `gomoku-web/src/composables/useRoom.ts` |
-| 实时聊天（规划中） | `gomoku-web/src/composables/useChat.ts` |
+| 实时聊天 | `gomoku-web/src/composables/useChat.ts` |
 | 匹配队列（规划中） | `gomoku-web/src/composables/useMatchmaking.ts` |
 
 ### 共享组件

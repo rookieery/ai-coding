@@ -52,7 +52,8 @@ App.vue
 │   └── OnlineGameView.vue (在线对弈)
 │       ├── OnlineBoard.vue ★ 在线棋盘 (独立渲染, 支持回合控制)
 │       ├── PlayerInfo.vue ★ 玩家信息 (颜色/用户名/轮次/断线)
-│       └── SpectatorList.vue ★ 观战者列表 (数量展示)
+│       ├── SpectatorList.vue ★ 观战者列表 (数量展示)
+│       └── ChatPanel.vue ★ 聊天面板 (频道隔离: 对弈者/观战者)
 ```
 
 ---
@@ -157,7 +158,7 @@ OnlineGameView.vue (路由 /online/room/:id)
         ├── 顶部栏: 房间名称 + 状态标签 (waiting/playing/finished)
         ├── 左侧: 对手 PlayerInfo
         ├── 中间: OnlineBoard
-        ├── 右侧: 自己 PlayerInfo + SpectatorList
+        ├── 右侧: 自己 PlayerInfo + SpectatorList + ChatPanel
         └── 底部: 认输按钮(仅玩家) + 返回大厅(游戏结束)
 ```
 
@@ -204,6 +205,7 @@ OnlineGameView.vue (路由 /online/room/:id)
 | 游戏状态 gameStatus | `useOnlineGame()` | 内存 | OnlineGameView |
 | 房间列表 rooms[] | `useRoom()` | 内存 | OnlineLobbyView, OnlineGameView |
 | 当前房间 currentRoom | `useRoom()` | 内存 | OnlineGameView |
+| 聊天消息 messagesMap | `useChat()` | 内存 | OnlineGameView (via ChatPanel) |
 
 ### 组件局部状态 (不跨页面)
 

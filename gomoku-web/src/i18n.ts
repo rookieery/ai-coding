@@ -355,6 +355,10 @@ export interface Messages {
   onlineWaitingForOpponent: string;
   onlineOpponentJoined: string;
   onlineGameFinished: string;
+  onlineChatPlayersChannel: string;
+  onlineChatSpectatorsChannel: string;
+  onlineChatPlaceholder: string;
+  onlineChatSend: string;
 }
 
 export type MessageKey = keyof Messages;

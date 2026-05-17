@@ -349,5 +349,9 @@
   "onlineBackToLobby": "返回大厅",
   "onlineWaitingForOpponent": "等待对手加入...",
   "onlineOpponentJoined": "对手已加入",
-  "onlineGameFinished": "对局结束"
+  "onlineGameFinished": "对局结束",
+  "onlineChatPlayersChannel": "对弈频道",
+  "onlineChatSpectatorsChannel": "观战频道",
+  "onlineChatPlaceholder": "输入消息...",
+  "onlineChatSend": "发送"
 }

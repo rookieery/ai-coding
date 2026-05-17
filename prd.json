@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-17-Chat-Handler",
-      "title": "后端：创建聊天 Socket Handler",
-      "description": "聊天后端任务。在 gomoku-server/src/socket/handlers/chat.handler.ts 中实现：\n\n1. 导出 `registerChatHandlers(io, socket)` 函数。\n\n2. `chat:send` 事件处理：\n   - 验证 socket.data.user 存在（登录校验）。\n   - 验证用户在该房间内（通过 socket.rooms 检查）。\n   - 根据用户角色确定可用频道：\n     - 对弈者（host/guest）只能用 'players' 频道。\n     - 观战者只能用 'spectators' 频道。\n   - 消息内容校验：非空，trim 后长度 1-500。\n   - 将消息持久化到 RoomMessage 表。\n   - 广播 `chat:message` 到房间内对应频道的所有人。\n\n3. 频道隔离实现：利用 Socket.io Room 的子房间机制，每个房间 ID 拆分为两个 Socket Room：`{roomId}:players` 和 `{roomId}:spectators`。对弈者加入时同时 join `{roomId}` 和 `{roomId}:players`，观战者 join `{roomId}` 和 `{roomId}:spectators`。\n\n4. 在 socket/index.ts 中注册 chat handler。\n\n依赖：ONLINE-05。预估代码约 100 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-18-Frontend-Chat",
       "title": "前端：创建聊天 composable + ChatPanel 组件",
       "description": "前端聊天功能任务。分两部分：\n\n**A. useChat composable** — gomoku-web/src/composables/useChat.ts：\n1. Props 参数：roomId, isPlayer (boolean)。\n2. 状态：`messages` ref（分频道 Map：players 和 spectators）、`activeChannel` ref（根据角色自动设定）。\n3. `sendMessage(content)` — 通过 Socket 发送 chat:send，自动根据 isPlayer 选择频道。\n4. 监听 chat:message Socket 事件，追加到对应频道的消息列表。\n5. `messagesForActiveChannel` computed — 当前激活频道的消息。\n6. 组件卸载时清理 Socket 监听。\n\n**B. ChatPanel.vue** — gomoku-web/src/games/gomoku/components/online/ChatPanel.vue：\n1. Props: roomId (string), isPlayer (boolean)。\n2. 消息列表：显示用户名 + 消息内容 + 时间，自动滚动到底部（nextTick + scrollTop）。\n3. 输入框 + 发送按钮，回车发送。\n4. 观战者只显示观战频道，对弈者只显示对弈频道（无需 Tab 切换，MVP 简化）。\n5. 所有文案使用 i18n。\n\n依赖：ONLINE-10, ONLINE-17。预估代码约 100 行（composable）+ 100 行（组件）。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-19-Disconnect-Service",

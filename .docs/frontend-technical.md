@@ -32,7 +32,7 @@ gomoku-web/src/
 ├── api/                     # API 服务层（7 个模块）
 ├── common/                  # 共享组件 + 主题定义
 ├── components/              # 应用级组件（Agent 相关）
-├── composables/             # 可组合函数（13 个）
+├── composables/             # 可组合函数（17 个）
 ├── games/                   # 游戏模块
 │   ├── gomoku/              # 五子棋（组件 + AI 引擎 + API）
 │   └── chinese-chess/       # 中国象棋（组件 + AI 引擎 + API）
@@ -87,6 +87,9 @@ gomoku-web/src/
 | `useSplitDrag` | 分屏面板拖拽 |
 | `useTypewriterQueue` | 打字机动画引擎 |
 | `useVisionBridge` | 视觉识别跨组件通信桥 |
+| `useOnlineGame` | 在线对弈：棋盘状态、轮次逻辑、Socket game 事件 |
+| `useRoom` | 房间管理：房间列表、加入/离开/观战、Socket room 事件 |
+| `useChat` | 实时聊天：频道隔离（players/spectators）、Socket chat 事件 |
 
 ### 跨组件通信
 `useVisionBridge()` 是一个响应式状态桥，用于在 GameView、AgentView 和视觉确认面板之间传递识别候选、分析请求和复盘标志。

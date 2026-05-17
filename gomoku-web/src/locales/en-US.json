@@ -349,5 +349,9 @@
   "onlineBackToLobby": "Back to Lobby",
   "onlineWaitingForOpponent": "Waiting for opponent...",
   "onlineOpponentJoined": "Opponent joined",
-  "onlineGameFinished": "Game Over"
+  "onlineGameFinished": "Game Over",
+  "onlineChatPlayersChannel": "Players",
+  "onlineChatSpectatorsChannel": "Spectators",
+  "onlineChatPlaceholder": "Type a message...",
+  "onlineChatSend": "Send"
 }
