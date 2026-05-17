@@ -340,6 +340,12 @@ export interface Messages {
   onlineRoomNameRequired: string;
   onlineRuleStandard: string;
   onlineRuleRenju: string;
+  onlineTitle: string;
+  onlineErrorNotLoggedIn: string;
+  onlineCurrentTurn: string;
+  onlineDisconnected: string;
+  onlineYourTurn: string;
+  onlineOpponentTurn: string;
 }
 
 export type MessageKey = keyof Messages;

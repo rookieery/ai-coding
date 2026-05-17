@@ -333,5 +333,11 @@
   "onlineRoomNamePlaceholder": "Enter room name",
   "onlineRoomNameRequired": "Room name cannot be empty",
   "onlineRuleStandard": "Standard",
-  "onlineRuleRenju": "Renju"
+  "onlineRuleRenju": "Renju",
+  "onlineTitle": "Online Lobby",
+  "onlineErrorNotLoggedIn": "Please log in to perform this action",
+  "onlineCurrentTurn": "Current Turn",
+  "onlineDisconnected": "Disconnected",
+  "onlineYourTurn": "Your Turn",
+  "onlineOpponentTurn": "Opponent's Turn"
 }

@@ -45,9 +45,14 @@ App.vue
 │       ├── DeleteConfirmModal.vue
 │       └── NotificationToast.vue
 │
-│   └── OnlineLobbyView.vue (在线大厅, 规划中)
+│   └── OnlineLobbyView.vue (在线大厅)
 │       ├── RoomList.vue → RoomCard.vue
 │       └── CreateRoomModal.vue
+│
+│   └── OnlineGameView.vue (在线对弈, 规划中)
+│       ├── OnlineBoard.vue ★ 在线棋盘 (独立渲染, 支持回合控制)
+│       ├── PlayerInfo.vue ★ 玩家信息 (颜色/用户名/轮次/断线)
+│       └── SpectatorList.vue ★ 观战者列表 (数量展示)
 ```
 
 ---

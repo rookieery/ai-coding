@@ -53,10 +53,10 @@
 | 在线房间列表 | `gomoku-web/src/games/gomoku/components/online/RoomList.vue` |
 | 在线房间卡片 | `gomoku-web/src/games/gomoku/components/online/RoomCard.vue` |
 | 创建房间弹窗 | `gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue` |
-| 在线对弈棋盘（规划中） | `gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue` |
+| 在线对弈棋盘 | `gomoku-web/src/games/gomoku/components/online/OnlineBoard.vue` |
 | 聊天面板（规划中） | `gomoku-web/src/games/gomoku/components/online/ChatPanel.vue` |
-| 玩家信息栏（规划中） | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
-| 观战者列表（规划中） | `gomoku-web/src/games/gomoku/components/online/SpectatorList.vue` |
+| 玩家信息栏 | `gomoku-web/src/games/gomoku/components/online/PlayerInfo.vue` |
+| 观战者列表 | `gomoku-web/src/games/gomoku/components/online/SpectatorList.vue` |
 | Toast 通知 | `gomoku-web/src/games/gomoku/components/NotificationToast.vue` |
 | 全屏视觉确认面板 | `gomoku-web/src/games/gomoku/components/VisionConfirmationPanel.vue` |
 

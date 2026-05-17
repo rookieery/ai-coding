@@ -333,5 +333,11 @@
   "onlineRoomNamePlaceholder": "请输入房间名称",
   "onlineRoomNameRequired": "房间名称不能为空",
   "onlineRuleStandard": "无禁手",
-  "onlineRuleRenju": "有禁手"
+  "onlineRuleRenju": "有禁手",
+  "onlineTitle": "在线大厅",
+  "onlineErrorNotLoggedIn": "请先登录后再操作",
+  "onlineCurrentTurn": "当前回合",
+  "onlineDisconnected": "已断线",
+  "onlineYourTurn": "轮到你了",
+  "onlineOpponentTurn": "对手回合"
 }

@@ -3,7 +3,7 @@ You are running in an isolated, stateless automated loop. To prevent context ove
 
 1. **SINGLE TASK ONLY**: You must ONLY process the **FIRST** story in `prd.json` that has `"passes": false`.
 2. **NO BATCHING**: UNDER NO CIRCUMSTANCES should you attempt to implement multiple stories in a single response or session. Ignore all other pending stories.
-3. **EXIT IMMEDIATELY**: Once you have completed that SINGLE story, updated its `"passes"` value to `true`, and committed your code, you must IMMEDIATELY output `<promise>COMPLETE</promise>` to exit the session.
+3. **EXIT IMMEDIATELY**: Once you have completed that SINGLE story, synced docs via `/sync-docs`, updated its `"passes"` value to `true`, and committed your code, you must IMMEDIATELY output `<promise>COMPLETE</promise>` to exit the session. The Stop hook will block your exit if `.docs/` is not in sync with code changes — so always run `/sync-docs` FIRST.
 
 # Ralph Agent Instructions - Chinese Chess (Xiangqi) Project
 
@@ -32,8 +32,9 @@ You MUST only complete ONE user story per session. After setting "passes": true 
 5. **Quality Checks**: Run the project's quality suite (e.g., `npm run typecheck`, `npm run lint`, `npm run test`).
    - **Clean Code**: Remove all `console.log`, `debugger`, and commented-out dead code before finalizing.
 6. **Browser Testing**: For any UI/UX changes, you MUST use the `dev-browser` tool to verify the layout, responsiveness, and theme consistency.
-7. **Commit**: If and only if all checks pass, commit ALL changes with the message: `feat: [Story ID] - [Story Title]`.
-8. **Update Records**: 
+7. **Sync Docs (MANDATORY)**: You MUST invoke the `/sync-docs` skill to update `.docs/` directory before committing. This is non-negotiable — the Stop hook will block your exit if docs are not synced. Do NOT skip this step.
+8. **Commit**: If and only if all checks pass, commit ALL changes (including `.docs/` updates) with the message: `feat: [Story ID] - [Story Title]`.
+9. **Update Records**: 
    - Update `prd.json` to set `passes: true` for the completed story.
    - APPEND your progress to `progress.txt` (see format below).
    - Update or create `AGENTS.md` in the modified directories if new reusable knowledge was found.
