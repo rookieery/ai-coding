@@ -5,6 +5,7 @@ import { optionalSocketAuth } from './middleware';
 import { registerRoomHandlers } from './handlers/room.handler';
 import { registerGameHandlers } from './handlers/game.handler';
 import { registerChatHandlers } from './handlers/chat.handler';
+import { registerMatchHandlers, startMatchmakingTimer } from './handlers/match.handler';
 import { roomService } from '../services/room.service';
 import { disconnectService } from '../services/disconnect.service';
 import { matchmakingService } from '../services/matchmaking.service';
@@ -66,6 +67,9 @@ export function initializeSocket(httpServer: Server): void {
   // Individual handlers check socket.data.user for actions that require authentication.
   io.use(optionalSocketAuth);
 
+  // Start the periodic matchmaking timer (runs once per server lifetime)
+  startMatchmakingTimer(io);
+
   io.on('connection', (socket) => {
     const userId = socket.data.user?.id ?? 'anonymous';
     logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
@@ -120,6 +124,7 @@ export function initializeSocket(httpServer: Server): void {
     registerRoomHandlers(io, socket);
     registerGameHandlers(io, socket);
     registerChatHandlers(io, socket);
+    registerMatchHandlers(io, socket);
 
     socket.on('disconnect', async (reason) => {
       logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);

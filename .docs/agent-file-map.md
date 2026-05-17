@@ -226,13 +226,13 @@
 ### Socket.io
 | 要改什么 | 文件路径 |
 |---------|---------|
-| Socket.io 初始化入口（含断线重连 + 观战者清理） | `gomoku-server/src/socket/index.ts` |
+| Socket.io 初始化入口（含断线重连 + 观战者清理 + 匹配定时器） | `gomoku-server/src/socket/index.ts` |
 | Socket 事件类型定义 | `gomoku-server/src/socket/types.ts` |
 | Socket 认证中间件 | `gomoku-server/src/socket/middleware.ts` |
 | 房间事件处理（含观战验证） | `gomoku-server/src/socket/handlers/room.handler.ts` |
 | 对弈事件处理（含观战者权限拦截） | `gomoku-server/src/socket/handlers/game.handler.ts` |
 | 聊天事件处理 | `gomoku-server/src/socket/handlers/chat.handler.ts` |
-| 匹配事件处理 | `gomoku-server/src/socket/handlers/match.handler.ts` |
+| 匹配事件处理（match:queue/cancel + 5s 定时器 + 自动创建排位房间） | `gomoku-server/src/socket/handlers/match.handler.ts` |
 
 ### 工具与类型
 | 要改什么 | 文件路径 |

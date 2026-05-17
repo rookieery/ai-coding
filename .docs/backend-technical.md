@@ -277,3 +277,42 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 9. 队列位置追踪
 10. 连续匹配
 11. 阈值扩展的精确时间行为
+
+---
+
+## 匹配 Socket Handler
+
+### 概述
+处理客户端匹配事件的 Socket.io handler，集成 MatchmakingService + RoomService，实现从排队到创建排位房间的完整流程。
+
+### 核心文件
+| 文件 | 说明 |
+|------|------|
+| `socket/handlers/match.handler.ts` | 匹配事件处理（match:queue, match:cancel）+ 定时匹配 |
+
+### 导出函数
+- `registerMatchHandlers(io, socket)` — 注册 match:queue 和 match:cancel 事件处理
+- `startMatchmakingTimer(io)` — 启动 5 秒间隔定时器，周期调用 `findMatch()`
+
+### Socket 事件
+
+| 事件 | 方向 | 说明 |
+|------|------|------|
+| `match:queue` | Client → Server | 加入匹配队列，参数 `{ ruleMode }` |
+| `match:cancel` | Client → Server | 离开匹配队列 |
+| `match:waiting` | Server → Client | 回报队列位置 `{ position }` |
+| `match:found` | Server → Client | 匹配成功 `{ roomId, opponent }` |
+
+### 匹配流程
+1. 客户端发送 `match:queue { ruleMode }`
+2. 服务端验证认证 → 查询用户 rating → 调用 `matchmakingService.enqueue()`
+3. 回发 `match:waiting { position }`
+4. 立即尝试 `findMatch()`（不等待定时器）
+5. 匹配成功时：创建排位房间（`isRanked=true`）→ 自动加入对手 → 双方收到 `match:found`
+6. 定时器每 5 秒额外调用 `findMatch()` 作为兜底
+
+### 断线处理
+已有机制：`socket/index.ts` 的 `disconnect` 事件中调用 `matchmakingService.dequeue(userId)` 自动清理离线用户。
+
+### RoomService 变更
+`createRoom(hostId, name, ruleMode, isRanked?)` 新增可选参数 `isRanked`（默认 `false`），用于创建排位赛房间。

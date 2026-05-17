@@ -14,6 +14,7 @@ class RoomService {
     hostId: string,
     name: string,
     ruleMode: RuleMode,
+    isRanked: boolean = false,
   ): Promise<RoomInfo> {
     const BOARD_SIZE = 15;
     const emptyBoard: number[][] = Array.from({ length: BOARD_SIZE }, () =>
@@ -31,6 +32,7 @@ class RoomService {
         gameType: 'gomoku',
         boardSize: BOARD_SIZE,
         currentPlayer: 'black',
+        isRanked,
       },
       include: {
         host: { select: { username: true } },
