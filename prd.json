@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-12A-Room-Sub-Components",
-      "title": "前端：创建房间子组件（RoomList + RoomCard + CreateRoomModal）",
-      "description": "前端 UI 子组件任务。创建 3 个组件：\n\n**A. RoomCard.vue** — gomoku-web/src/games/gomoku/components/online/RoomCard.vue：\n1. Props: room (RoomInfo 类型)。\n2. 显示：房间名称、规则模式（无禁手/有禁手）、状态标签（等待中/对弈中）。\n3. 显示 host 名称、guest 名称（或「等待中...」）。\n4. 观战人数。\n5. 操作按钮：加入（status=waiting 时）/ 观战（status=playing 时），emit 对应事件。\n6. 所有文案使用 i18n。\n\n**B. RoomList.vue** — gomoku-web/src/games/gomoku/components/online/RoomList.vue：\n1. Props: rooms (RoomInfo[])。\n2. 渲染 RoomCard 列表（v-for）。\n3. 空状态显示 i18n('noRooms')。\n4. 向上透传 join/watch 事件。\n\n**C. CreateRoomModal.vue** — gomoku-web/src/games/gomoku/components/online/CreateRoomModal.vue：\n1. Props: visible (boolean)。\n2. Emits: close, create。\n3. 表单：房间名称输入框、规则模式选择（无禁手/有禁手）。\n4. 确认/取消按钮。\n5. 表单校验（名称不能为空）。\n\n依赖：ONLINE-11。所有文案使用 i18n，严禁硬编码中文。预估代码约 200 行（3 个文件合计）。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-12B-Online-Lobby-View",
       "title": "前端：创建在线大厅页面（OnlineLobbyView）",
       "description": "前端页面组装任务。创建 gomoku-web/src/games/gomoku/views/OnlineLobbyView.vue：\n\n1. 页面布局：顶部标题栏（onlineTitle）+ 创建房间按钮 + 房间列表区域。\n2. 使用 useRoom composable 管理状态。\n3. 集成 CreateRoomModal：点击创建按钮显示弹窗，create 事件调用 useRoom.createRoom。\n4. 集成 RoomList + RoomCard：加载房间列表，点击加入/观战调用对应方法。\n5. 加入房间成功后跳转到 /online/room/:id（router.push）。\n6. 未登录用户：可浏览房间列表和观战，创建/加入时前端提示需登录（使用 useAuth）。\n7. 页面挂载时调用 loadRooms()，卸载时清理 Socket 监听。\n8. 实时更新：监听 room:updated 事件自动刷新列表。\n\n依赖：ONLINE-12A, ONLINE-11。所有文案使用 i18n。预估代码约 120 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-13-Frontend-Online-Game",
