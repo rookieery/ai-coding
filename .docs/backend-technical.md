@@ -29,7 +29,7 @@ gomoku-server/src/
 │   ├── auth.ts              # JWT 认证 + 管理员权限
 │   └── validation.ts        # Zod 请求校验中间件
 ├── controllers/             # 8 个控制器
-├── services/                # 11 个服务
+├── services/                # 12 个服务
 ├── routes/                  # 路由定义
 │   ├── index.ts             # 路由聚合
 │   └── games/               # 游戏子路由
@@ -237,3 +237,43 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 |------|------|
 | `GET /api/users/:id/rating` | 获取用户积分信息（rating, totalGames, wins, losses, draws, winRate） |
 | `GET /api/users/leaderboard` | 积分排行榜（Top 50，按 rating 倒序，含 rank 字段） |
+
+---
+
+## 匹配系统（MatchmakingService）
+
+### 概述
+内存队列匹配服务，按 `ruleMode` 维护独立队列，支持动态积分阈值扩展。
+
+### 匹配算法
+1. **基础阈值**：积分差 ≤ 200 立即匹配
+2. **动态扩展**：等待超过 30s 后，每 10s 阈值扩大 100 分
+3. **最优匹配**：在阈值范围内选择积分差最小的对手
+4. **FIFO 优先**：优先匹配等待时间最长的玩家
+
+### 核心文件
+| 文件 | 说明 |
+|------|------|
+| `services/matchmaking.service.ts` | 匹配服务（内存队列 + 动态阈值） |
+| `services/matchmaking.service.test.ts` | 14 个单元测试覆盖所有场景 |
+
+### API
+- `enqueue(userId, rating, ruleMode)` — 加入队列（防重复），返回 `boolean`
+- `dequeue(userId)` — 离开所有队列，返回是否成功
+- `findMatch()` — 遍历所有队列尝试匹配，返回 `{ player1, player2, ruleMode } | null`
+- `getQueuePosition(userId)` — 获取用户在队列中的位置（1-based，0 表示不在队列）
+- `getQueueSize(ruleMode)` — 获取指定模式队列长度
+- `isQueued(userId)` — 检查用户是否在任何队列中
+
+### 测试覆盖场景
+1. 相同积分立即匹配
+2. 积分差距过大不匹配（>200）
+3. 等待超时后阈值扩展匹配
+4. 多人同时匹配的正确配对（最近积分优先）
+5. 取消匹配后不再被匹配
+6. 队列为空/单人不报错
+7. 防止重复入队
+8. 不同 ruleMode 不交叉匹配
+9. 队列位置追踪
+10. 连续匹配
+11. 阈值扩展的精确时间行为

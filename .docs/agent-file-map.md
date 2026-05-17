@@ -196,7 +196,8 @@
 | 在线对弈逻辑（含排位赛 ELO 集成） | `gomoku-server/src/services/online-game.service.ts` |
 | 断线重连管理（60s 倒计时 + 重连取消 + 排位赛 ELO） | `gomoku-server/src/services/disconnect.service.ts` |
 | ELO 积分计算（标准 ELO + K-factor 动态调整） | `gomoku-server/src/services/elo.service.ts` |
-| 匹配服务（stub：仅 dequeue） | `gomoku-server/src/services/matchmaking.service.ts` |
+| 匹配服务（内存队列 + 动态积分阈值 + 防重复入队） | `gomoku-server/src/services/matchmaking.service.ts` |
+| 匹配服务单元测试（14 个测试用例） | `gomoku-server/src/services/matchmaking.service.test.ts` |
 
 ### 路由
 | 要改什么 | 文件路径 |

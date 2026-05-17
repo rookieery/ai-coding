@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-22-ELO-Integration",
-      "title": "后端：将 ELO 积分更新集成到游戏结束流程 + 积分 REST API",
-      "description": "积分集成任务（第二阶段）。分两部分：\n\n**A. 游戏结束积分更新** — 修改 gomoku-server/src/services/online-game.service.ts：\n1. 在游戏结束处理中（makeMove 判定胜负、resign），如果房间 isRanked=true：\n   - 调用 EloService.updateRatings 更新双方积分。\n   - 创建 Match 记录保存对局数据（playerBlackId, playerWhiteId, result, moves 等）。\n   - 在 game:over 广播中携带双方积分变化信息。\n\n**B. 积分 REST API** — 扩展 gomoku-server/src/routes/room.routes.ts：\n1. `GET /api/users/:id/rating` — 获取用户积分信息（rating, 对局数, 胜率）。\n2. `GET /api/leaderboard` — 积分排行榜（Top 50，按 rating 倒序）。\n\n依赖：ONLINE-21, ONLINE-08。预估代码约 80 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-23-Matchmaking-Service",
       "title": "后端：创建匹配服务（MatchmakingService）+ 单元测试",
       "description": "匹配系统任务（第二阶段）。分两部分：\n\n**A. MatchmakingService** — gomoku-server/src/services/matchmaking.service.ts：\n1. 内存队列：Map<ruleMode, QueueEntry[]>，QueueEntry = { userId, rating, enqueuedAt }。\n2. `enqueue(userId, rating, ruleMode)` — 加入队列，检查防重复。\n3. `dequeue(userId)` — 离开队列。\n4. `findMatch()` — 遍历队列匹配：优先积分差 <= 200；超 30s 未匹配则每 10s 扩大 100 分范围。返回 { player1, player2 } | null。\n5. `getQueuePosition(userId)` — 获取队列位置。\n6. `getQueueSize(ruleMode)` — 队列长度。\n\n**B. 单元测试** — gomoku-server/src/__tests__/matchmaking.test.ts：\n1. 相同积分立即匹配。\n2. 积分差距过大不匹配。\n3. 等待超时扩大范围后匹配。\n4. 多人同时匹配的正确配对。\n5. 取消匹配后不再被匹配。\n6. 队列为空不报错。\n7. 防止重复入队。\n\n依赖：无（纯逻辑）。预估代码约 150 行（服务）+ 120 行（测试）。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-24A-Matchmaking-Handler",
