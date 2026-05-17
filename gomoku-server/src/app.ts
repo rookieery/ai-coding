@@ -2,9 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import http, { Server } from 'http';
 import { PrismaClient } from '@prisma/client';
 import { logger } from './utils/logger';
 import { config } from './config';
+import { initializeSocket } from './socket';
 
 // 加载环境变量
 dotenv.config();
@@ -15,6 +17,7 @@ export const prisma = new PrismaClient();
 // 创建Express应用
 const app = express();
 const PORT = config.server.port;
+let httpServer: Server;
 
 // 中间件
 app.use(helmet());
@@ -111,7 +114,9 @@ async function startServer() {
     await prisma.$connect();
     logger.info('Database connected successfully');
 
-    app.listen(PORT, () => {
+    httpServer = http.createServer(app);
+    initializeSocket(httpServer);
+    httpServer.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
       logger.info(`API available at http://localhost:${PORT}/api`);
       logger.info(`Health check at http://localhost:${PORT}/health`);
@@ -125,6 +130,16 @@ async function startServer() {
 // 优雅关闭
 process.on('SIGINT', async () => {
   logger.info('Shutting down server...');
+  if (httpServer) {
+    httpServer.close();
+  }
+  const { getIO } = await import('./socket');
+  try {
+    getIO().close();
+    logger.info('Socket.io server closed');
+  } catch {
+    // Socket.io not initialized, skip
+  }
   await prisma.$disconnect();
   logger.info('Database disconnected');
   process.exit(0);
@@ -132,6 +147,16 @@ process.on('SIGINT', async () => {
 
 process.on('SIGTERM', async () => {
   logger.info('Terminating server...');
+  if (httpServer) {
+    httpServer.close();
+  }
+  const { getIO } = await import('./socket');
+  try {
+    getIO().close();
+    logger.info('Socket.io server closed');
+  } catch {
+    // Socket.io not initialized, skip
+  }
   await prisma.$disconnect();
   logger.info('Database disconnected');
   process.exit(0);
@@ -140,4 +165,5 @@ process.on('SIGTERM', async () => {
 // 启动应用
 startServer();
 
+export { httpServer };
 export default app;

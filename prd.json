@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-03-Socket-Types",
-      "title": "创建 Socket 事件类型定义",
-      "description": "纯类型定义任务。在 gomoku-server/src/socket/types.ts 中定义所有 Socket 事件的 payload 类型：\n\n1. 客户端→服务端事件类型：RoomCreatePayload(name, ruleMode, isRanked), RoomJoinPayload(roomId), RoomLeavePayload(roomId), RoomWatchPayload(roomId), RoomListPayload(page?, pageSize?), GameMovePayload(roomId, r, c), GameResignPayload(roomId), ChatSendPayload(roomId, content, channel), MatchQueuePayload(ruleMode), MatchCancelPayload。\n\n2. 服务端→客户端事件类型：RoomCreatedPayload(room), RoomUpdatedPayload(room), RoomJoinedPayload(room, color), RoomLeftPayload(roomId), RoomRemovedPayload(roomId), RoomListResponse(rooms, pagination), GameMoveBroadcast(roomId, r, c, player, boardState), GameOverPayload(roomId, winner, reason), ChatMessagePayload(roomId, message), MatchFoundPayload(roomId, opponent), MatchWaitingPayload(position), ErrorPayload(code, message), DisconnectWarningPayload(roomId, remainingSeconds)。\n\n3. 共享接口：RoomInfo(id, name, status, gameType, boardSize, ruleMode, hostId, hostName, hostColor, guestId, guestName, currentPlayer, moveCount, spectatorCount, isRanked, createdAt), MessageInfo(id, userId, username, content, channel, createdAt)。\n\n4. 导出 ServerEvents 和 ClientEvents 接口供 Socket.io 泛型使用。\n\n预估代码约 150 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-04-Express-Socket-Integration",
       "title": "重构 Express 启动方式以支持 Socket.io",
       "description": "核心架构变更任务。修改 gomoku-server/src/app.ts：\n\n**现有代码上下文**（app.ts 关键结构）：\n- `export const prisma = new PrismaClient()` — 命名导出，不可更改。\n- `export default app` — 默认导出，不可更改。\n- `startServer()` 函数内部调用 `app.listen(PORT, callback)` — 需要重构。\n- 优雅关闭使用 `process.on('SIGINT/SIGTERM', ...)` — 需要扩展。\n\n**修改步骤**：\n1. 在 `startServer()` 内部，将 `app.listen(PORT, callback)` 替换为：\n   ```typescript\n   import { createServer } from 'http';\n   import { initializeSocket } from './socket';\n   // 在 startServer() 内：\n   const httpServer = createServer(app);\n   initializeSocket(httpServer);\n   httpServer.listen(PORT, callback);\n   ```\n2. 导出 httpServer：在文件顶层声明 `let httpServer: Server`，在 startServer 中赋值，然后 `export { httpServer }`。\n\n3. 优雅关闭扩展：在 SIGINT/SIGTERM handler 中，先调用 `io.close()` 再 `prisma.$disconnect()`。io 实例需要从 socket/index.ts 导出。\n\n4. 创建 gomoku-server/src/socket/index.ts 骨架：\n   - 导出 `io` 实例（供优雅关闭使用）。\n   - 导出 `initializeSocket(httpServer: Server)` 函数。\n   - 创建 Socket.io Server，CORS 配置复用 app.ts 中相同的 allowedOrigins 逻辑（提取为共享函数或直接引用 config）。\n   - transports: ['websocket', 'polling']。\n   - connection 事件暂时只打印日志。\n\n**影响分析**：不修改任何现有路由、中间件或 SSE 逻辑。SSE 基于 Express response，不经过 Socket.io，无冲突。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-05-Socket-Auth-Middleware",
