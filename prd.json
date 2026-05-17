@@ -2,16 +2,10 @@
   "branchName": "feature/online-multiplayer",
   "stories": [
     {
-      "id": "ONLINE-10-Frontend-Socket-Service",
-      "title": "前端：创建 Socket.io 客户端服务层 + config 配置",
-      "description": "前端基础设施任务。\n\n**A. 配置扩展** — 修改 gomoku-web/src/config.ts：\n在现有 config 对象中新增 `socket` 配置项：\n```typescript\nsocket: {\n  url: import.meta.env.VITE_SOCKET_URL || '',  // 空 string 表示使用当前 origin\n}\n```\n不修改现有的 api/app/logging 配置。\n\n**B. Socket 服务** — 创建 gomoku-web/src/services/socket.service.ts：\n1. 导出 `socketService` 单例对象：\n   - `connect(token: string)` — 使用 { auth: { token }, transports: ['websocket', 'polling'] } 建立连接。URL 从 config.socket.url 获取，为空则使用当前 origin。\n   - `disconnect()` — 断开连接。\n   - `on(event, callback)` — 监听事件。\n   - `off(event, callback)` — 取消监听。\n   - `emit(event, data)` — 发送事件。\n   - `isConnected` — getter。\n2. 自动重连：reconnection=true, reconnectionAttempts=5, reconnectionDelay=1000。\n3. 连接/断开/错误事件处理。\n\n依赖：ONLINE-01。预估代码约 80 行。",
-      "passes": true
-    },
-    {
       "id": "ONLINE-11-Frontend-Room-API",
       "title": "前端：创建房间 API 层和房间 Composable",
       "description": "前端数据层任务。分两部分：\n\n**A. REST API 层** — gomoku-web/src/api/room-api.ts：\n1. `fetchRooms(page, pageSize)` — GET /api/rooms。\n2. `fetchRoomById(roomId)` — GET /api/rooms/:id。\n3. 复用项目现有的 getDefaultFetchOptions + getApiUrl 工具（来自 config.ts）。\n\n**B. Room Composable** — gomoku-web/src/composables/useRoom.ts：\n1. `rooms` ref — 房间列表。\n2. `currentRoom` ref — 当前所在房间。\n3. `isInRoom` computed — 是否在房间中。\n4. `loadRooms()` — 调用 room-api 获取房间列表。\n5. `createRoom(name, ruleMode)` — 通过 Socket 发送 room:create。\n6. `joinRoom(roomId)` — 通过 Socket 发送 room:join。\n7. `leaveRoom()` — 通过 Socket 发送 room:leave。\n8. `watchRoom(roomId)` — 通过 Socket 发送 room:watch。\n9. 监听 Socket 事件（room:created, room:updated, room:removed）自动更新本地状态。\n10. 组件卸载时自动清理 Socket 监听（使用 onUnmounted）。\n\n依赖：ONLINE-10, ONLINE-07B（REST API 需后端就绪）。预估代码约 120 行。",
-      "passes": false
+      "passes": true
     },
     {
       "id": "ONLINE-12A-Room-Sub-Components",
