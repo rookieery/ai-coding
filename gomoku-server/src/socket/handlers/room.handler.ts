@@ -58,6 +58,9 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       // Broadcast updated state to everyone in the room
       io.to(payload.roomId).emit('room:updated', { room });
 
+      // Notify lobby clients so room list stays in sync
+      io.emit('room:updated', { room });
+
       logger.info(`room:join — user ${socket.data.user.id} joined room ${payload.roomId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -80,10 +83,14 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
 
       if (destroyed) {
         io.to(payload.roomId).emit('room:removed', { roomId: payload.roomId });
+        // Notify lobby clients to remove the room
+        io.emit('room:removed', { roomId: payload.roomId });
       } else {
         // Fetch updated room and broadcast
         const updatedRoom = await roomService.getRoomById(payload.roomId);
         io.to(payload.roomId).emit('room:updated', { room: updatedRoom });
+        // Notify lobby clients so room list stays in sync
+        io.emit('room:updated', { room: updatedRoom });
       }
 
       logger.info(`room:leave — user left room ${payload.roomId}`);
@@ -121,6 +128,9 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       socket.join(`${payload.roomId}:spectators`);
 
       io.to(payload.roomId).emit('room:updated', { room });
+
+      // Notify lobby clients so spectator count stays in sync
+      io.emit('room:updated', { room });
 
       logger.info(`room:watch — user ${socket.data.user.id} watching room ${payload.roomId}`);
     } catch (err) {

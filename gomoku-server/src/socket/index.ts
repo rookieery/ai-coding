@@ -151,12 +151,21 @@ export function initializeSocket(httpServer: Server): void {
               // Player disconnect during an active game → start disconnect timer
               if (room.status === 'playing') {
                 disconnectService.startDisconnectTimer(roomId, disconnectedUserId, io);
+              } else if (room.status === 'waiting' && isHost) {
+                // Host of a waiting room disconnected — destroy the room
+                await roomService.leaveRoom(roomId, disconnectedUserId);
+                io.to(roomId).emit('room:removed', { roomId });
+                io.emit('room:removed', { roomId });
+                logger.info(
+                  `Host ${disconnectedUserId} disconnected from waiting room ${roomId}, room destroyed`,
+                );
               }
             } else {
               // Spectator disconnect
               await roomService.unwatchRoom(roomId);
               const updatedRoom = await roomService.getRoomById(roomId);
               io.to(roomId).emit('room:updated', { room: updatedRoom });
+              io.emit('room:updated', { room: updatedRoom });
               logger.info(`Spectator ${disconnectedUserId} disconnected from room ${roomId}`);
             }
           } catch {

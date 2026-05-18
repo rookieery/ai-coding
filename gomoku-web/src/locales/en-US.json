@@ -337,6 +337,7 @@
   "onlineRuleRenju": "Renju",
   "onlineTitle": "Online Lobby",
   "onlineErrorNotLoggedIn": "Please log in to perform this action",
+  "onlineErrorServerUnavailable": "Server connection failed. Please check your network and try again",
   "onlineCurrentTurn": "Current Turn",
   "onlineDisconnected": "Disconnected",
   "onlineYourTurn": "Your Turn",

@@ -14,7 +14,7 @@
 | 路由定义、导航守卫 | `gomoku-web/src/router/index.ts` |
 | 全局样式、Tailwind 配置 | `gomoku-web/src/index.css` |
 | i18n + 主题切换逻辑 | `gomoku-web/src/i18n.ts` |
-| 应用配置常量 | `gomoku-web/src/config.ts` |
+| 应用配置常量（含 API/Socket 地址、环境变量） | `gomoku-web/src/config.ts` |
 | Vite 构建配置 | `gomoku-web/vite.config.ts` |
 | 环境变量 | `gomoku-web/.env` / `.env.development` / `.env.production` |
 
@@ -196,7 +196,7 @@
 | 统一视觉识别（自动判断棋盘类型） | `gomoku-server/src/services/unified-vision.service.ts` |
 | 房间业务逻辑 | `gomoku-server/src/services/room.service.ts` |
 | 在线对弈逻辑（含排位赛 ELO 集成） | `gomoku-server/src/services/online-game.service.ts` |
-| 断线重连管理（60s 倒计时 + 重连取消 + 排位赛 ELO） | `gomoku-server/src/services/disconnect.service.ts` |
+| 断线重连管理（60s 倒计时 + 重连取消 + 排位赛 ELO + 大厅通知） | `gomoku-server/src/services/disconnect.service.ts` |
 | ELO 积分计算（标准 ELO + K-factor 动态调整） | `gomoku-server/src/services/elo.service.ts` |
 | 匹配服务（内存队列 + 动态积分阈值 + 防重复入队） | `gomoku-server/src/services/matchmaking.service.ts` |
 | 匹配服务单元测试（14 个测试用例） | `gomoku-server/src/services/matchmaking.service.test.ts` |
@@ -230,11 +230,11 @@
 ### Socket.io
 | 要改什么 | 文件路径 |
 |---------|---------|
-| Socket.io 初始化入口（含断线重连 + 观战者清理 + 匹配定时器） | `gomoku-server/src/socket/index.ts` |
+| Socket.io 初始化入口（含断线重连 + 观战者清理 + 等待中房间主机断线清理 + 匹配定时器） | `gomoku-server/src/socket/index.ts` |
 | Socket 事件类型定义 | `gomoku-server/src/socket/types.ts` |
 | Socket 认证中间件 | `gomoku-server/src/socket/middleware.ts` |
-| 房间事件处理（含观战验证） | `gomoku-server/src/socket/handlers/room.handler.ts` |
-| 对弈事件处理（含观战者权限拦截） | `gomoku-server/src/socket/handlers/game.handler.ts` |
+| 房间事件处理（含观战验证 + 大厅状态同步广播） | `gomoku-server/src/socket/handlers/room.handler.ts` |
+| 对弈事件处理（含观战者权限拦截 + 游戏结束大厅通知） | `gomoku-server/src/socket/handlers/game.handler.ts` |
 | 聊天事件处理 | `gomoku-server/src/socket/handlers/chat.handler.ts` |
 | 匹配事件处理（match:queue/cancel + 5s 定时器 + 自动创建排位房间） | `gomoku-server/src/socket/handlers/match.handler.ts` |
 

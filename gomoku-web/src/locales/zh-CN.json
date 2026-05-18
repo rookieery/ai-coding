@@ -337,6 +337,7 @@
   "onlineRuleRenju": "有禁手",
   "onlineTitle": "在线大厅",
   "onlineErrorNotLoggedIn": "请先登录后再操作",
+  "onlineErrorServerUnavailable": "服务器连接失败，请检查网络后重试",
   "onlineCurrentTurn": "当前回合",
   "onlineDisconnected": "已断线",
   "onlineYourTurn": "轮到你了",

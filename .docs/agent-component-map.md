@@ -137,7 +137,31 @@ AgentGomokuPanel.vue / AgentChessPanel.vue ← 加载棋盘状态
 
 ---
 
-## 数据流：在线对弈 (OnlineGameView)
+## 数据流：在线大厅 (OnlineLobbyView)
+
+```
+OnlineLobbyView.vue (路由 /online)
+  │
+  ├── onMounted → loadRooms() [REST] + socketService.connect(token)
+  │
+  ├── 创建房间流程:
+  │     ├── handleOpenCreate() → 检查 auth + socketService.isConnected
+  │     │     ├── 未登录 → 显示 "请先登录后再操作"
+  │     │     ├── Socket 未连接 → 显示 "服务器连接失败"
+  │     │     └── 通过 → 打开 CreateRoomModal
+  │     ├── CreateRoomModal @create → handleCreate()
+  │     │     └── emit room:create + 启动 10s 超时
+  │     └── Socket 响应:
+  │           ├── room:joined → router.push('/online/room/:id')
+  │           ├── room:error → 显示错误信息
+  │           └── 超时 10s → 显示 "服务器连接失败"
+  │
+  ├── 加入房间: handleJoin(roomId) → emit room:join + 10s 超时
+  ├── 观战: handleWatch(roomId) → emit room:watch + 直接跳转
+  └── 排位赛: handleRankedMatch → useMatchmaking.startMatchmaking()
+```
+
+---
 
 ```
 OnlineGameView.vue (路由 /online/room/:id)

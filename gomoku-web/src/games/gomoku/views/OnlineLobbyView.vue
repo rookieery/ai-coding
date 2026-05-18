@@ -29,6 +29,14 @@ const showCreateModal = ref(false);
 const errorMsg = ref('');
 /** True while we are waiting for the server to confirm a create / join. */
 const awaitingJoin = ref(false);
+let joinTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearJoinTimeout(): void {
+  if (joinTimeout) {
+    clearTimeout(joinTimeout);
+    joinTimeout = null;
+  }
+}
 
 const userRating = computed(() => {
   const user = auth.user.value;
@@ -42,6 +50,10 @@ function handleOpenCreate(): void {
     errorMsg.value = t('onlineErrorNotLoggedIn');
     return;
   }
+  if (!socketService.isConnected) {
+    errorMsg.value = t('onlineErrorServerUnavailable');
+    return;
+  }
   errorMsg.value = '';
   showCreateModal.value = true;
 }
@@ -51,6 +63,14 @@ function handleCreate(payload: { name: string; ruleMode: 'standard' | 'renju' })
   errorMsg.value = '';
   awaitingJoin.value = true;
   room.createRoom(payload.name, payload.ruleMode);
+
+  clearJoinTimeout();
+  joinTimeout = setTimeout(() => {
+    if (awaitingJoin.value) {
+      awaitingJoin.value = false;
+      errorMsg.value = t('onlineErrorServerUnavailable');
+    }
+  }, 10000);
 }
 
 function handleJoin(roomId: string): void {
@@ -58,9 +78,21 @@ function handleJoin(roomId: string): void {
     errorMsg.value = t('onlineErrorNotLoggedIn');
     return;
   }
+  if (!socketService.isConnected) {
+    errorMsg.value = t('onlineErrorServerUnavailable');
+    return;
+  }
   errorMsg.value = '';
   awaitingJoin.value = true;
   room.joinRoom(roomId);
+
+  clearJoinTimeout();
+  joinTimeout = setTimeout(() => {
+    if (awaitingJoin.value) {
+      awaitingJoin.value = false;
+      errorMsg.value = t('onlineErrorServerUnavailable');
+    }
+  }, 10000);
 }
 
 function handleWatch(roomId: string): void {
@@ -81,12 +113,14 @@ function handleRankedMatch(): void {
 
 function onRoomJoined(payload: unknown): void {
   if (!awaitingJoin.value) return;
+  clearJoinTimeout();
   awaitingJoin.value = false;
   const data = payload as { roomId: string };
   router.push(`/online/room/${data.roomId}`);
 }
 
 function onError(payload: unknown): void {
+  clearJoinTimeout();
   const data = payload as { message?: string };
   errorMsg.value = data.message ?? t('requestFailed');
   awaitingJoin.value = false;
@@ -107,6 +141,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  clearJoinTimeout();
   socketService.off('room:joined', onRoomJoined);
   socketService.off('room:error', onError);
 });

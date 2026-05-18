@@ -18,7 +18,7 @@ export const config = {
     version: '1.0.0',
   },
   socket: {
-    url: import.meta.env.VITE_SOCKET_URL || '', // 空 string 表示使用当前 origin
+    url: import.meta.env.VITE_SOCKET_URL || API_BASE_URL.replace('/api', ''),
   },
   logging: {
     enabled: import.meta.env.DEV, // 开发环境下启用日志

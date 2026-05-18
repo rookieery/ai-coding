@@ -110,6 +110,9 @@ class DisconnectService {
           ratingChanges,
         });
 
+        // Notify lobby to remove the room (finished rooms should not appear)
+        io.emit('room:removed', { roomId });
+
         logger.info(
           `Disconnect timer expired: player ${userId} in room ${roomId} loses by disconnect`,
         );

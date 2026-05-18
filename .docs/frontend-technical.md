@@ -172,6 +172,7 @@ gomoku-web/src/
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
 | `VITE_API_BASE_URL` | 后端 API 地址 | `http://localhost:3003/api` |
+| `VITE_SOCKET_URL` | Socket.io 服务器地址 | 自动从 `VITE_API_BASE_URL` 推导 |
 
 ---
 

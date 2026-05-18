@@ -57,6 +57,9 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
           reason,
           ratingChanges: result.ratingChanges,
         });
+
+        // Notify lobby to remove the room (finished rooms should not appear)
+        io.emit('room:removed', { roomId });
       }
 
       logger.info(`game:move — (${r},${c}) by ${userId} in room ${roomId}`);
@@ -96,6 +99,9 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
         reason: 'resign',
         ratingChanges: result.ratingChanges,
       });
+
+      // Notify lobby to remove the room (finished rooms should not appear)
+      io.emit('room:removed', { roomId });
 
       logger.info(`game:resign — ${userId} resigned in room ${roomId}`);
     } catch (err) {
