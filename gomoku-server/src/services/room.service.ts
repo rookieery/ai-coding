@@ -204,16 +204,29 @@ class RoomService {
    * Decrements spectatorCount (floored at 0).
    */
   async unwatchRoom(roomId: string): Promise<void> {
-    await prisma.room.update({
-      where: { id: roomId },
+    // Atomic decrement only when count > 0 — prevents negative values
+    await prisma.room.updateMany({
+      where: { id: roomId, spectatorCount: { gt: 0 } },
       data: { spectatorCount: { decrement: 1 } },
     });
+  }
 
-    // Ensure spectatorCount never goes below 0
-    await prisma.room.updateMany({
-      where: { id: roomId, spectatorCount: { lt: 0 } },
-      data: { spectatorCount: 0 },
+  /**
+   * Clean up orphaned rooms left over from a previous server session.
+   * After a restart all in-memory socket state is gone, so any room still
+   * in "waiting" or "playing" can never be rejoined — mark them finished.
+   */
+  async cleanOrphanedRooms(): Promise<number> {
+    const result = await prisma.room.updateMany({
+      where: { status: { in: ['waiting', 'playing'] } },
+      data: { status: 'finished', spectatorCount: 0 },
     });
+
+    if (result.count > 0) {
+      logger.info(`Cleaned up ${result.count} orphaned rooms on startup`);
+    }
+
+    return result.count;
   }
 
   /**

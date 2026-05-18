@@ -312,7 +312,7 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 6. 定时器每 5 秒额外调用 `findMatch()` 作为兜底
 
 ### 断线处理
-已有机制：`socket/index.ts` 的 `disconnect` 事件中调用 `matchmakingService.dequeue(userId)` 自动清理离线用户。
+已有机制：`socket/index.ts` 的 `disconnecting` 事件中调用 `matchmakingService.dequeue(userId)` 自动清理离线用户。注意使用 `disconnecting`（非 `disconnect`）确保 `socket.rooms` 仍有效。
 
 ### RoomService 变更
 `createRoom(hostId, name, ruleMode, isRanked?)` 新增可选参数 `isRanked`（默认 `false`），用于创建排位赛房间。

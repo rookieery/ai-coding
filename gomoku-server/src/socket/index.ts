@@ -70,6 +70,15 @@ export function initializeSocket(httpServer: Server): void {
   // Start the periodic matchmaking timer (runs once per server lifetime)
   startMatchmakingTimer(io);
 
+  // Clean up orphaned rooms from a previous server session.
+  // After a crash or restart all socket state is gone, so any room still
+  // in "waiting" or "playing" is unreachable — mark them finished.
+  roomService.cleanOrphanedRooms().catch((err) => {
+    logger.error(
+      `Failed to clean up orphaned rooms: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  });
+
   io.on('connection', (socket) => {
     const userId = socket.data.user?.id ?? 'anonymous';
     logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
@@ -126,8 +135,11 @@ export function initializeSocket(httpServer: Server): void {
     registerChatHandlers(io, socket);
     registerMatchHandlers(io, socket);
 
-    socket.on('disconnect', async (reason) => {
-      logger.info(`Socket disconnected: ${socket.id} (user: ${userId}), reason: ${reason}`);
+    // Use "disconnecting" (not "disconnect") so that socket.rooms is still
+    // populated. Socket.IO v4 clears rooms *before* firing "disconnect",
+    // which made the cleanup loop a no-op.
+    socket.on('disconnecting', async (reason) => {
+      logger.info(`Socket disconnecting: ${socket.id} (user: ${userId}), reason: ${reason}`);
 
       if (socket.data.user) {
         const disconnectedUserId = socket.data.user.id;
@@ -135,12 +147,12 @@ export function initializeSocket(httpServer: Server): void {
         // Clean up any matchmaking queue entries for this user
         matchmakingService.dequeue(disconnectedUserId);
 
-        for (const roomId of socket.rooms) {
-          // Skip the socket's own ID room
-          if (roomId === socket.id) continue;
-          // Skip channel sub-rooms (e.g. "roomId:players", "roomId:spectators")
-          if (roomId.includes(':')) continue;
+        // Snapshot room IDs synchronously before any await
+        const roomIds = [...socket.rooms].filter(
+          (rid) => rid !== socket.id && !rid.includes(':'),
+        );
 
+        for (const roomId of roomIds) {
           try {
             const room = await roomService.getRoomById(roomId);
 
@@ -148,11 +160,9 @@ export function initializeSocket(httpServer: Server): void {
             const isGuest = room.guestId === disconnectedUserId;
 
             if (isHost || isGuest) {
-              // Player disconnect during an active game → start disconnect timer
               if (room.status === 'playing') {
                 disconnectService.startDisconnectTimer(roomId, disconnectedUserId, io);
               } else if (room.status === 'waiting' && isHost) {
-                // Host of a waiting room disconnected — destroy the room
                 await roomService.leaveRoom(roomId, disconnectedUserId);
                 io.to(roomId).emit('room:removed', { roomId });
                 io.emit('room:removed', { roomId });

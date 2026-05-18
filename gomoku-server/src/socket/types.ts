@@ -59,6 +59,10 @@ export interface RoomWatchPayload {
   roomId: string;
 }
 
+export interface RoomUnwatchPayload {
+  roomId: string;
+}
+
 export interface RoomListPayload {
   page?: number;
   pageSize?: number;
@@ -198,6 +202,7 @@ export interface ClientEvents {
   'room:join': (payload: RoomJoinPayload) => void;
   'room:leave': (payload: RoomLeavePayload) => void;
   'room:watch': (payload: RoomWatchPayload) => void;
+  'room:unwatch': (payload: RoomUnwatchPayload) => void;
   'room:list': (payload: RoomListPayload) => void;
   'game:move': (payload: GameMovePayload) => void;
   'game:resign': (payload: GameResignPayload) => void;

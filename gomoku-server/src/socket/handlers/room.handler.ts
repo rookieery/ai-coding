@@ -140,6 +140,28 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     }
   });
 
+  // ── room:unwatch ────────────────────────────────────────────────────────
+  socket.on('room:unwatch', async (payload) => {
+    try {
+      await roomService.unwatchRoom(payload.roomId);
+
+      socket.leave(payload.roomId);
+      socket.leave(`${payload.roomId}:spectators`);
+
+      const updatedRoom = await roomService.getRoomById(payload.roomId);
+      io.to(payload.roomId).emit('room:updated', { room: updatedRoom });
+      io.emit('room:updated', { room: updatedRoom });
+
+      logger.info(
+        `room:unwatch — user ${socket.data.user?.id ?? 'guest'} stopped watching room ${payload.roomId}`,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      logger.error(`room:unwatch error: ${message}`);
+      socket.emit('error', { code: 'ROOM_UNWATCH_FAILED', message });
+    }
+  });
+
   // ── room:list ──────────────────────────────────────────────────────────
   socket.on('room:list', async (payload) => {
     try {

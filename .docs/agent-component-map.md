@@ -158,6 +158,7 @@ OnlineLobbyView.vue (路由 /online)
   │
   ├── 加入房间: handleJoin(roomId) → emit room:join + 10s 超时
   ├── 观战: handleWatch(roomId) → emit room:watch + 直接跳转
+  └── 离开观战: emit room:unwatch (前端路由离开时触发)
   └── 排位赛: handleRankedMatch → useMatchmaking.startMatchmaking()
 ```
 
