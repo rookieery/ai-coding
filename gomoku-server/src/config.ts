@@ -11,7 +11,7 @@ export const config = {
     level: process.env.LOG_LEVEL || 'info',
   },
   database: {
-    url: process.env.DATABASE_URL || 'file:./dev.db',
+    url: process.env.DATABASE_URL || 'mysql://root:password@localhost:3306/gomoku',
   },
   server: {
     port: process.env.PORT || 3001,

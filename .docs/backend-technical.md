@@ -8,7 +8,7 @@
 | 运行时 | Node.js | 18+ |
 | 框架 | Express.js | 4.18 |
 | ORM | Prisma | 5.x |
-| 数据库 | SQLite (开发) / PostgreSQL (Docker) / MySQL (Schema 声明) | - |
+| 数据库 | MySQL 8.0 (utf8mb4) | - |
 | 认证 | JWT (jsonwebtoken) + bcryptjs | 9.x |
 | 校验 | Zod | 3.x |
 | AI | OpenAI SDK (调用 DeepSeek / 豆包) | - |
@@ -23,8 +23,7 @@
 ```
 gomoku-server/src/
 ├── app.ts                   # Express 应用入口 + 中间件配置
-├── config.ts                # 旧配置文件
-├── config/index.ts          # 新配置（含环境变量校验）
+├── config.ts                # 配置（含数据库/JWT/CORS）
 ├── middleware/
 │   ├── auth.ts              # JWT 认证 + 管理员权限
 │   └── validation.ts        # Zod 请求校验中间件
@@ -92,7 +91,7 @@ Prisma ORM，数据在写入时 JSON.stringify，读取时 JSON.parse。`mapToGa
 ## 数据库
 
 ### 当前配置
-Schema 声明 `provider = "mysql"`，但 `.env` 使用 SQLite（`file:./dev.db`），Docker Compose 配置 PostgreSQL。三种数据库都支持。
+Schema 使用 `provider = "mysql"`，`.env` 连接本地 MySQL 8.0（`mysql://root:alu.0812@localhost:3306/gomoku`），Docker Compose 使用 MySQL 8.0 容器。所有环境统一使用 MySQL。
 
 ### 表结构
 
@@ -117,14 +116,14 @@ Schema 声明 `provider = "mysql"`，但 `.env` 使用 SQLite（`file:./dev.db`�
 | title | String | NOT NULL |
 | description | String? | |
 | boardSize | Int | DEFAULT 15 |
-| moves | String | JSON 序列化的 Move[] |
+| moves | String (@db.Text) | JSON 序列化的 Move[] |
 | result | String? | |
 | playerBlack | String? | |
 | playerWhite | String? | |
 | isPublic | Boolean | DEFAULT true |
 | gameType | String | DEFAULT 'gomoku' |
-| tags | String | JSON 序列化的 string[] |
-| metadata | String? | JSON 序列化对象 |
+| tags | String (@db.Text) | JSON 序列化的 string[] |
+| metadata | String? (@db.Text) | JSON 序列化对象 |
 | authorId | String? | FK → User |
 | createdAt | DateTime | |
 | updatedAt | DateTime | |
@@ -133,10 +132,7 @@ Schema 声明 `provider = "mysql"`，但 `.env` 使用 SQLite（`file:./dev.db`�
 完整比赛记录，包含玩家信息、AI 配置、走子、吃子、时长等。
 
 ### 迁移历史
-1. `init` — 创建 User, Game, Match 表
-2. `add_phone_field` — User 表增加 phone 字段
-3. `add_user_role_field` — User 表增加 role 字段
-4. `add_game_type` — Game 表增加 gameType 字段
+1. `init_mysql` — MySQL 初始迁移，创建 User, Game, Match, Room, RoomMessage 全部表
 
 ---
 
@@ -161,7 +157,7 @@ Schema 声明 `provider = "mysql"`，但 `.env` 使用 SQLite（`file:./dev.db`�
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `DATABASE_URL` | 数据库连接串 | `file:./dev.db` |
+| `DATABASE_URL` | MySQL 连接串 | `mysql://root:password@localhost:3306/gomoku` |
 | `JWT_SECRET` | JWT 签名密钥 | (必须修改) |
 | `JWT_EXPIRES_IN` | Token 有效期 | `7d` |
 | `PORT` | 服务端口 | `3001` |
@@ -191,7 +187,7 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 ```
 
 ### Docker Compose
-包含 PostgreSQL 15 + pgAdmin + 应用服务三个容器。
+包含 MySQL 8.0 + 应用服务两个容器。
 
 ---
 

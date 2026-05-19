@@ -157,7 +157,7 @@
 |---------|---------|
 | Express 应用入口、中间件挂载 | `gomoku-server/src/app.ts` |
 | 环境变量配置 | `gomoku-server/.env` |
-| 配置校验 | `gomoku-server/src/config/index.ts` |
+| 配置（含数据库/JWT/CORS） | `gomoku-server/src/config.ts` |
 | Prisma Schema | `gomoku-server/prisma/schema.prisma` |
 | Docker 配置 | `gomoku-server/Dockerfile` / `docker-compose.yml` |
 
@@ -251,8 +251,5 @@
 ### 数据库
 | 要改什么 | 文件路径 |
 |---------|---------|
-| Schema 定义 | `gomoku-server/prisma/schema.prisma` |
-| 初始迁移 | `gomoku-server/prisma/migrations/20260331155201_init/` |
-| phone 字段迁移 | `gomoku-server/prisma/migrations/20260405053632_add_phone_field/` |
-| role 字段迁移 | `gomoku-server/prisma/migrations/20260405062110_add_user_role_field/` |
-| gameType 字段迁移 | `gomoku-server/prisma/migrations/20260420140717_add_game_type/` |
+| Schema 定义（MySQL） | `gomoku-server/prisma/schema.prisma` |
+| MySQL 初始迁移 | `gomoku-server/prisma/migrations/20260519150344_init_mysql/` |

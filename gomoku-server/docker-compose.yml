@@ -1,44 +1,32 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
+  mysql:
+    image: mysql:8.0
     container_name: gomoku-db-dev
     environment:
-      POSTGRES_DB: gomoku
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: gomoku
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # 可选: 添加 pgAdmin 用于数据库管理
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: gomoku-pgadmin-dev
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@gomoku.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   app:
     build: .
     container_name: gomoku-app-dev
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/gomoku?schema=public
+      DATABASE_URL: mysql://root:password@mysql:3306/gomoku
       JWT_SECRET: your-super-secret-jwt-key-change-in-development
       PORT: 3001
       NODE_ENV: development
@@ -54,4 +42,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  mysql_data:

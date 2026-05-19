@@ -29,14 +29,14 @@
 | title | String | NOT NULL | 棋局标题 |
 | description | String? | | 描述 |
 | boardSize | Int | DEFAULT 15 | 棋盘大小 |
-| moves | String | NOT NULL | JSON 序列化的 `Move[]` |
+| moves | String (@db.Text) | NOT NULL | JSON 序列化的 `Move[]` |
 | result | String? | | 比赛结果 |
 | playerBlack | String? | | 黑方名称 |
 | playerWhite | String? | | 白方名称 |
 | isPublic | Boolean | DEFAULT true | 是否公开 |
 | gameType | String | DEFAULT 'gomoku' | 'gomoku' 或 'chinese_chess' |
-| tags | String | DEFAULT '[]' | JSON 序列化的 `string[]` |
-| metadata | String? | | JSON 序列化的对象 |
+| tags | String (@db.Text) | NOT NULL | JSON 序列化的 `string[]` |
+| metadata | String? (@db.Text) | | JSON 序列化的对象 |
 | authorId | String? | FK → User.id | 创建者 |
 | createdAt | DateTime | | |
 | updatedAt | DateTime | | |
