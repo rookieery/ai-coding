@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import unLoginMusic from '../music/unLogin.mp3';
 import loginInMusic from '../music/login_in.mp3';
 
-const isPlaying = ref(true);
+const isPlaying = ref(false);
 
 let audio: HTMLAudioElement | null = null;
 let currentSrc: string | null = null;
@@ -71,9 +71,7 @@ export function useBackgroundMusic() {
 
   const init = (isAuthenticated: boolean) => {
     const src = isAuthenticated ? loginInMusic : unLoginMusic;
-    const el = getAudio(src);
-    tryPlay(el);
-    setupInteractionListener();
+    getAudio(src);
   };
 
   const onAuthChange = (isAuthenticated: boolean) => {

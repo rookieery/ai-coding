@@ -80,7 +80,7 @@ gomoku-web/src/
 | `useAgentChess` | 象棋对弈：用户走子→AI回应、AI先手、将军检测、走子拦截 |
 | `useAgentVision` | 视觉识别：五子棋/象棋确认回放、确认分析、挂起分析处理 |
 | `useAutoResize` | 聊天输入框自动调整高度 |
-| `useBackgroundMusic` | 背景音乐播放器 |
+| `useBackgroundMusic` | 背景音乐播放器（默认关闭，用户手动开启） |
 | `useClipboard` | 剪贴板操作 |
 | `useMarkdown` | Markdown 渲染 |
 | `useSpeech` | 文本转语音 |
