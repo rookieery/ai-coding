@@ -23,7 +23,10 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       socket.join(room.id);
       socket.join(`${room.id}:players`);
 
+      // Emit both events: room:created for lobby list sync,
+      // room:joined so the creator navigates to the game room.
       socket.emit('room:created', { room });
+      socket.emit('room:joined', { room, color: 'black' });
 
       // Broadcast updated room list to all connected clients (lobby)
       io.emit('room:updated', { room });

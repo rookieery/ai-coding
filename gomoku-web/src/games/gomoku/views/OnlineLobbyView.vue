@@ -115,8 +115,8 @@ function onRoomJoined(payload: unknown): void {
   if (!awaitingJoin.value) return;
   clearJoinTimeout();
   awaitingJoin.value = false;
-  const data = payload as { roomId: string };
-  router.push(`/online/room/${data.roomId}`);
+  const data = payload as { room: { id: string } };
+  router.push(`/online/room/${data.room.id}`);
 }
 
 function onError(payload: unknown): void {
@@ -181,6 +181,21 @@ onUnmounted(() => {
             {{ t('onlineCreateRoom') }}
           </button>
         </div>
+      </div>
+
+      <!-- Loading banner -->
+      <div
+        v-if="awaitingJoin"
+        class="mb-4 px-4 py-3 rounded-lg border text-sm font-medium flex items-center gap-2"
+        :class="currentTheme === 'dark'
+          ? 'bg-blue-900/30 border-blue-700 text-blue-300'
+          : 'bg-blue-50 border-blue-200 text-blue-700'"
+      >
+        <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        {{ t('onlineJoiningRoom') }}
       </div>
 
       <!-- Error banner -->

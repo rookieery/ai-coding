@@ -150,6 +150,7 @@ OnlineLobbyView.vue (路由 /online)
   │     │     ├── Socket 未连接 → 显示 "服务器连接失败"
   │     │     └── 通过 → 打开 CreateRoomModal
   │     ├── CreateRoomModal @create → handleCreate()
+  │     │     ├── awaitingJoin = true → 显示加载横幅 "正在进入房间..."
   │     │     └── emit room:create + 启动 10s 超时
   │     └── Socket 响应:
   │           ├── room:joined → router.push('/online/room/:id')
