@@ -179,6 +179,11 @@ export interface DisconnectWarningPayload {
   remainingSeconds: number;
 }
 
+export interface AuthStatusPayload {
+  authenticated: boolean;
+  user: SocketUserData | null;
+}
+
 // ── Socket.io Generic Interfaces ──────────────────────────────────────
 
 export interface ServerEvents {
@@ -188,12 +193,16 @@ export interface ServerEvents {
   'room:left': (payload: RoomLeftPayload) => void;
   'room:removed': (payload: RoomRemovedPayload) => void;
   'room:list': (payload: RoomListResponse) => void;
+  'room:error': (payload: ErrorPayload) => void;
   'game:move': (payload: GameMoveBroadcast) => void;
   'game:over': (payload: GameOverPayload) => void;
+  'game:error': (payload: ErrorPayload) => void;
   'chat:message': (payload: ChatMessagePayload) => void;
+  'chat:error': (payload: ErrorPayload) => void;
   'match:found': (payload: MatchFoundPayload) => void;
   'match:waiting': (payload: MatchWaitingPayload) => void;
-  'error': (payload: ErrorPayload) => void;
+  'match:error': (payload: ErrorPayload) => void;
+  'auth:status': (payload: AuthStatusPayload) => void;
   'disconnect:warning': (payload: DisconnectWarningPayload) => void;
 }
 

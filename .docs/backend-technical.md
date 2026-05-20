@@ -310,6 +310,27 @@ docker run -p 3001:3001 --env-file .env gomoku-server
 ### 断线处理
 已有机制：`socket/index.ts` 的 `disconnecting` 事件中调用 `matchmakingService.dequeue(userId)` 自动清理离线用户。注意使用 `disconnecting`（非 `disconnect`）确保 `socket.rooms` 仍有效。
 
+### Socket 错误事件命名规范
+所有 Socket handler 统一使用**域前缀命名**发送错误事件，不使用 Socket.IO 内置的 `error` 事件：
+
+| Handler 域 | 错误事件名 | 示例 |
+|-----------|-----------|------|
+| Room | `room:error` | `socket.emit('room:error', { code: 'AUTH_REQUIRED', message })` |
+| Game | `game:error` | `socket.emit('game:error', { code: 'GAME_MOVE_FAILED', message })` |
+| Match | `match:error` | `socket.emit('match:error', { code: 'MATCH_QUEUE_FAILED', message })` |
+| Chat | `chat:error` | `socket.emit('chat:error', { code: 'CHAT_SEND_FAILED', message })` |
+
+客户端对应监听 `room:error`、`game:error`、`match:error`、`chat:error`。错误载荷格式：`{ code: string, message: string }`。
+
+### Socket 连接认证状态反馈
+服务端在 Socket 连接建立后立即向客户端发送 `auth:status` 事件，告知客户端该 socket 是否通过认证：
+
+```
+socket.emit('auth:status', { authenticated: boolean, user: SocketUserData | null });
+```
+
+客户端（`OnlineLobbyView.vue`）监听此事件：若 `authenticated: false` 但本地存在 token，说明 token 已过期，立即清除认证状态、断开 socket 并提示"登录已过期，请重新登录"。
+
 ### RoomService 变更
 `createRoom(hostId, name, ruleMode, isRanked?)` 新增可选参数 `isRanked`（默认 `false`），用于创建排位赛房间。
 

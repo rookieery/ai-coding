@@ -339,6 +339,7 @@
   "onlineErrorNotLoggedIn": "Please log in to perform this action",
   "onlineJoiningRoom": "Joining room...",
   "onlineErrorServerUnavailable": "Server connection failed. Please check your network and try again",
+  "onlineErrorTokenExpired": "Session expired. Please log in again",
   "onlineCurrentTurn": "Current Turn",
   "onlineDisconnected": "Disconnected",
   "onlineYourTurn": "Your Turn",

@@ -13,7 +13,8 @@ interface SocketService {
   on(event: string, callback: EventCallback): void;
   off(event: string, callback: EventCallback): void;
   emit(event: string, data?: unknown): void;
-  isConnected: boolean;
+  readonly isConnected: boolean;
+  readonly socket: Socket | null;
 }
 
 function createSocketService(): SocketService {
@@ -34,9 +35,6 @@ function createSocketService(): SocketService {
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
       });
-
-      // Connection lifecycle is managed by socket.io's built-in reconnection.
-      // Individual handlers (on/off) are registered by consumers via socketService.on().
     },
 
     disconnect(): void {
@@ -60,6 +58,10 @@ function createSocketService(): SocketService {
 
     get isConnected(): boolean {
       return socket?.connected ?? false;
+    },
+
+    get socket(): Socket | null {
+      return socket;
     },
   };
 }

@@ -39,6 +39,17 @@ function onMatchFound(payload: unknown): void {
   isMatching.value = false;
 }
 
+function onMatchError(payload: unknown): void {
+  isMatching.value = false;
+  queuePosition.value = 0;
+  const data = payload as { message?: string };
+  const errMsg = data.message ?? '';
+  if (errMsg !== 'Already in matchmaking queue') {
+    matchedOpponent.value = null;
+    matchedRoomId.value = null;
+  }
+}
+
 // ── Composable ─────────────────────────────────────────────────────────
 
 export function useMatchmaking() {
@@ -92,6 +103,7 @@ export function useMatchmaking() {
     if (listenerCount === 0) {
       socketService.on('match:waiting', onMatchWaiting);
       socketService.on('match:found', onMatchFound);
+      socketService.on('match:error', onMatchError);
     }
     listenerCount++;
   }
@@ -102,6 +114,7 @@ export function useMatchmaking() {
       listenerCount = 0;
       socketService.off('match:waiting', onMatchWaiting);
       socketService.off('match:found', onMatchFound);
+      socketService.off('match:error', onMatchError);
     }
   }
 

@@ -339,6 +339,7 @@
   "onlineErrorNotLoggedIn": "请先登录后再操作",
   "onlineJoiningRoom": "正在进入房间...",
   "onlineErrorServerUnavailable": "服务器连接失败，请检查网络后重试",
+  "onlineErrorTokenExpired": "登录已过期，请重新登录",
   "onlineCurrentTurn": "当前回合",
   "onlineDisconnected": "已断线",
   "onlineYourTurn": "轮到你了",

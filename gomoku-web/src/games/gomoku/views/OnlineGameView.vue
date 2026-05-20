@@ -203,11 +203,13 @@ onMounted(async () => {
 
   socketService.on('room:updated', onRoomUpdated);
   socketService.on('room:error', onRoomError);
+  socketService.on('game:error', onRoomError);
 });
 
 onUnmounted(() => {
   socketService.off('room:updated', onRoomUpdated);
   socketService.off('room:error', onRoomError);
+  socketService.off('game:error', onRoomError);
   cleanup();
 });
 </script>

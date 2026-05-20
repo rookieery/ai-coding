@@ -15,7 +15,7 @@ export function registerChatHandlers(io: TypedServer, socket: TypedSocket): void
     try {
       // 1. Authentication check
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('chat:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -25,7 +25,7 @@ export function registerChatHandlers(io: TypedServer, socket: TypedSocket): void
 
       // 2. Verify user is in the room
       if (!socket.rooms.has(roomId)) {
-        socket.emit('error', { code: 'CHAT_SEND_FAILED', message: 'NOT_IN_ROOM' });
+        socket.emit('chat:error', { code: 'CHAT_SEND_FAILED', message: 'NOT_IN_ROOM' });
         return;
       }
 
@@ -35,7 +35,7 @@ export function registerChatHandlers(io: TypedServer, socket: TypedSocket): void
       const allowedChannel: ChatChannel = isPlayer ? 'players' : 'spectators';
 
       if (channel !== allowedChannel) {
-        socket.emit('error', {
+        socket.emit('chat:error', {
           code: 'CHAT_SEND_FAILED',
           message: 'INVALID_CHANNEL',
         });
@@ -45,7 +45,7 @@ export function registerChatHandlers(io: TypedServer, socket: TypedSocket): void
       // 4. Validate message content
       const trimmed = (content as string).trim();
       if (trimmed.length < MIN_CONTENT_LENGTH || trimmed.length > MAX_CONTENT_LENGTH) {
-        socket.emit('error', {
+        socket.emit('chat:error', {
           code: 'CHAT_SEND_FAILED',
           message: 'INVALID_MESSAGE_LENGTH',
         });
@@ -84,7 +84,7 @@ export function registerChatHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`chat:send error: ${message}`);
-      socket.emit('error', { code: 'CHAT_SEND_FAILED', message });
+      socket.emit('chat:error', { code: 'CHAT_SEND_FAILED', message });
     }
   });
 }

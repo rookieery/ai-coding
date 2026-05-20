@@ -81,7 +81,16 @@ export function initializeSocket(httpServer: Server): void {
 
   io.on('connection', (socket) => {
     const userId = socket.data.user?.id ?? 'anonymous';
-    logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
+    const authenticated = !!socket.data.user;
+    logger.info(`Socket connected: ${socket.id} (user: ${userId}, auth: ${authenticated})`);
+
+    // Tell the client whether socket-level authentication succeeded.
+    // This lets the client detect expired tokens immediately rather than
+    // discovering the issue only when an action is rejected.
+    socket.emit('auth:status', {
+      authenticated,
+      user: socket.data.user ?? null,
+    });
 
     // ── Reconnect detection ──────────────────────────────────────────
     // If a reconnecting user was in a disconnect timer, cancel it.

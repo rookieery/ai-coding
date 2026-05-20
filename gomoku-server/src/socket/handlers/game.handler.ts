@@ -17,7 +17,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
   socket.on('game:move', async (payload) => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('game:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -27,7 +27,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
       // Spectator permission check — only host or guest may move
       const roomInfo = await roomService.getRoomById(roomId);
       if (roomInfo.hostId !== userId && roomInfo.guestId !== userId) {
-        socket.emit('error', {
+        socket.emit('game:error', {
           code: 'GAME_MOVE_FAILED',
           message: 'onlineErrorNotYourTurn',
         });
@@ -66,7 +66,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`game:move error: ${message}`);
-      socket.emit('error', { code: 'GAME_MOVE_FAILED', message });
+      socket.emit('game:error', { code: 'GAME_MOVE_FAILED', message });
     }
   });
 
@@ -74,7 +74,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
   socket.on('game:resign', async (payload) => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('game:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -84,7 +84,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
       // Spectator permission check — only host or guest may resign
       const roomInfo = await roomService.getRoomById(roomId);
       if (roomInfo.hostId !== userId && roomInfo.guestId !== userId) {
-        socket.emit('error', {
+        socket.emit('game:error', {
           code: 'GAME_RESIGN_FAILED',
           message: 'onlineErrorNotYourTurn',
         });
@@ -107,7 +107,7 @@ export function registerGameHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`game:resign error: ${message}`);
-      socket.emit('error', { code: 'GAME_RESIGN_FAILED', message });
+      socket.emit('game:error', { code: 'GAME_RESIGN_FAILED', message });
     }
   });
 }

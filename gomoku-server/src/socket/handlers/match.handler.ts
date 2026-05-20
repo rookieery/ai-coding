@@ -128,7 +128,7 @@ export function registerMatchHandlers(io: TypedServer, socket: TypedSocket): voi
   socket.on('match:queue', async (payload) => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('match:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -142,14 +142,14 @@ export function registerMatchHandlers(io: TypedServer, socket: TypedSocket): voi
       });
 
       if (!user) {
-        socket.emit('error', { code: 'USER_NOT_FOUND', message: 'User not found' });
+        socket.emit('match:error', { code: 'USER_NOT_FOUND', message: 'User not found' });
         return;
       }
 
       // Enqueue (prevents duplicate entry)
       const enqueued = matchmakingService.enqueue(userId, user.rating, ruleMode);
       if (!enqueued) {
-        socket.emit('error', {
+        socket.emit('match:error', {
           code: 'ALREADY_IN_QUEUE',
           message: 'Already in matchmaking queue',
         });
@@ -172,7 +172,7 @@ export function registerMatchHandlers(io: TypedServer, socket: TypedSocket): voi
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`match:queue error: ${message}`);
-      socket.emit('error', { code: 'MATCH_QUEUE_FAILED', message });
+      socket.emit('match:error', { code: 'MATCH_QUEUE_FAILED', message });
     }
   });
 
@@ -180,7 +180,7 @@ export function registerMatchHandlers(io: TypedServer, socket: TypedSocket): voi
   socket.on('match:cancel', async () => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('match:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -191,7 +191,7 @@ export function registerMatchHandlers(io: TypedServer, socket: TypedSocket): voi
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`match:cancel error: ${message}`);
-      socket.emit('error', { code: 'MATCH_CANCEL_FAILED', message });
+      socket.emit('match:error', { code: 'MATCH_CANCEL_FAILED', message });
     }
   });
 }

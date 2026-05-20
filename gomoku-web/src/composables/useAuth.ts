@@ -169,10 +169,7 @@ export function useAuth() {
       user.value = currentUser;
       localStorage.setItem('user', JSON.stringify(currentUser));
     } catch (err) {
-      // 如果获取失败，可能是token过期，清除认证信息
-      if (err instanceof Error && (err.message.includes('Unauthorized') || err.message.includes('Invalid'))) {
-        clearAuth();
-      }
+      clearAuth();
       error.value = err instanceof Error ? err.message : '获取用户信息失败';
     } finally {
       isLoading.value = false;

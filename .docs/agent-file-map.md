@@ -231,12 +231,12 @@
 | 要改什么 | 文件路径 |
 |---------|---------|
 | Socket.io 初始化入口（disconnecting 事件清理 + 断线重连 + 观战者清理 + 等待中房间主机断线清理 + 匹配定时器） | `gomoku-server/src/socket/index.ts` |
-| Socket 事件类型定义 | `gomoku-server/src/socket/types.ts` |
+| Socket 事件类型定义（含域前缀错误事件：room:error / game:error / match:error / chat:error） | `gomoku-server/src/socket/types.ts` |
 | Socket 认证中间件 | `gomoku-server/src/socket/middleware.ts` |
-| 房间事件处理（含观战验证 + room:unwatch 取消观战 + 创建后同时发送 room:joined + 大厅状态同步广播） | `gomoku-server/src/socket/handlers/room.handler.ts` |
-| 对弈事件处理（含观战者权限拦截 + 游戏结束大厅通知） | `gomoku-server/src/socket/handlers/game.handler.ts` |
-| 聊天事件处理 | `gomoku-server/src/socket/handlers/chat.handler.ts` |
-| 匹配事件处理（match:queue/cancel + 5s 定时器 + 自动创建排位房间） | `gomoku-server/src/socket/handlers/match.handler.ts` |
+| 房间事件处理（含观战验证 + room:unwatch 取消观战 + 创建后同时发送 room:joined + 大厅状态同步广播 + room:error 错误响应） | `gomoku-server/src/socket/handlers/room.handler.ts` |
+| 对弈事件处理（含观战者权限拦截 + 游戏结束大厅通知 + game:error 错误响应） | `gomoku-server/src/socket/handlers/game.handler.ts` |
+| 聊天事件处理（含 chat:error 错误响应） | `gomoku-server/src/socket/handlers/chat.handler.ts` |
+| 匹配事件处理（match:queue/cancel + 5s 定时器 + 自动创建排位房间 + match:error 错误响应） | `gomoku-server/src/socket/handlers/match.handler.ts` |
 
 ### 工具与类型
 | 要改什么 | 文件路径 |

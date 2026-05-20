@@ -111,6 +111,19 @@ function handleRankedMatch(): void {
 
 // ── Socket responses ────────────────────────────────────────────────────
 
+function onConnectError(): void {
+  errorMsg.value = t('onlineErrorServerUnavailable');
+}
+
+function onAuthStatus(payload: unknown): void {
+  const data = payload as { authenticated: boolean };
+  if (!data.authenticated && auth.isAuthenticated.value) {
+    auth.clearAuth();
+    socketService.disconnect();
+    errorMsg.value = t('onlineErrorTokenExpired');
+  }
+}
+
 function onRoomJoined(payload: unknown): void {
   if (!awaitingJoin.value) return;
   clearJoinTimeout();
@@ -136,12 +149,16 @@ onMounted(() => {
     socketService.connect(token);
   }
 
+  socketService.on('connect_error', onConnectError);
+  socketService.on('auth:status', onAuthStatus);
   socketService.on('room:joined', onRoomJoined);
   socketService.on('room:error', onError);
 });
 
 onUnmounted(() => {
   clearJoinTimeout();
+  socketService.off('connect_error', onConnectError);
+  socketService.off('auth:status', onAuthStatus);
   socketService.off('room:joined', onRoomJoined);
   socketService.off('room:error', onError);
 });

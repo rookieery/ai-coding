@@ -10,7 +10,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
   socket.on('room:create', async (payload) => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('room:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -35,7 +35,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`room:create error: ${message}`);
-      socket.emit('error', { code: 'ROOM_CREATE_FAILED', message });
+      socket.emit('room:error', { code: 'ROOM_CREATE_FAILED', message });
     }
   });
 
@@ -43,7 +43,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
   socket.on('room:join', async (payload) => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('room:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
@@ -68,7 +68,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`room:join error: ${message}`);
-      socket.emit('error', { code: 'ROOM_JOIN_FAILED', message });
+      socket.emit('room:error', { code: 'ROOM_JOIN_FAILED', message });
     }
   });
 
@@ -100,7 +100,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`room:leave error: ${message}`);
-      socket.emit('error', { code: 'ROOM_LEAVE_FAILED', message });
+      socket.emit('room:error', { code: 'ROOM_LEAVE_FAILED', message });
     }
   });
 
@@ -108,14 +108,14 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
   socket.on('room:watch', async (payload) => {
     try {
       if (!socket.data.user) {
-        socket.emit('error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
+        socket.emit('room:error', { code: 'AUTH_REQUIRED', message: 'Authentication required' });
         return;
       }
 
       // Validate room exists and is in a watchable state (playing or waiting)
       const existingRoom = await roomService.getRoomById(payload.roomId);
       if (existingRoom.status !== 'playing' && existingRoom.status !== 'waiting') {
-        socket.emit('error', {
+        socket.emit('room:error', {
           code: 'ROOM_WATCH_FAILED',
           message: 'ROOM_NOT_WATCHABLE',
         });
@@ -139,7 +139,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`room:watch error: ${message}`);
-      socket.emit('error', { code: 'ROOM_WATCH_FAILED', message });
+      socket.emit('room:error', { code: 'ROOM_WATCH_FAILED', message });
     }
   });
 
@@ -161,7 +161,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`room:unwatch error: ${message}`);
-      socket.emit('error', { code: 'ROOM_UNWATCH_FAILED', message });
+      socket.emit('room:error', { code: 'ROOM_UNWATCH_FAILED', message });
     }
   });
 
@@ -182,7 +182,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error(`room:list error: ${message}`);
-      socket.emit('error', { code: 'ROOM_LIST_FAILED', message });
+      socket.emit('room:error', { code: 'ROOM_LIST_FAILED', message });
     }
   });
 }

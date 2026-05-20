@@ -62,6 +62,7 @@ const winner = ref<PlayerColor | 'draw' | null>(null);
 const moveCount = ref(0);
 const lastMove = ref<{ r: number; c: number } | null>(null);
 let listenerCount = 0;
+let currentRoomId: string | null = null;
 
 // ── Socket event handlers ──────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ export function useOnlineGame() {
    * restored by replaying each move step-by-step.
    */
   function initGame(roomInfo: RoomGameInfo, spectator: boolean): void {
+    currentRoomId = roomInfo.id;
     isSpectator.value = spectator;
     gameStatus.value = roomInfo.status as GameStatus;
     moveCount.value = roomInfo.moveCount;
@@ -156,8 +158,8 @@ export function useOnlineGame() {
    * Emits game:move to the server; does NOT modify local state directly.
    */
   function makeMove(r: number, c: number): void {
-    if (!isMyTurn.value || isSpectator.value) return;
-    socketService.emit('game:move', { r, c });
+    if (!isMyTurn.value || isSpectator.value || !currentRoomId) return;
+    socketService.emit('game:move', { roomId: currentRoomId, r, c });
   }
 
   /**
@@ -165,14 +167,15 @@ export function useOnlineGame() {
    * Only executes for active players (not spectators).
    */
   function resign(): void {
-    if (isSpectator.value || !myColor.value) return;
-    socketService.emit('game:resign', {});
+    if (isSpectator.value || !myColor.value || !currentRoomId) return;
+    socketService.emit('game:resign', { roomId: currentRoomId });
   }
 
   // ── Cleanup ─────────────────────────────────────────────────────────
 
   function cleanup(): void {
     unregisterListeners();
+    currentRoomId = null;
     boardState.value = createEmptyBoard();
     currentPlayer.value = 'black';
     myColor.value = null;
