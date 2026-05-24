@@ -248,7 +248,29 @@
 | 五子棋 AI 类型 | `gomoku-server/src/types/llm.types.ts` |
 | 象棋 AI 类型 | `gomoku-server/src/types/chess-llm.types.ts` |
 
-### 数据库
+---
+
+## AI 工具链 (.claude)
+
+### Hooks
+| 要改什么 | 文件路径 |
+|---------|---------|
+| API 校验 Hook（PostToolUse Write\|Edit） | `.claude/hooks/verify-api.mjs` |
+| API 测试配置 | `.claude/hooks/api-test-config.json` |
+| 文件行数超限检查（Stop） | `.claude/hooks/check-refactor-threshold.sh` |
+| Todo 条目写入脚本 | `.claude/hooks/add-todo.sh` |
+
+### Skills
+| 要改什么 | 文件路径 |
+|---------|---------|
+| 代码行数统计 | `.claude/skills/code-stats/SKILL.md` |
+| 文档同步 | `.claude/skills/sync-docs/SKILL.md` |
+| Todo 管理（增删查改、讨论） | `.claude/skills/todo/SKILL.md` |
+
+### 任务追踪
+| 要改什么 | 文件路径 |
+|---------|---------|
+| Todo 追踪文件（issues/tasks/suggestions） | `.docs/todo.md` |
 | 要改什么 | 文件路径 |
 |---------|---------|
 | Schema 定义（MySQL） | `gomoku-server/prisma/schema.prisma` |

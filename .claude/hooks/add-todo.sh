@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # add-todo.sh — Append a structured entry to .docs/todo.md
 # Usage:
-#   ./scripts/add-todo.sh issue "WebSocket reconnection fails on token refresh" "online-multiplayer"
-#   ./scripts/add-todo.sh task "Add E2E tests for room creation" "testing"
-#   ./scripts/add-todo.sh suggest "Extract shared game timer into a reusable hook" "refactor"
-#   ./scripts/add-todo.sh done "Fixed auth token expiry handling" "online-multiplayer"
+#   bash .claude/hooks/add-todo.sh issue "WebSocket reconnection fails on token refresh" "online-multiplayer"
+#   bash .claude/hooks/add-todo.sh task "Add E2E tests for room creation" "testing"
+#   bash .claude/hooks/add-todo.sh suggest "Extract shared game timer into a reusable hook" "refactor"
+#   bash .claude/hooks/add-todo.sh done "Fixed auth token expiry handling" "online-multiplayer"
 
 set -euo pipefail
 

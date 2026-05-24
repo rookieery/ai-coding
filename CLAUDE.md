@@ -65,7 +65,7 @@
   - **发现潜在问题**：代码中发现的 Bug、兼容性问题、性能瓶颈、安全隐患等，立即记录为 issue。
   - **未完成的子任务**：因时间、依赖、范围等原因跳过或延后的工作，立即记录为 task。
   - **有更优方案但暂未采纳**：对当前实现有更好的架构/性能/可维护性方案，立即记录为 suggest。
-- **记录方式**：直接编辑 `.docs/todo.md`，或使用 `bash scripts/add-todo.sh <type> "描述" "上下文"` 写入：
+- **记录方式**：直接编辑 `.docs/todo.md`，或使用 `bash .claude/hooks/add-todo.sh <type> "描述" "上下文"` 写入：
   - `issue`：问题和 Bug。
   - `task`：待完成任务。
   - `suggest`：改进建议。
