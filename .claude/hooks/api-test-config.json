@@ -1,0 +1,22 @@
+{
+  "baseUrl": "http://localhost:3001/api",
+  "healthEndpoint": "http://localhost:3001/health",
+  "healthTimeout": 3000,
+  "requestTimeout": 5000,
+  "filePatterns": {
+    "frontend": ["src/api/", "/api-", "ApiService", "api/"],
+    "backend": ["src/routes/", "/routes/", ".routes.", "/controller"]
+  },
+  "routePrefixMap": {
+    "room": "/rooms",
+    "game": "/games",
+    "auth": "/auth",
+    "chat": "/chat",
+    "admin": "/admin",
+    "user": "/users",
+    "vision": "/vision",
+    "gomoku": "/games/gomoku",
+    "chinese-chess": "/games/chinese-chess"
+  },
+  "authToken": ""
+}
